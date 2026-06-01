@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MultiShop.Payment.Entities;
-using System.Collections.Generic;
 
 namespace MultiShop.Payment.Context
 {
