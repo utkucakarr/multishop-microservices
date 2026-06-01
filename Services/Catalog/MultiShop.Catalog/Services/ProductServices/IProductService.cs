@@ -4,7 +4,7 @@ namespace MultiShop.Catalog.Services.ProductServices
 {
     public interface IProductService
     {
-        Task<List<ResultProductDto>> GetAllProductAsync();
+        Task<IEnumerable<ResultProductDto>> GetAllProductAsync();
 
         Task CreateProductAsync(CreateProductDto createProductDto);
 
@@ -14,8 +14,8 @@ namespace MultiShop.Catalog.Services.ProductServices
 
         Task<GetByIdProductDto> GetByIdProductAsync(string id);
 
-        Task<List<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync();
+        Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync();
 
-        Task<List<ResultProductsWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId);
+        Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId);
     }
 }

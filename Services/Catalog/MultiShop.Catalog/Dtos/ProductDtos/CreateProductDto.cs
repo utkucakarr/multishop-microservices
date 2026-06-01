@@ -15,10 +15,10 @@
         // Ürün sisteme ilk girildiğindeki başlangıç stoğu
         public int AvailableStock { get; set; }
 
-        // Yeniden sipariş verme uyarısı için minimum sınır
-        public int RestockThreshold { get; set; }
-
         // Deponun alabileceği maksimum ürün kapasitesi
         public int MaxStockThreshold { get; set; }
+
+        // Yeniden sipariş verme uyarısı için minimum sınır
+        public int RestockThreshold { get; set; }
     }
 }

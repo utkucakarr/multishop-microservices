@@ -1,5 +1,6 @@
 ﻿using MultiShop.Catalog.Dtos.ProductDtos;
 using MultiShop.Catalog.Entities;
+using MultiShop.Catalog.Entities.ValueObject;
 
 namespace MultiShop.Catalog.Extensions
 {
@@ -7,7 +8,7 @@ namespace MultiShop.Catalog.Extensions
     {
         public static Product ToEntity(this CreateProductDto dto)
         {
-            return new Product(
+            var parameters = new ProductCreationParameters(
                 productName: dto.ProductName,
                 productPrice: dto.ProductPrice,
                 categoryId: dto.CategoryId,
@@ -17,6 +18,8 @@ namespace MultiShop.Catalog.Extensions
                 productDescription: dto.ProductDescription,
                 productImageUrl: dto.ProductImageUrl
             );
+
+            return Product.Create(parameters);
         }
     }
 }
