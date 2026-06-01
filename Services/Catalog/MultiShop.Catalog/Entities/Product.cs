@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MultiShop.Catalog.Entities.ValueObject;
 using MultiShop.Catalog.Exceptions;
 
 namespace MultiShop.Catalog.Entities
@@ -33,19 +34,24 @@ namespace MultiShop.Catalog.Entities
         [BsonIgnore]
         public Category Category { get; set; }
 
-        public Product(string productName, decimal productPrice, string categoryId, int initialStock, int restockThreshold, int maxStockThreshold, string? productDescription = null, string? productImageUrl = null)
-        {
-            ProductId = ObjectId.GenerateNewId().ToString();
-            ProductName = productName;
-            ProductPrice = productPrice;
-            CategoryId = categoryId;
-            AvailableStock = initialStock;
-            RestockThreshold = restockThreshold;
-            MaxStockThreshold = maxStockThreshold;
-            OnReorder = false;
+        // MongoDB için parametresiz constructor (private — dışarıdan erişilemesin)
+        private Product() { }
 
-            ProductDescription = productDescription;
-            ProductImageUrl = productImageUrl;
+        public static Product Create(ProductCreationParameters parameters)
+        {
+            return new Product
+            {
+                ProductId = ObjectId.GenerateNewId().ToString(),
+                ProductName = parameters.ProductName,
+                ProductPrice = parameters.ProductPrice,
+                CategoryId = parameters.CategoryId,
+                AvailableStock = parameters.InitialStock,
+                RestockThreshold = parameters.RestockThreshold,
+                MaxStockThreshold = parameters.MaxStockThreshold,
+                OnReorder = false,
+                ProductDescription = parameters.ProductDescription,
+                ProductImageUrl = parameters.ProductImageUrl
+            };
         }
 
         public int RemoveStock(int quantityDesired)
@@ -91,6 +97,20 @@ namespace MultiShop.Catalog.Entities
 
             ProductDescription = description;
             ProductImageUrl = imageUrl;
+        }
+
+        public void UpdateCoreDetails(string productName, decimal productPrice, string categoryId)
+        {
+            if (string.IsNullOrWhiteSpace(productName))
+                throw new CatalogDomainException("Product name cannot be empty.");
+            if (productPrice <= 0)
+                throw new CatalogDomainException("Product price must be greater than zero.");
+            if (string.IsNullOrWhiteSpace(categoryId))
+                throw new CatalogDomainException("Category ID cannot be empty.");
+
+            ProductName = productName;
+            ProductPrice = productPrice;
+            CategoryId = categoryId;
         }
     }
 }
