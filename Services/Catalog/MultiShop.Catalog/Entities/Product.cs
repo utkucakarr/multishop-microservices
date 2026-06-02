@@ -15,9 +15,7 @@ namespace MultiShop.Catalog.Entities
 
         public decimal ProductPrice { get; private set; }
 
-        public string? ProductImageUrl { get; private set; }
-
-        public string? ProductDescription { get; private set; }
+        public string? ThumbnailUrl { get; private set; } 
 
         public string CategoryId { get; private set; }
 
@@ -49,8 +47,7 @@ namespace MultiShop.Catalog.Entities
                 RestockThreshold = parameters.RestockThreshold,
                 MaxStockThreshold = parameters.MaxStockThreshold,
                 OnReorder = false,
-                ProductDescription = parameters.ProductDescription,
-                ProductImageUrl = parameters.ProductImageUrl
+                ThumbnailUrl = parameters.ThumbnailUrl
             };
         }
 
@@ -90,13 +87,11 @@ namespace MultiShop.Catalog.Entities
             return this.AvailableStock - original;
         }
 
-        public void UpdateProductDetails(string? description, string? imageUrl)
+        public void UpdateProductDetails(string? thumbnailUrl)
         {
-            // İleride buraya kural ekleyebilirsin: 
-            // Örneğin "description boş olamaz" veya "imageUrl http ile başlamalı" gibi.
+            // TODO:UTKU Şimdilik boş olabilir ileride kural eklenicek
 
-            ProductDescription = description;
-            ProductImageUrl = imageUrl;
+            ThumbnailUrl = thumbnailUrl;
         }
 
         public void UpdateCoreDetails(string productName, decimal productPrice, string categoryId)
