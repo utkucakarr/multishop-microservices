@@ -1,4 +1,6 @@
-﻿namespace MultiShop.Catalog.Entities.ValueObject
+﻿using MultiShop.Catalog.Exceptions;
+
+namespace MultiShop.Catalog.Entities.ValueObject
 {
     public record ProductCreationParameters
     {
@@ -23,17 +25,17 @@
             string? productImageUrl = null)
         {
             if (string.IsNullOrWhiteSpace(productName))
-                throw new ArgumentException("Product name cannot be empty.", nameof(productName));
+                throw new CatalogDomainException("Product name cannot be empty.");
             if (productPrice <= 0)
-                throw new ArgumentException("Product price must be greater than zero.", nameof(productPrice));
+                throw new CatalogDomainException("Product price must be greater than zero.");
             if (string.IsNullOrWhiteSpace(categoryId))
-                throw new ArgumentException("Category ID cannot be empty.", nameof(categoryId));
+                throw new CatalogDomainException("Category ID cannot be empty.");
             if (initialStock < 0)
-                throw new ArgumentException("Initial stock cannot be negative.", nameof(initialStock));
+                throw new CatalogDomainException("Initial stock cannot be negative.");
             if (restockThreshold < 0)
-                throw new ArgumentException("Restock threshold cannot be negative.", nameof(restockThreshold));
+                throw new CatalogDomainException("Restock threshold cannot be negative.");
             if (maxStockThreshold <= restockThreshold)
-                throw new ArgumentException("Max stock threshold must be greater than restock threshold.", nameof(maxStockThreshold));
+                throw new CatalogDomainException("Max stock threshold must be greater than restock threshold.");
 
             ProductName = productName;
             ProductPrice = productPrice;
