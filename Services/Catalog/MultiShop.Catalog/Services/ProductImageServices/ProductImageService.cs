@@ -1,57 +1,73 @@
 ﻿using AutoMapper;
 using MongoDB.Driver;
-using MultiShop.Catalog.Dtos.ProductDetailDtos;
 using MultiShop.Catalog.Dtos.ProductImageDtos;
 using MultiShop.Catalog.Entities;
-using MultiShop.Catalog.Settings;
+using MultiShop.Catalog.Exceptions;
+using MultiShop.Catalog.Extensions;
+using MultiShop.Catalog.Repositories.Interfaces;
 
 namespace MultiShop.Catalog.Services.ProductImageServices
 {
     public class ProductImageService : IProductImageService
     {
-        private readonly IMongoCollection<ProductImage> _ProductImageCollection;
+        private readonly IProductImageRepository _productImageRepository;
         private readonly IMapper _mapper;
 
-        public ProductImageService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public ProductImageService(IProductImageRepository productImageRepository,
+            IMapper mapper)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
-            _ProductImageCollection = database.GetCollection<ProductImage>(_databaseSettings.ProductImageCollectionName);
+            _productImageRepository = productImageRepository;
             _mapper = mapper;
         }
         public async Task CreateProductImageAsync(CreateProductImageDto createProductImageDto)
         {
-            var values = _mapper.Map<ProductImage>(createProductImageDto);
-            await _ProductImageCollection.InsertOneAsync(values);
+            var productImage = createProductImageDto.ToEntity();
+            await _productImageRepository.CreateAsync(productImage);
         }
 
         public async Task DeleteProductImageAsync(string id)
-        {
-            await _ProductImageCollection.DeleteOneAsync(x => x.ProductImageId == id);
-        }
+            => await _productImageRepository.DeleteAsync(id);
 
-        public async Task<List<ResultProductImageDto>> GetAllProductImageAsync()
+        public async Task<IEnumerable<ResultProductImageDto>> GetAllProductImageAsync()
         {
-            var values = await _ProductImageCollection.Find(x => true).ToListAsync();
-            return _mapper.Map<List<ResultProductImageDto>>(values);
+            var values = await _productImageRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ResultProductImageDto>>(values);
         }
 
         public async Task<GetByIdProductImageDto> GetByIdProductImageAsync(string id)
         {
-            var values = await _ProductImageCollection.Find<ProductImage>(x => x.ProductImageId == id).FirstOrDefaultAsync();
-            return _mapper.Map<GetByIdProductImageDto>(values);
+            var productImage = await _productImageRepository.GetByIdAsync(id);
+            return _mapper.Map<GetByIdProductImageDto?>(productImage);
         }
 
-        public async Task<GetByIdProductImageDto> GetByProductIdProductImageAsync(string id)
+        public async Task<IEnumerable<GetByIdProductImageDto>> GetByProductIdProductImageAsync(string id)
         {
-            var values = await _ProductImageCollection.Find(x => x.ProductId == id).FirstOrDefaultAsync();
-            return _mapper.Map<GetByIdProductImageDto>(values);
+            var productImages = await _productImageRepository
+                           .GetImagesByProductIdAsync(id);
+
+            return _mapper.Map<IEnumerable<GetByIdProductImageDto>>(productImages);
         }
 
         public async Task UpdateProductImageAsync(UpdateProductImageDto updateProductImageDto)
         {
-            var values = _mapper.Map<ProductImage>(updateProductImageDto);
-            await _ProductImageCollection.FindOneAndReplaceAsync(x => x.ProductImageId == updateProductImageDto.ProductImageId, values);
+            var productImage = await _productImageRepository
+                            .GetByIdAsync(updateProductImageDto.ProductImageId);
+
+            if (productImage is null)
+                throw new CatalogDomainException(
+                    $"ProductImage not found: {updateProductImageDto.ProductImageId}"
+                );
+
+            productImage.UpdateImage(
+                updateProductImageDto.ImageUrl,
+                updateProductImageDto.DisplayOrder,
+                updateProductImageDto.IsMain
+            );
+
+            await _productImageRepository.UpdateAsync(
+                productImage.ProductImageId,
+                productImage
+            );
         }
     }
 }

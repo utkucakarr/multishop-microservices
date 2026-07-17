@@ -1,57 +1,70 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.ProductDetailDtos;
 using MultiShop.Catalog.Entities;
-using MultiShop.Catalog.Settings;
+using MultiShop.Catalog.Exceptions;
+using MultiShop.Catalog.Extensions;
+using MultiShop.Catalog.Repositories.Interfaces;
 
 namespace MultiShop.Catalog.Services.ProductDetailServices
 {
     public class ProductDetailService : IProductDetailService
     {
         private readonly IMapper _mapper;
-        private readonly IMongoCollection<ProductDetail> _ProductDetailColection;
+        private readonly IProductDetailRepository _repository;
 
-        public ProductDetailService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public ProductDetailService(IProductDetailRepository repository, IMapper mapper)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
-            _ProductDetailColection = database.GetCollection<ProductDetail>(_databaseSettings.ProductDetailCollectionName);
+            _repository = repository;
             _mapper = mapper;
         }
         public async Task CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto)
         {
-            var values = _mapper.Map<ProductDetail>(createProductDetailDto);
-            await _ProductDetailColection.InsertOneAsync(values);
+            var productDetail = createProductDetailDto.ToEntity();
+            await _repository.CreateAsync(productDetail);
         }
 
         public async Task DeleteProductDetailAsync(string id)
-        {
-            await _ProductDetailColection.DeleteOneAsync(x => x.ProductDetailId == id);
-        }
+            => await _repository.DeleteAsync(id);
 
-        public async Task<List<ResultProductDetailDto>> GetAllProductDetailAsync()
+        public async Task<IEnumerable<ResultProductDetailDto>> GetAllProductDetailAsync()
         {
-            var values = await _ProductDetailColection.Find(x => true).ToListAsync();
-            return _mapper.Map<List<ResultProductDetailDto>>(values);
+            var values = await _repository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ResultProductDetailDto>>(values);
         }
 
         public async Task<GetByIdProductDetailDto> GetByIdProductDetailAsync(string id)
         {
-            var values = await _ProductDetailColection.Find<ProductDetail>(x => x.ProductDetailId == id).FirstOrDefaultAsync();
-            return _mapper.Map<GetByIdProductDetailDto>(values);
+            var productDetail = await _repository.GetByIdAsync(id);
+            return _mapper.Map<GetByIdProductDetailDto?>(productDetail);
         }
 
         public async Task<GetByIdProductDetailDto> GetByProductIdProductDetailAsync(string id)
         {
-            var values = await _ProductDetailColection.Find(x => x.ProductId == id).FirstOrDefaultAsync();
-            return _mapper.Map<GetByIdProductDetailDto>(values);
+            var productDetail = await _repository.GetByProductIdAsync(id);
+            return _mapper.Map<GetByIdProductDetailDto?>(productDetail);
         }
 
         public async Task UpdateProductDetailAsyn(UpdateProductDetailDto updateProductDetailDto)
         {
-            var values = _mapper.Map<ProductDetail>(updateProductDetailDto);
-            await _ProductDetailColection.FindOneAndReplaceAsync(x => x.ProductDetailId == updateProductDetailDto.ProductDetailId, values);
+            var productDetail = await _repository
+                .GetByIdAsync(updateProductDetailDto.ProductDetailId);
+
+            if (productDetail is null)
+                throw new CatalogDomainException(
+                    $"ProductDetail not found: {updateProductDetailDto.ProductDetailId}"
+                );
+
+            productDetail.UpdateDetails(
+                updateProductDetailDto.ShortDescription,
+                updateProductDetailDto.LongDescription,
+                updateProductDetailDto.ProductInfo
+            );
+
+            await _repository.UpdateAsync(
+                productDetail.ProductDetailId,
+                productDetail
+            );
         }
     }
 }

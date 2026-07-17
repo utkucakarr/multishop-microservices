@@ -67,8 +67,7 @@ namespace MultiShop.Catalog.Services.ProductServices
                 updateProductDto.CategoryId
             );
             product.UpdateProductDetails(
-                updateProductDto.ProductDescription,
-                updateProductDto.ProductImageUrl
+                updateProductDto.ThumbnailUrl
             );
 
             await _productRepository.UpdateAsync(product.ProductId, product);

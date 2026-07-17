@@ -16,29 +16,30 @@ namespace MultiShop.Catalog.Mapping
 {
     public class GeneralMapping : Profile
     {
-        public GeneralMapping() 
+        public GeneralMapping()
         {
             CreateMap<Category, ResultCategoryDto>().ReverseMap();
             CreateMap<Category, CreateCategoryDto>().ReverseMap();
             CreateMap<Category, UpdateCategoryDto>().ReverseMap();
             CreateMap<Category, GetByIdCategoryDto>().ReverseMap();
 
-            CreateMap<Product, ResultProductDto>().ReverseMap();
-            CreateMap<Product, CreateProductDto>().ReverseMap();
-            CreateMap<Product, UpdateProductDto>().ReverseMap();
-            CreateMap<Product, GetByIdProductDto>().ReverseMap();
+            CreateMap<Product, ResultProductDto>();
+            CreateMap<Product, GetByIdProductDto>();
+            CreateMap<Product, UpdateProductDto>();
 
-            CreateMap<ProductDetail, ResultProductDetailDto>().ReverseMap();
-            CreateMap<ProductDetail, CreateProductDetailDto>().ReverseMap();
-            CreateMap<ProductDetail, UpdateProductDetailDto>().ReverseMap();
-            CreateMap<ProductDetail, GetByIdProductDetailDto>().ReverseMap();
+            CreateMap<Product, ResultProductsWithCategoryDto>()
+                .ForMember(
+                    dest => dest.Category,
+                    opt => opt.MapFrom(src => src.Category)
+                );
 
-            CreateMap<ProductImage, ResultProductImageDto>().ReverseMap();
-            CreateMap<ProductImage, CreateProductImageDto>().ReverseMap();
-            CreateMap<ProductImage, UpdateProductImageDto>().ReverseMap();
-            CreateMap<ProductImage, GetByIdProductImageDto>().ReverseMap();
+            CreateMap<ProductDetail, ResultProductDetailDto>();
+            CreateMap<ProductDetail, GetByIdProductDetailDto>();
+            CreateMap<ProductDetail, UpdateProductDetailDto>();
 
-            CreateMap<Product, ResultProductsWithCategoryDto>().ReverseMap();
+            CreateMap<ProductImage, ResultProductImageDto>();
+            CreateMap<ProductImage, GetByIdProductImageDto>();
+            CreateMap<ProductImage, UpdateProductImageDto>();
 
             CreateMap<FeatureSlider, ResultFeatureSliderDto>().ReverseMap();
             CreateMap<FeatureSlider, CreateFeatureSliderDto>().ReverseMap();

@@ -5,9 +5,9 @@ namespace MultiShop.Payment.Context
 {
     public class PaymentContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public PaymentContext(DbContextOptions<PaymentContext> options) : base (options)
         {
-            optionsBuilder.UseSqlServer("Server=localhost,1440;initial Catalog=MultiShopPaymentDb;User=sa;Password=123456aA*");
+            
         }
 
         public DbSet<PaymentInfo> PaymentInfos { get; set; }
