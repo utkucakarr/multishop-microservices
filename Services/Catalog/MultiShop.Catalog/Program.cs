@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson.Serialization.Conventions;
 using MultiShop.Catalog.Repositories.Concrete;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Services.AboutServices;
@@ -17,17 +18,24 @@ using MultiShop.Catalog.Services.StatisticServices;
 using MultiShop.Catalog.Settings;
 using System.Reflection;
 
+// Mongo dokÃ¼manlarÄ±nda entity class'Ä±nda karÅŸÄ±lÄ±ÄŸÄ± olmayan eski/fazladan alanlar
+// (Ã¶r. ÅŸema deÄŸiÅŸiklikleri sonrasÄ± kalan eski alan adlarÄ±) artÄ±k hata fÄ±rlatmak yerine yok sayÄ±lÄ±r.
+ConventionRegistry.Register(
+    "IgnoreExtraElements",
+    new ConventionPack { new IgnoreExtraElementsConvention(true) },
+    _ => true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
 {
-    // authority burada bize jwt kiminle beraber kullanýcaðýmýzý belirliyoruz.
+    // authority burada bize jwt kiminle beraber kullanï¿½caï¿½ï¿½mï¿½zï¿½ belirliyoruz.
     opt.Authority = builder.Configuration["IdentityServerUrl"];
     opt.Audience = "ResourceCatalog";
     opt.RequireHttpsMetadata = false;
 });
 
-//Burada ICategoryservice çaðýrýldýðýnda categoryservice sýnýfýnýn çaðýrýlmasýný saðlýyoruz
+//Burada ICategoryservice ï¿½aï¿½ï¿½rï¿½ldï¿½ï¿½ï¿½nda categoryservice sï¿½nï¿½fï¿½nï¿½n ï¿½aï¿½ï¿½rï¿½lmasï¿½nï¿½ saï¿½lï¿½yoruz
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryRepository, MongoCategoryRepository>();
 builder.Services.AddScoped<IProductRepository, MongoProductRepository>();
@@ -45,7 +53,7 @@ builder.Services.AddScoped<IAboutService, AboutService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 
-//Otomapper için konfigürasyon iþlemi
+//Otomapper iï¿½in konfigï¿½rasyon iï¿½lemi
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection("DataBaseSettings"));

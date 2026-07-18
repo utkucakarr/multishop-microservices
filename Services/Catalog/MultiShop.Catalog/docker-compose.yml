@@ -3,14 +3,10 @@ services:
   catalog-db:
     image: mongo
     container_name: catalog-db-container
-    command: ["mongod", "--auth"]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-data:/data/db
+      - catalog-mongo-data:/data/db
 
   # 2. Catalog API Mikroservisi
   catalog-api:
@@ -29,8 +25,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - DataBaseSettings__ConnectionString=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@catalog-db:27017/?authSource=admin
+      - DataBaseSettings__ConnectionString=mongodb://catalog-db:27017
       - IdentityServerUrl=http://identity-server:5001
       - DOTNET_USE_POLLING_FILE_WATCHER=1 
     depends_on:
       - catalog-db
+
+volumes:
+  catalog-mongo-data:
+    external: true
