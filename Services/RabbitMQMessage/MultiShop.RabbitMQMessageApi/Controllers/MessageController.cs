@@ -9,12 +9,19 @@ namespace MultiShop.RabbitMQMessageApi.Controllers
     [ApiController]
     public class MessageController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+
+        public MessageController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         [HttpPost]
         public IActionResult CreateMessage()
         {
             var connectionFactory = new ConnectionFactory()
             {
-                HostName = "localhost"
+                HostName = _configuration["RabbitMQ:HostName"]
             };
 
             var connection = connectionFactory.CreateConnection();
@@ -33,7 +40,7 @@ namespace MultiShop.RabbitMQMessageApi.Controllers
         public IActionResult ReadMessage()
         {
             var factory = new ConnectionFactory();
-            factory.HostName = "localhost";
+            factory.HostName = _configuration["RabbitMQ:HostName"];
             var connection = factory.CreateConnection();
             var channel = connection.CreateModel();
             var consumer = new EventingBasicConsumer(channel);

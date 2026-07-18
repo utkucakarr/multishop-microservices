@@ -1,14 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MultiShop.Comment.Entities;
-using System.Security.Cryptography;
 
 namespace MultiShop.Comment.Context
 {
     public class CommentContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public CommentContext(DbContextOptions<CommentContext> options) : base(options)
         {
-            optionsBuilder.UseSqlServer("Server=localhost,1442;initial Catalog=MultiShopCommentDb;User=sa;Password=123456aA*");
+            
         }
 
         public DbSet<UserComment> UserComments { get; set; }

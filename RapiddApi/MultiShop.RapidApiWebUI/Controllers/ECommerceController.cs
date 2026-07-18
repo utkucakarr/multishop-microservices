@@ -6,6 +6,13 @@ namespace MultiShop.RapidApiWebUI.Controllers
 {
     public class ECommerceController : Controller
     {
+        private readonly string _rapidApiKey;
+
+        public ECommerceController(IConfiguration configuration)
+        {
+            _rapidApiKey = configuration["RapidApiKey"];
+        }
+
         public async Task<IActionResult> ECommerceList()
         {
             var client = new HttpClient();
@@ -15,7 +22,7 @@ namespace MultiShop.RapidApiWebUI.Controllers
                 RequestUri = new Uri("https://real-time-product-search.p.rapidapi.com/search-v2?q=logitech%20fare&country=tr&language=en&page=1&limit=10&sort_by=BEST_MATCH&product_condition=ANY&return_filters=true"),
                 Headers =
     {
-        { "x-rapidapi-key", "f79c34c8b2msh1fee8bedff3584fp1192d3jsn050275d0fea6" },
+        { "x-rapidapi-key", _rapidApiKey },
         { "x-rapidapi-host", "real-time-product-search.p.rapidapi.com" },
     },
             };

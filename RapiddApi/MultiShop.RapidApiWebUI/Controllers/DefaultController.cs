@@ -6,6 +6,13 @@ namespace MultiShop.RapidApiWebUI.Controllers
 {
     public class DefaultController : Controller
     {
+        private readonly string _rapidApiKey;
+
+        public DefaultController(IConfiguration configuration)
+        {
+            _rapidApiKey = configuration["RapidApiKey"];
+        }
+
         public async Task<IActionResult> WeatherDetail()
         {
             var client = new HttpClient();
@@ -15,7 +22,7 @@ namespace MultiShop.RapidApiWebUI.Controllers
                 RequestUri = new Uri("https://the-weather-api.p.rapidapi.com/api/weather/bolu"),
                 Headers =
     {
-        { "x-rapidapi-key", "f79c34c8b2msh1fee8bedff3584fp1192d3jsn050275d0fea6" },
+        { "x-rapidapi-key", _rapidApiKey },
         { "x-rapidapi-host", "the-weather-api.p.rapidapi.com" },
     },
             };
@@ -38,7 +45,7 @@ namespace MultiShop.RapidApiWebUI.Controllers
                 RequestUri = new Uri("https://real-time-finance-data.p.rapidapi.com/currency-exchange-rate?from_symbol=USD&to_symbol=TRY&language=en"),
                 Headers =
     {
-        { "x-rapidapi-key", "f79c34c8b2msh1fee8bedff3584fp1192d3jsn050275d0fea6" },
+        { "x-rapidapi-key", _rapidApiKey },
         { "x-rapidapi-host", "real-time-finance-data.p.rapidapi.com" },
     },
             };
@@ -58,7 +65,7 @@ namespace MultiShop.RapidApiWebUI.Controllers
                 RequestUri = new Uri("https://real-time-finance-data.p.rapidapi.com/currency-exchange-rate?from_symbol=EUR&to_symbol=TRY&language=en"),
                 Headers =
     {
-        { "x-rapidapi-key", "f79c34c8b2msh1fee8bedff3584fp1192d3jsn050275d0fea6" },
+        { "x-rapidapi-key", _rapidApiKey },
         { "x-rapidapi-host", "real-time-finance-data.p.rapidapi.com" },
     },
             };
