@@ -28,6 +28,8 @@ namespace MultiShop.IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            Tools.JwtTokenDefault.Key = Configuration["JwtSettings:Key"];
+
             services.AddLocalApiAuthentication();
             services.AddControllersWithViews();
 
@@ -51,7 +53,7 @@ namespace MultiShop.IdentityServer
                 .AddInMemoryIdentityResources(Config.IdentityResources)
                 .AddInMemoryApiResources(Config.ApiResources)
                 .AddInMemoryApiScopes(Config.ApiScopes)
-                .AddInMemoryClients(Config.Clients)
+                .AddInMemoryClients(Config.GetClients(Configuration))
                 .AddAspNetIdentity<ApplicationUser>();
 
             // not recommended for production - you need to store your key material somewhere secure

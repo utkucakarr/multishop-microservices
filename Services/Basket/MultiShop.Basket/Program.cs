@@ -9,9 +9,9 @@ using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Burada deðiþkenin içine kullanýcýnýn zorunlu olmasýný atadýk
+//Burada deï¿½iï¿½kenin iï¿½ine kullanï¿½cï¿½nï¿½n zorunlu olmasï¿½nï¿½ atadï¿½k
 var requireAuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-//burada subn maplemesini kaldýrdýk.
+//burada subn maplemesini kaldï¿½rdï¿½k.
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
@@ -28,7 +28,7 @@ builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("Redi
 builder.Services.AddSingleton<RedisService>(sp =>
 {
     var redisSettings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
-    var redis = new RedisService(redisSettings.Host, redisSettings.Port);
+    var redis = new RedisService(redisSettings.Host, redisSettings.Port, redisSettings.Password);
     redis.Connect();
     return redis;
 });

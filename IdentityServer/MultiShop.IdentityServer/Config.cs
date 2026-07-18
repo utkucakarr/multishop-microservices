@@ -3,6 +3,7 @@
 
 using IdentityServer4;
 using IdentityServer4.Models;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 
 // bu Config sayfasında yetkilendirme işlemleri yapılıyor.
@@ -86,8 +87,12 @@ namespace MultiShop.IdentityServer
 
         //Clientler ile admin, ziyaretçi gibi kullanıcı kısatlamaları sağlayabiliyoruz.
 
-        public static IEnumerable<Client> Clients => new Client[]
+        public static IEnumerable<Client> GetClients(IConfiguration configuration)
         {
+            var clientSecret = configuration["ClientSecrets:SharedSecret"];
+
+            return new Client[]
+            {
             //Visitor
             new Client
             {
@@ -96,7 +101,7 @@ namespace MultiShop.IdentityServer
                 //Neye izin verdiğimizi belirliyoruz, ClientCredentials ise kimlik işlemleri
                 AllowedGrantTypes=GrantTypes.ClientCredentials,
                 //Şifremizi belirledik
-                ClientSecrets={new Secret("multishopsecret".Sha256())},
+                ClientSecrets={new Secret(clientSecret.Sha256())},
                 //Buradaka visitors kullanıcısına vericeğimiz yetkileri belirledik
                 AllowedScopes={ "CatalogReadPermission", "CatalogFullPermission", "OcelotFullPermission", "CommentFullPermission", "ImageFullPermission",
                 IdentityServerConstants.LocalApi.ScopeName
@@ -110,7 +115,7 @@ namespace MultiShop.IdentityServer
                 ClientId="MultiShopManagerId",
                 ClientName="Multi Shop Manager User",
                 AllowedGrantTypes=GrantTypes.ResourceOwnerPassword,
-                ClientSecrets={new Secret("multishopsecret".Sha256())},
+                ClientSecrets={new Secret(clientSecret.Sha256())},
                 AllowedScopes={ "CatalogReadPermission", "CatalogFullPermission", "BasketFullPermission", "OcelotFullPermission", "CommentFullPermission", "PaymentFullPermission", "ImageFullPermission", "DiscountFullPermission", "OrderFullPermission", "MessageFullPermission", "CargoFullPermission",
                 IdentityServerConstants.LocalApi.ScopeName,
                 IdentityServerConstants.StandardScopes.Email,
@@ -125,7 +130,7 @@ namespace MultiShop.IdentityServer
                 ClientId="MultiShopAdminId",
                 ClientName="Multi Shop Admin User",
                 AllowedGrantTypes=GrantTypes.ResourceOwnerPassword,
-                ClientSecrets={new Secret("multishopsecret".Sha256())},
+                ClientSecrets={new Secret(clientSecret.Sha256())},
                 AllowedScopes={ "CatalogFullPermission", "CatalogReadPermission", "DiscountFullPermission", "OrderFullPermission", "CargoFullPermission", "BasketFullPermission", "OcelotFullPermission", "CommentFullPermission", "PaymentFullPermission", "ImageFullPermission", "CargoFullPermission",
                 IdentityServerConstants.LocalApi.ScopeName,
                 IdentityServerConstants.StandardScopes.Email,
@@ -135,6 +140,7 @@ namespace MultiShop.IdentityServer
                 //Burada 600 saniye sonra token ömrü sona eriyor
                 AccessTokenLifetime=600
             }
-        };
+            };
+        }
     }
 }
