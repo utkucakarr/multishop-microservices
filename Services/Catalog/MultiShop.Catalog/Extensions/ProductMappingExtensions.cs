@@ -15,7 +15,8 @@ namespace MultiShop.Catalog.Extensions
                 initialStock: dto.AvailableStock,
                 restockThreshold: dto.RestockThreshold,
                 maxStockThreshold: dto.MaxStockThreshold,
-                thumbnailUrl: dto.ThumbnailUrl
+                productDescription: dto.ProductDescription,
+                productImageUrl: dto.ProductImageUrl
             );
 
             return Product.Create(parameters);
