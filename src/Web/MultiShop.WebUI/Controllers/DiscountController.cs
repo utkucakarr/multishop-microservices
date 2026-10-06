@@ -42,9 +42,10 @@ namespace MultiShop.WebUI.Controllers
             if (values != 0)
             {
                 var basketValues = await _basketService.GetBasket();
-                var totalPriceWithTax = basketValues.TotalPrice + (basketValues.TotalPrice * 10 / 100);
+                var tax = Math.Round(basketValues.TotalPrice * 10 / 100, 2, MidpointRounding.AwayFromZero);
+                var totalPriceWithTax = basketValues.TotalPrice + tax;
 
-                var totalNewPriceWithDiscount = totalPriceWithTax - (totalPriceWithTax * values / 100);
+                var totalNewPriceWithDiscount = Math.Round(totalPriceWithTax - (totalPriceWithTax * values / 100), 2, MidpointRounding.AwayFromZero);
 
                 return RedirectToAction("Index", "ShoppingCard", new { code = code, discountRate = values, totalNewPriceWithDiscount = totalNewPriceWithDiscount });
             }
