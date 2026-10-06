@@ -41,7 +41,7 @@ namespace MultiShop.Catalog.Controllers
         [HttpGet("GetProductAvgPrice")]
         public async Task<IActionResult> GetProductAvgPrice()
         {
-            var value = _statisticService.GetProductAvgPriceAsync();
+            var value = await _statisticService.GetProductAvgPriceAsync();
             return Ok(value);
         }
 

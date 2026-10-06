@@ -32,45 +32,52 @@ namespace MultiShop.Catalog.Services.StatisticServices
         }
 
         public async Task<string> GetMaxPriceProductNameAsync()
-        {
-            var filter = Builders<Product>.Filter.Empty;
-            var sort = Builders<Product>.Sort.Descending(x => x.ProductPrice);
-            var projection = Builders<Product>.Projection.Include(y =>
-                                                            y.ProductName).Exclude("ProductId");
-            var product = await _productCollection.Find(filter)
-                                                .Sort(sort)
-                                                .Project(projection)
-                                                .FirstOrDefaultAsync();
-            return product.GetValue("ProductName").AsString;
-        }
+            => await GetProductNameByPriceAsync(descending: true);
 
         public async Task<string> GetMinPriceProductNameAsync()
-        {
-            var filter = Builders<Product>.Filter.Empty;
-            var sort = Builders<Product>.Sort.Ascending(x => x.ProductPrice);
-            var projection = Builders<Product>.Projection.Include(y =>
-                                                            y.ProductName).Exclude("ProductId");
-            var product = await _productCollection.Find(filter)
-                                                .Sort(sort)
-                                                .Project(projection)
-                                                .FirstOrDefaultAsync();
-            return product.GetValue("ProductName").AsString;
-        }
+            => await GetProductNameByPriceAsync(descending: false);
 
         public async Task<decimal> GetProductAvgPriceAsync()
         {
-            var pipeLine = new BsonDocument[]
+            var pipeline = new[]
             {
                 new BsonDocument("$group", new BsonDocument
                 {
-                    {"_id", null },
-                    {"averagePrice", new BsonDocument("$avg", "ProductPrice") }
+                    { "_id", BsonNull.Value },
+                    { "averagePrice", new BsonDocument("$avg", PriceAsDecimal()) }
                 })
             };
-            var result = await _productCollection.AggregateAsync<BsonDocument>(pipeLine);
-            var value = result.FirstOrDefault().GetValue("averagePrice", decimal.Zero).AsDecimal;
-            return value;
+            var result = await (await _productCollection.AggregateAsync<BsonDocument>(pipeline)).FirstOrDefaultAsync();
+            if (result is null || !result.TryGetValue("averagePrice", out var averagePrice) || averagePrice.IsBsonNull)
+                return 0;
+
+            return Math.Round(averagePrice.ToDecimal(), 2);
         }
+
+        private async Task<string> GetProductNameByPriceAsync(bool descending)
+        {
+            var pipeline = new[]
+            {
+                new BsonDocument("$addFields", new BsonDocument("priceValue", PriceAsDecimal())),
+                new BsonDocument("$match", new BsonDocument("priceValue", new BsonDocument("$ne", BsonNull.Value))),
+                new BsonDocument("$sort", new BsonDocument("priceValue", descending ? -1 : 1)),
+                new BsonDocument("$limit", 1),
+                new BsonDocument("$project", new BsonDocument("ProductName", 1))
+            };
+            var product = await (await _productCollection.AggregateAsync<BsonDocument>(pipeline)).FirstOrDefaultAsync();
+            return product?.GetValue("ProductName", BsonString.Empty).AsString ?? string.Empty;
+        }
+
+        // Eski kayıtlarda ProductPrice metin (MongoDB.Driver 2.x), yenilerde Decimal128 (3.x) olarak saklı.
+        // Hesaplama ve sıralamanın ikisinde de doğru çalışması için değer sorgu içinde decimal'a çevrilir.
+        private static BsonDocument PriceAsDecimal()
+            => new BsonDocument("$convert", new BsonDocument
+            {
+                { "input", "$ProductPrice" },
+                { "to", "decimal" },
+                { "onError", BsonNull.Value },
+                { "onNull", BsonNull.Value }
+            });
 
         public async Task<long> GetProductCountAsync()
         {

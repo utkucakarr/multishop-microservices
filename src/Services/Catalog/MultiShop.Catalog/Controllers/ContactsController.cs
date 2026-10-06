@@ -26,7 +26,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(contacts);
         }
 
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetContactById(string id)
         {
             var contactId = await _contactService.GetByIdContactAsync(id);
