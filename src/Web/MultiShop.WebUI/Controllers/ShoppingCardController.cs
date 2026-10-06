@@ -35,9 +35,10 @@ namespace MultiShop.WebUI.Controllers
             ViewBag.directory3 = "Sepetim";
             var values = await _basketService.GetBasket();
             ViewBag.total = values.TotalPrice;
-            var tax = values.TotalPrice * 10 / 100;
+            // Para değerleri kuruşa yuvarlanır (ör. %10 KDV: 19,99 -> 2,00)
+            var tax = Math.Round(values.TotalPrice * 10 / 100, 2, MidpointRounding.AwayFromZero);
             ViewBag.tax = tax;
-            var totalPriceWithTax = values.TotalPrice + (values.TotalPrice * 10 / 100);
+            var totalPriceWithTax = values.TotalPrice + tax;
             ViewBag.totalPriceWithTax = totalPriceWithTax;
             return View();
         }
