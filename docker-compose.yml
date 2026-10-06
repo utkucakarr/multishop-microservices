@@ -1,0 +1,117 @@
+# MultiShop geliştirme altyapısı
+#
+#   docker compose up -d        -> hepsini başlatır
+#   docker compose ps           -> durum / health
+#   docker compose down         -> durdurur (veriler volume'lerde kalır)
+#
+# Şifreler kökteki .env dosyasından okunur (.env.example'ı kopyalayıp doldurun).
+# Portlar MultiShop'a özeldir; bilgisayardaki yerel SQL Server / MongoDB / PostgreSQL
+# servisleri ve başka projelerin container'larıyla çakışmaz.
+
+name: multishop
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: multishop-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD .env dosyasında tanımlı olmalı}
+      MSSQL_MEMORY_LIMIT_MB: "2048"
+    ports:
+      - "14330:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8.0
+    container_name: multishop-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: multishop-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-multishop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD .env dosyasında tanımlı olmalı}
+      POSTGRES_DB: MultiShopMessageDb
+    ports:
+      - "5440:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d MultiShopMessageDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: multishop-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: multishop-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-multishop}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD .env dosyasında tanımlı olmalı}
+    ports:
+      - "5673:5672"     # AMQP
+      - "15673:15672"   # Yönetim paneli: http://localhost:15673
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+    restart: unless-stopped
+
+  seq:
+    image: datalust/seq:latest
+    container_name: multishop-seq
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"   # Yalnızca geliştirme ortamı için
+    ports:
+      - "8091:80"       # Arayüz ve log alımı: http://localhost:8091
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+  mongo-data:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+  seq-data:

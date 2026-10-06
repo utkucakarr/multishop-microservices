@@ -377,3 +377,6 @@ tempkey.jwk
 
 # Kişisel analiz ve planlama notları (yalnızca lokal)
 docs/
+
+# docker-compose şifreleri (yalnızca lokal)
+.env
