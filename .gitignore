@@ -374,3 +374,6 @@ src/Services/Images/MultiShop.Images.WebUI/wwwroot/*.json
 
 # IdentityServer developer signing key (regenerated on startup)
 tempkey.jwk
+
+# Kişisel analiz ve planlama notları (yalnızca lokal)
+docs/
