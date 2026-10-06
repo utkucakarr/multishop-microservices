@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
+
 using MultiShop.Catalog.Dtos.OfferDiscountDtos;
 using MultiShop.Catalog.Services.OfferDiscountServices;
 

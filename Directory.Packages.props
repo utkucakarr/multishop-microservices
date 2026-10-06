@@ -1,0 +1,52 @@
+<Project>
+
+  <!-- Merkezi paket yönetimi: sürümler yalnızca burada tutulur, csproj'larda PackageReference sürümsüz yazılır. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!-- ASP.NET Core / EF Core -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <!-- Veri erişimi -->
+  <ItemGroup>
+    <PackageVersion Include="Dapper" Version="2.1.66" />
+    <PackageVersion Include="MongoDB.Bson" Version="3.1.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.1.0" />
+    <PackageVersion Include="Npgsql" Version="8.0.5" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.7.17" />
+  </ItemGroup>
+
+  <!-- Kimlik -->
+  <ItemGroup>
+    <PackageVersion Include="IdentityModel.AspNetCore" Version="3.0.0" />
+    <PackageVersion Include="IdentityServer4.AspNetIdentity" Version="4.1.2" />
+  </ItemGroup>
+
+  <!-- Diğer -->
+  <ItemGroup>
+    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.13.0" />
+    <PackageVersion Include="MailKit" Version="4.18.1" />
+    <PackageVersion Include="MediatR" Version="12.4.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="Ocelot" Version="23.4.3" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
+  </ItemGroup>
+
+</Project>

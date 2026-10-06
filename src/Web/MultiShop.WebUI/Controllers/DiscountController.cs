@@ -1,5 +1,4 @@
 ﻿using AspNetCoreGeneratedDocument;
-using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.BasketDtos;
 using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;

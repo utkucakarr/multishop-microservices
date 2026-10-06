@@ -1,6 +1,4 @@
-﻿
-using Duende.IdentityServer.Extensions;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MultiShop.WebUI.Services.Concrete;
 using MultiShop.WebUI.Services.Interfaces;

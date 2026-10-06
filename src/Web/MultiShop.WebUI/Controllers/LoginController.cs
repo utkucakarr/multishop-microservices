@@ -1,5 +1,4 @@
-﻿using Duende.IdentityServer.Extensions;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.IdentityDtos.LoginDtos;

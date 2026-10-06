@@ -1,5 +1,4 @@
-﻿using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using MultiShop.DtoLayer.CatalogDtos.SpecialOfferDtos;
