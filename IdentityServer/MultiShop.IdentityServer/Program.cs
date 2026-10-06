@@ -73,6 +73,16 @@ namespace MultiShop.IdentityServer
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog()
+                // Re-added after environment variables so this project's user-secrets
+                // win over any machine/user-level env vars from other local projects
+                // (e.g. a stray ConnectionStrings__DefaultConnection left by another app).
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        config.AddUserSecrets<Program>(optional: true);
+                    }
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

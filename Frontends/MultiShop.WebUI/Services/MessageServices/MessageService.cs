@@ -14,14 +14,14 @@ namespace MultiShop.WebUI.Services.MessageServices
 
         public async Task<List<ResultInboxMessageDto>> GetInboxMessageAsync(string id)
         {
-            var responseMessage = await _httpClient.GetAsync("http://localhost:5000/services/Message/UserMessage/GetMesssageInBox?id=" + id);
+            var responseMessage = await _httpClient.GetAsync("http://localhost:5020/services/Message/UserMessage/GetMesssageInBox?id=" + id);
             var values = await responseMessage.Content.ReadFromJsonAsync<List<ResultInboxMessageDto>>();
             return values;
         }
 
         public async Task<List<ResultSendboxMessageDto>> GetSendboxMessageAsync(string id)
         {
-            var responseMessage = await _httpClient.GetAsync("http://localhost:5000/services/Message/UserMessage/GetMessageSendBox?id=" + id);
+            var responseMessage = await _httpClient.GetAsync("http://localhost:5020/services/Message/UserMessage/GetMessageSendBox?id=" + id);
             var values = await responseMessage.Content.ReadFromJsonAsync<List<ResultSendboxMessageDto>>();
             return values;
         }

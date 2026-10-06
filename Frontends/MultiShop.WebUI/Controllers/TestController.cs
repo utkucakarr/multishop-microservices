@@ -27,7 +27,7 @@ namespace MultiShop.WebUI.Controllers
             {
                 var request = new HttpRequestMessage
                 {
-                    RequestUri = new Uri("http://localhost:5001/connect/token"),
+                    RequestUri = new Uri("http://localhost:5010/connect/token"),
                     Method = HttpMethod.Post,
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
                     {

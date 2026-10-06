@@ -30,7 +30,7 @@ namespace MultiShop.WebUI.ViewComponents.UILayoutViewComponents
             if (isLogin)
             {
                 var basket = await _basketService.GetBasket();
-                ViewBag.basketCount = basket.BasketItems.Count;
+                ViewBag.basketCount = basket?.BasketItems.Count ?? 0;
             }
             ViewBag.isLogin = isLogin;
 

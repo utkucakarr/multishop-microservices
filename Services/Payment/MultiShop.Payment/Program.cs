@@ -5,6 +5,14 @@ using MultiShop.Payment.Services.PaymentServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Re-added after environment variables so this project's user-secrets win over
+// any machine/user-level env vars left by other local projects (e.g. a stray
+// ConnectionStrings__DefaultConnection).
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets(System.Reflection.Assembly.GetExecutingAssembly(), optional: true);
+}
+
 builder.Services.AddDbContext<PaymentContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
