@@ -137,7 +137,7 @@
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
-        "AllowedScopes": [ "CommentFullPermission" ]
+        "AllowedScopes": [ "PaymentFullPermission" ]
       }
     },
     //Images Mikroservisi
