@@ -9,9 +9,17 @@ using MultiShop.Cargo.DataAccessLayer.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Re-added after environment variables so this project's user-secrets win over
+// any machine/user-level env vars left by other local projects (e.g. a stray
+// ConnectionStrings__DefaultConnection).
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets(System.Reflection.Assembly.GetExecutingAssembly(), optional: true);
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
 {
-    // authority burada bize jwt kiminle beraber kullanýcaðýmýzý belirliyoruz.
+    // authority burada bize jwt kiminle beraber kullanï¿½caï¿½ï¿½mï¿½zï¿½ belirliyoruz.
     opt.Authority = builder.Configuration["IdentityServerUrl"];
     opt.Audience = "ResourceCargo";
     opt.RequireHttpsMetadata = false;

@@ -1,4 +1,5 @@
-﻿using MultiShop.DtoLayer.BasketDtos;
+﻿using System.Text.Json;
+using MultiShop.DtoLayer.BasketDtos;
 
 namespace MultiShop.WebUI.Services.BasketServices
 {
@@ -61,8 +62,12 @@ namespace MultiShop.WebUI.Services.BasketServices
         public async Task<BasketTotalDto> GetBasket()
         {
             var responseMessage = await _httpClient.GetAsync("baskets");
-            var values = await responseMessage.Content.ReadFromJsonAsync<BasketTotalDto>();
-            return values;
+            var content = await responseMessage.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return null;
+            }
+            return JsonSerializer.Deserialize<BasketTotalDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         public async Task<bool> RemoveAllBasketItem(string productId)

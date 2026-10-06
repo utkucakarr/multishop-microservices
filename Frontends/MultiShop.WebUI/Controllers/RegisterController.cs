@@ -28,7 +28,7 @@ namespace MultiShop.WebUI.Controllers
                 var client = _httpClientFactory.CreateClient();
                 var jsonData = JsonConvert.SerializeObject(createRegisterDto);
                 StringContent stringContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
-                var responseMessage = await client.PostAsync("http://localhost:5001/api/Registers", stringContent);
+                var responseMessage = await client.PostAsync("http://localhost:5010/api/Registers", stringContent);
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     return RedirectToAction("Index", "Login");
