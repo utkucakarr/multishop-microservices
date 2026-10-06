@@ -1,0 +1,187 @@
+{
+  "Routes": [
+    //Catalog Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7070
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/catalog/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CatalogFullPermission" ]
+      }
+    },
+    //Discount Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7071
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/discount/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "DiscountFullPermission" ]
+      }
+    },
+    //Order Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7072
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/order/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "OrderFullPermission" ]
+      }
+    },
+    //Cargo Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7073
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/cargo/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CargoFullPermission" ]
+      }
+    },
+    //Basket Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7074
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/basket/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "BasketFullPermission" ]
+      }
+    },
+    //Comment Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7075
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/comment/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CommentFullPermission" ]
+      }
+    },
+    //Payment Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7076
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/payment/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "PaymentFullPermission" ]
+      }
+    },
+    //Images Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7077
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/images/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "ImageFullPermission" ]
+      }
+    },
+    //Message Mikroservisi
+    {
+      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7078
+        }
+      ],
+      //Upstream tarafı client tarafından bize gelen istek tarafı.
+      "UpstreamPathTemplate": "/services/message/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "MessageFullPermission" ]
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5020"
+  }
+}

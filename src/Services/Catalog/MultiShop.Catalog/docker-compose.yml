@@ -1,0 +1,36 @@
+services:
+  # 1. Catalog Veritabanı (MongoDB)
+  catalog-db:
+    image: mongo
+    container_name: catalog-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - catalog-mongo-data:/data/db
+
+  # 2. Catalog API Mikroservisi
+  catalog-api:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+      target: build           # <-- BURASI KRİTİK: Dockerfile içindeki SDK katmanını hedefle
+    container_name: catalog-api-container
+    ports:
+      - "7070:8080"
+    volumes:
+      - .:/app
+    working_dir: /app
+    # Proje dosyanın adını tam yazmak daha garantidir:
+    command: ["dotnet", "watch", "run", "--project", "MultiShop.Catalog.csproj", "--urls", "http://0.0.0.0:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - DataBaseSettings__ConnectionString=mongodb://catalog-db:27017
+      - IdentityServerUrl=http://host.docker.internal:5010
+      - DOTNET_USE_POLLING_FILE_WATCHER=1 
+    depends_on:
+      - catalog-db
+
+volumes:
+  catalog-mongo-data:
+    external: true
