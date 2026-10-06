@@ -5,20 +5,19 @@ using Microsoft.Extensions.Options;
 using MultiShop.Basket.LoginServices;
 using MultiShop.Basket.Services;
 using MultiShop.Basket.Settings;
-using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //Burada de�i�kenin i�ine kullan�c�n�n zorunlu olmas�n� atad�k
 var requireAuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-//burada subn maplemesini kald�rd�k.
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
 {
     opt.Authority = builder.Configuration["IdentityServerUrl"];
     opt.Audience = "ResourceBasket";
     opt.RequireHttpsMetadata = false;
+    // .NET 8: "sub" claim'inin ClaimTypes.NameIdentifier'a çevrilmesini kapatır; LoginService "sub" okur
+    opt.MapInboundClaims = false;
 });
 
 builder.Services.AddHttpContextAccessor();
