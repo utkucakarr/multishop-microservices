@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- src/ altındaki tüm projeler için ortak ayarlar. Bir proje gerekirse kendi csproj'unda ezebilir. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

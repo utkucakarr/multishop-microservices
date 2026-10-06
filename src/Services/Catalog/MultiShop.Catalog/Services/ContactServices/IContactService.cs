@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Query.Internal;
-using MultiShop.Catalog.Dtos.ContactDtos;
+﻿using MultiShop.Catalog.Dtos.ContactDtos;
 
 namespace MultiShop.Catalog.Services.ContactServices
 {
