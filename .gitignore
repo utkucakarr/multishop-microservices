@@ -371,3 +371,6 @@ Services/Images/MultiShop.Images.WebUI/wwwroot/*.json
 *-service-account*.json
 
 **/mongo-data/
+
+# IdentityServer developer signing key (regenerated on startup)
+tempkey.jwk

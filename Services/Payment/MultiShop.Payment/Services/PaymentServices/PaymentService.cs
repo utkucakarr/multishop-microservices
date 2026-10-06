@@ -4,38 +4,42 @@ using System.Security.Cryptography;
 using MultiShop.Payment.Repositories;
 using MultiShop.Payment.Entities;
 using System.Xml.Linq;
+using Microsoft.Extensions.Options;
+using MultiShop.Payment.Settings;
 
 namespace MultiShop.Payment.Services.PaymentServices
 {
     public class PaymentService : IPaymentService
     {
         private readonly IRepository<PaymentInfo> _repository;
+        private readonly GarantiPosSettings _posSettings;
 
-        public PaymentService(IRepository<PaymentInfo> repository)
+        public PaymentService(IRepository<PaymentInfo> repository, IOptions<GarantiPosSettings> posSettings)
         {
             _repository = repository;
+            _posSettings = posSettings.Value;
         }
 
         public async Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto)
         {
             var orderId = "MLT-SHP-" + createPaymentDto.OrderingId.ToString(); //Guid.NewGuid().ToString("N");
             var paymentAmounth = ulong.Parse(createPaymentDto.PaymentAmounth) * 100;
-            //Güvenlik için hash oluşturuuyor. 949 Para kodu, 123qweASK/ şifre ve 30691297'de Terminal Id
-            var hashData = GetHashData("123qweASD/", "30691297", orderId, createPaymentDto.CardNumber, paymentAmounth, 949);
+            //Güvenlik için hash oluşturuluyor. POS bilgileri GarantiPosSettings'ten (user-secrets) okunur.
+            var hashData = GetHashData(_posSettings.ProvisionPassword, _posSettings.TerminalId, orderId, createPaymentDto.CardNumber, paymentAmounth, _posSettings.CurrencyCode);
             var xmlData = $"<?xml version='1.0' encoding='iso-8859-9'?>\n" +
                       $"<GVPSRequest>\n" +
-                      $"    <Mode>TEST</Mode>\n" +
+                      $"    <Mode>{_posSettings.Mode}</Mode>\n" +
                       $"    <Version>512</Version>\n" +
                       $"    <Terminal>\n" +
-                      $"        <ProvUserID>PROVAUT</ProvUserID>\n" +
+                      $"        <ProvUserID>{_posSettings.ProvUserId}</ProvUserID>\n" +
                       $"        <HashData>{hashData}</HashData>\n" +
-                      $"        <UserID>PROVAUT</UserID>\n" +
-                      $"        <ID>30691297</ID>\n" +
-                      $"        <MerchantID>7000679</MerchantID>\n" +
+                      $"        <UserID>{_posSettings.ProvUserId}</UserID>\n" +
+                      $"        <ID>{_posSettings.TerminalId}</ID>\n" +
+                      $"        <MerchantID>{_posSettings.MerchantId}</MerchantID>\n" +
                       $"    </Terminal>\n" +
                       $"    <Customer>\n" +
-                      $"        <IPAddress>192.168.0.1</IPAddress>\n" +
-                      $"        <EmailAddress>eticaret@garanti.com.tr</EmailAddress>\n" +
+                      $"        <IPAddress>{_posSettings.CustomerIpAddress}</IPAddress>\n" +
+                      $"        <EmailAddress>{_posSettings.CustomerEmailAddress}</EmailAddress>\n" +
                       $"    </Customer>\n" +
                       $"    <Card>\n" +
                       $"        <Number>{createPaymentDto.CardNumber}</Number>\n" +
@@ -49,7 +53,7 @@ namespace MultiShop.Payment.Services.PaymentServices
                       $"    <Transaction>\n" +
                       $"        <Type>sales</Type>\n" +
                       $"        <Amount>{paymentAmounth}</Amount>\n" +
-                      $"        <CurrencyCode>949</CurrencyCode>\n" +
+                      $"        <CurrencyCode>{_posSettings.CurrencyCode}</CurrencyCode>\n" +
                       $"        <CardholderPresentCode>0</CardholderPresentCode>\n" +
                       $"        <MotoInd>N</MotoInd>\n" +
                       $"    </Transaction>\n" +
@@ -59,7 +63,7 @@ namespace MultiShop.Payment.Services.PaymentServices
 
             var requestContent = new StringContent(xmlData, Encoding.GetEncoding("iso-8859-9"), "application/xml");
 
-            var response = await client.PostAsync("https://sanalposprovtest.garantibbva.com.tr/VPServlet", requestContent);
+            var response = await client.PostAsync(_posSettings.ApiUrl, requestContent);
 
             string responseString = await response.Content.ReadAsStringAsync();
 

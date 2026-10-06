@@ -1,12 +1,21 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using MultiShop.WebUI.Models;
+using MultiShop.WebUI.Settings;
 
 namespace MultiShop.WebUI.Controllers
 {
     public class MailController : Controller
     {
+        private readonly SmtpSettings _smtpSettings;
+
+        public MailController(IOptions<SmtpSettings> smtpSettings)
+        {
+            _smtpSettings = smtpSettings.Value;
+        }
+
         [HttpGet]
         public IActionResult SendMail()
         {
@@ -19,7 +28,7 @@ namespace MultiShop.WebUI.Controllers
             MimeMessage mimeMessage = new MimeMessage();
 
             //burada mesajın kimden gönderildiği
-            MailboxAddress mailboxAddressFrom = new MailboxAddress("MultiShop Katalog", "utkckr504@gmail.com");
+            MailboxAddress mailboxAddressFrom = new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail);
             mimeMessage.From.Add(mailboxAddressFrom);
 
             //Burada mesajın kime gönderildiği
@@ -36,8 +45,8 @@ namespace MultiShop.WebUI.Controllers
 
             //SMTP protokolü kullanarak mail atmaya izin verme
             SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 587, false);
-            client.Authenticate("utkckr504@gmail.com", "uombuxvotnmwpgix");
+            client.Connect(_smtpSettings.Host, _smtpSettings.Port, false);
+            client.Authenticate(_smtpSettings.UserName, _smtpSettings.Password);
             client.Send(mimeMessage);
             client.Disconnect(true);
             return View();

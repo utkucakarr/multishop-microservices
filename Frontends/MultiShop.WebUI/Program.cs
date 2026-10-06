@@ -38,10 +38,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddCookie(JwtBearerDefaults.AuthenticationScheme,
     opt =>
     {
-        //Sisteme giriþ yapmadan yönlenen biri olursa yönlendirilecek sayfa belirleniyor.
+        //Sisteme giriï¿½ yapmadan yï¿½nlenen biri olursa yï¿½nlendirilecek sayfa belirleniyor.
         opt.LoginPath = "/Login/Index/";
         opt.LogoutPath = "/Login/Logout/";
-        //Kullanýcý yetkisi olmayan bir sayfaya gitmeye çalýþtýðýnda yönlendirilecek sayfa
+        //Kullanï¿½cï¿½ yetkisi olmayan bir sayfaya gitmeye ï¿½alï¿½ï¿½tï¿½ï¿½ï¿½nda yï¿½nlendirilecek sayfa
         opt.AccessDeniedPath = "/Pages/AccessDenied/";
         opt.Cookie.HttpOnly = true;
         opt.Cookie.SameSite = SameSiteMode.Strict;
@@ -73,6 +73,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<ClientSettings>(builder.Configuration.GetSection("ClientSettings"));
 builder.Services.Configure<ServiceApiSettings>(builder.Configuration.GetSection("ServiceApiSettings"));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
 builder.Services.AddScoped<ResourceOwnerPasswordTokenHandler>();
 builder.Services.AddScoped<ClientCredentialTokenHandler>();
