@@ -5,6 +5,7 @@ namespace MultiShop.Catalog.Repositories.Interfaces
     public interface IProductImageRepository : IGenericRepository<ProductImage>
     {
         Task<IEnumerable<ProductImage>> GetImagesByProductIdAsync(string productId);
+        Task<IDictionary<string, string>> GetMainImageUrlsAsync(IEnumerable<string> productIds);
         // Task<ProductImage?> GetMainImageByProductIdAsync(string productId);
     }
 }
