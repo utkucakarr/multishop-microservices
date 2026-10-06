@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiShop.Payment.Context;
 using MultiShop.Payment.Repositories;
 using MultiShop.Payment.Services.PaymentServices;
+using MultiShop.Payment.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<PaymentContext>(options =>
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.Configure<GarantiPosSettings>(builder.Configuration.GetSection("GarantiPosSettings"));
 
 // Add services to the container.
 
