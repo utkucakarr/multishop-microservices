@@ -32,6 +32,10 @@
             </div>
             <form class="form-detail" method="post">
                 <h2>MultiShop Giriş Formu</h2>
+                @if (ViewBag.LoginError != null)
+                {
+                    <div style="color:#c0392b; margin-bottom:15px;">@ViewBag.LoginError</div>
+                }
                 <div class="form-row">
                     <label for="your_email">Kullanıcı Adınız</label>
                     <input type="text" id="your_username" asp-for="UserName" class="input-text" required>

@@ -17,13 +17,15 @@ namespace MultiShop.WebUI.Services.Concrete
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ClientSettings _clientSettings;
         private readonly ServiceApiSettings _serviceApiSettings;
+        private readonly ILogger<IdentityService> _logger;
 
-        public IdentityService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IOptions<ClientSettings> clientSettings, IOptions<ServiceApiSettings> serviceApiSettings)
+        public IdentityService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IOptions<ClientSettings> clientSettings, IOptions<ServiceApiSettings> serviceApiSettings, ILogger<IdentityService> logger)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
             _clientSettings = clientSettings.Value;
             _serviceApiSettings = serviceApiSettings.Value;
+            _logger = logger;
         }
 
         public async Task<bool> GetRefreshToken()
@@ -91,6 +93,12 @@ namespace MultiShop.WebUI.Services.Concrete
                 }
             });
 
+            if (discoveryEndPoint.IsError)
+            {
+                _logger.LogError("IdentityServer discovery hatası ({Url}): {Error}", _serviceApiSettings.IdentityServerUrl, discoveryEndPoint.Error);
+                return false;
+            }
+
             var passwordTokenRequest = new PasswordTokenRequest
             {
                 ClientId = _clientSettings.MultiShopManegerClient.ClientId,
@@ -102,6 +110,12 @@ namespace MultiShop.WebUI.Services.Concrete
 
             var token = await _httpClient.RequestPasswordTokenAsync(passwordTokenRequest);
 
+            if (token.IsError)
+            {
+                _logger.LogWarning("Token alınamadı ({StatusCode}): {Error} - {ErrorDescription}", token.HttpStatusCode, token.Error, token.ErrorDescription);
+                return false;
+            }
+
             var userInfoRequest = new UserInfoRequest
             {
                 Token = token.AccessToken,
@@ -109,6 +123,12 @@ namespace MultiShop.WebUI.Services.Concrete
             };
 
             var userValues = await _httpClient.GetUserInfoAsync(userInfoRequest);
+
+            if (userValues.IsError)
+            {
+                _logger.LogError("Kullanıcı bilgisi alınamadı ({StatusCode}): {Error}", userValues.HttpStatusCode, userValues.Error);
+                return false;
+            }
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(userValues.Claims, CookieAuthenticationDefaults.AuthenticationScheme, "name", "role");
 

@@ -31,8 +31,13 @@ namespace MultiShop.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(SignInDto signInDto, string returnUrl)
         {
-            await _identityService.SignIn(signInDto);
-            if (returnUrl == null)
+            var isSignedIn = await _identityService.SignIn(signInDto);
+            if (!isSignedIn)
+            {
+                ViewBag.LoginError = "Kullanıcı adı veya şifre hatalı ya da kimlik sunucusuna ulaşılamadı.";
+                return View();
+            }
+            if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
             {
                 return RedirectToAction("Index", "Default");
             }
