@@ -11,9 +11,10 @@ builder.Services.AddAuthentication().AddJwtBearer("OcelotAuthenticationSheme", o
     opt.RequireHttpsMetadata = false;
 });
 
-IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("ocelot.json").Build();
+// ocelot.json proje klasöründen (content root) okunur; çalışma dizinine bağlı değildir.
+builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-builder.Services.AddOcelot(configuration);
+builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
 
