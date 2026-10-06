@@ -87,14 +87,16 @@ namespace MultiShop.Discount.Services
             }
         }
 
-        public int GetDiscountCouponCountRate(string code)
+        // Sadece aktif ve süresi dolmamış kuponun oranını döner; geçersiz kuponda 0 döner.
+        // ValidDate gün bazında karşılaştırılır: son gün, gün sonuna kadar geçerlidir.
+        public async Task<int> GetDiscountCouponCountRate(string code)
         {
-            string query = "Select Rate From Coupons Where Code = @code";
+            string query = "Select Rate From Coupons Where Code = @code And IsActive = 1 And ValidDate >= CAST(GETDATE() AS date)";
             var parameters = new DynamicParameters();
             parameters.Add("@code", code);
             using (var connection = _context.CreateConnection())
             {
-                var values = connection.QueryFirstOrDefault<int>(query, parameters);
+                var values = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
                 return values;
             }
         }
