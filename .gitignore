@@ -367,7 +367,7 @@ appsettings.Development.json
 .env
 
 # GCP service-account key files should never be committed
-Services/Images/MultiShop.Images.WebUI/wwwroot/*.json
+src/Services/Images/MultiShop.Images.WebUI/wwwroot/*.json
 *-service-account*.json
 
 **/mongo-data/
