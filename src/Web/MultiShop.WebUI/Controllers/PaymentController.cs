@@ -7,6 +7,7 @@ using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
 using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
 using MultiShop.WebUI.Services.PaymentServices;
+using System.Globalization;
 
 namespace MultiShop.WebUI.Controllers
 {
@@ -44,7 +45,7 @@ namespace MultiShop.WebUI.Controllers
             createPaymentDto.UserID = user.Id;
 
             var basket = await _basketService.GetBasket();
-            createPaymentDto.PaymentAmounth = basket.TotalPrice.ToString("0.##");
+            createPaymentDto.PaymentAmounth = basket.TotalPrice.ToString("0.00", CultureInfo.InvariantCulture);
 
 
             var orderRequest = new CreateOrderingDto
@@ -66,7 +67,7 @@ namespace MultiShop.WebUI.Controllers
                     ProductName = item.ProductName,
                     ProductPrice = item.Price,
                     ProductAmount = item.Quantity,
-                    ProductTotalPrice = orderRequest.TotalPrice
+                    ProductTotalPrice = item.Price * item.Quantity
                 };
                 await _orderDetailService.CreateOrderDetailAsync(createOrderDetailDto);
             }

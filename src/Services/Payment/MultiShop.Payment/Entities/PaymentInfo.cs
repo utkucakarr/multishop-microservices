@@ -1,4 +1,6 @@
-﻿namespace MultiShop.Payment.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace MultiShop.Payment.Entities
 {
     public class PaymentInfo
     {
@@ -16,6 +18,7 @@
 
         public string CardNumber { get; set; }
 
-        public ulong Amount { get; set; }
+        [Precision(18, 2)]
+        public decimal Amount { get; set; }
     }
 }
