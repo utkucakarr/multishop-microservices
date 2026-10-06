@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using MultiShop.Payment.Repositories;
 using MultiShop.Payment.Entities;
 using System.Xml.Linq;
+using System.Globalization;
 using Microsoft.Extensions.Options;
 using MultiShop.Payment.Settings;
 
@@ -23,7 +24,12 @@ namespace MultiShop.Payment.Services.PaymentServices
         public async Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto)
         {
             var orderId = "MLT-SHP-" + createPaymentDto.OrderingId.ToString(); //Guid.NewGuid().ToString("N");
-            var paymentAmounth = ulong.Parse(createPaymentDto.PaymentAmounth) * 100;
+            // Tutar kültürden bağımsız ("123.45") gelir; Garanti kuruş cinsinden ister (123.45 TL -> 12345).
+            if (!decimal.TryParse(createPaymentDto.PaymentAmounth, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+            {
+                return new CreatePaymentResponseDto { IsSuccess = false, ErrorMessage = "Geçersiz ödeme tutarı." };
+            }
+            var paymentAmounth = (ulong)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
             //Güvenlik için hash oluşturuluyor. POS bilgileri GarantiPosSettings'ten (user-secrets) okunur.
             var hashData = GetHashData(_posSettings.ProvisionPassword, _posSettings.TerminalId, orderId, createPaymentDto.CardNumber, paymentAmounth, _posSettings.CurrencyCode);
             var xmlData = $"<?xml version='1.0' encoding='iso-8859-9'?>\n" +
@@ -83,7 +89,7 @@ namespace MultiShop.Payment.Services.PaymentServices
                 IsSuccess = isSuccess,
                 CreatedDate = DateTime.Now,
                 CardNumber = createPaymentDto.CardNumber,
-                Amount = ulong.Parse(createPaymentDto.PaymentAmounth)
+                Amount = amount
             });
 
             var paymentResponse = new CreatePaymentResponseDto
