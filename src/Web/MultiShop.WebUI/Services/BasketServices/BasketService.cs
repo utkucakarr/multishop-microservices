@@ -6,10 +6,12 @@ namespace MultiShop.WebUI.Services.BasketServices
     public class BasketService : IBasketService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<BasketService> _logger;
 
-        public BasketService(HttpClient httpClient)
+        public BasketService(HttpClient httpClient, ILogger<BasketService> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task AddBasketBtnItem(BasketItemDto basketItemDto)
@@ -38,18 +40,15 @@ namespace MultiShop.WebUI.Services.BasketServices
 
         public async Task AddBasketItem(BasketItemDto basketItemDto)
         {
-            var values = await GetBasket();
-            if (values != null)
+            var values = await GetBasket() ?? new BasketTotalDto();
+            var existingItem = values.BasketItems.FirstOrDefault(x => x.ProductId == basketItemDto.ProductId); // uyan değer var mı diye bakıyor.
+            if (existingItem is null)
             {
-                if (!values.BasketItems.Any(x => x.ProductId == basketItemDto.ProductId)) // uyan değer var mı diye bakıyor.
-                {
-                    values.BasketItems.Add(basketItemDto);
-                }
-                else
-                {
-                    values = new BasketTotalDto();
-                    values.BasketItems.Add(basketItemDto);
-                }
+                values.BasketItems.Add(basketItemDto);
+            }
+            else
+            {
+                existingItem.Quantity += basketItemDto.Quantity;
             }
             await SaveBasket(values);
         }
@@ -62,6 +61,11 @@ namespace MultiShop.WebUI.Services.BasketServices
         public async Task<BasketTotalDto> GetBasket()
         {
             var responseMessage = await _httpClient.GetAsync("baskets");
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Sepet alınamadı ({StatusCode})", responseMessage.StatusCode);
+                return null;
+            }
             var content = await responseMessage.Content.ReadAsStringAsync();
             if (string.IsNullOrWhiteSpace(content))
             {
@@ -92,7 +96,12 @@ namespace MultiShop.WebUI.Services.BasketServices
 
         public async Task SaveBasket(BasketTotalDto basketTotalDto)
         {
-            await _httpClient.PostAsJsonAsync<BasketTotalDto>("baskets", basketTotalDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync<BasketTotalDto>("baskets", basketTotalDto);
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                var error = await responseMessage.Content.ReadAsStringAsync();
+                _logger.LogWarning("Sepet kaydedilemedi ({StatusCode}): {Error}", responseMessage.StatusCode, error);
+            }
         }
     }
 }
