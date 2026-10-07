@@ -1,6 +1,10 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization.Conventions;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.BuildingBlocks.Exceptions;
+using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Swagger;
+using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Services.AboutServices;
@@ -27,13 +31,12 @@ ConventionRegistry.Register(
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
-{
-    // authority burada bize jwt kiminle beraber kullan�ca��m�z� belirliyoruz.
-    opt.Authority = builder.Configuration["IdentityServerUrl"];
-    opt.Audience = "ResourceCatalog";
-    opt.RequireHttpsMetadata = false;
-});
+builder.AddMultiShopServiceDefaults("Catalog");
+builder.AddMultiShopJwtAuthentication("ResourceCatalog");
+
+// Entity'lerdeki [BsonRepresentation(BsonType.ObjectId)] alanları, geçersiz bir id ile sorgulanınca
+// FormatException fırlatır; bu bir istemci hatasıdır (500 değil 400).
+builder.Services.Configure<ExceptionMappingOptions>(opt => opt.Map<FormatException>(StatusCodes.Status400BadRequest));
 
 //Burada ICategoryservice �a��r�ld���nda categoryservice s�n�f�n�n �a��r�lmas�n� sa�l�yoruz
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -62,23 +65,15 @@ builder.Services.AddScoped<IDatabaseSettings>(sp =>
     return sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 });
 
-// Add services to the container.
+// Mongo erişilemezken sunucu seçimi 30 sn bekler; health check daha erken yanıt versin.
+builder.Services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", timeout: TimeSpan.FromSeconds(5));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddMultiShopSwagger("MultiShop Catalog API");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+app.UseMultiShopServiceDefaults();
 
 app.UseAuthentication();
 
