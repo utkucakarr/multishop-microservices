@@ -1,8 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MultiShop.BuildingBlocks.HealthChecks;
+using MultiShop.BuildingBlocks.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseMultiShopSerilog("Gateway");
 
 builder.Services.AddAuthentication().AddJwtBearer("OcelotAuthenticationSheme", opt =>
 {
@@ -15,11 +20,14 @@ builder.Services.AddAuthentication().AddJwtBearer("OcelotAuthenticationSheme", o
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddOcelot(builder.Configuration);
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-await app.UseOcelot();
+// Ocelot tüm istekleri yakaladığı için /health ondan önce eklenmeli.
+app.UseMultiShopHealthChecks();
+app.UseSerilogRequestLogging();
 
-app.MapGet("/", () => "Hello World!");
+await app.UseOcelot();
 
 app.Run();

@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MultiShop.BuildingBlocks.HealthChecks;
+using Serilog;
 
 namespace MultiShop.IdentityServer
 {
@@ -35,6 +37,8 @@ namespace MultiShop.IdentityServer
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>("sqlserver");
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -80,7 +84,9 @@ namespace MultiShop.IdentityServer
                 app.UseDatabaseErrorPage();
             }
 
+            app.UseMultiShopHealthChecks();
             app.UseStaticFiles();
+            app.UseSerilogRequestLogging();
 
             app.UseRouting();
             app.UseIdentityServer();
