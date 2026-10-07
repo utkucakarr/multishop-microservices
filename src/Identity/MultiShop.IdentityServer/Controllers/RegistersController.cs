@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.IdentityServer.Dtos;
 using MultiShop.IdentityServer.Models;
+using System.Linq;
 using System.Threading.Tasks;
 using static IdentityServer4.IdentityServerConstants;
 
@@ -33,14 +34,15 @@ namespace MultiShop.IdentityServer.Controllers
                 Surname = userRegisterDto.Surname,
             };
             var result = await _userManager.CreateAsync(values,userRegisterDto.Password);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                return Ok("Kullanıcı başarıyla eklendi");
+                // Hata nedeni (ör. şifre kuralları, kullanılan kullanıcı adı) istemciye 400 ile döner.
+                return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
             }
-            else
-            {
-                return Ok("Bir hata oluştu tekrar deneyiniz");
-            }
+
+            // Yeni kayıt olan herkes müşteridir; Admin rolü yalnızca IdentitySeeder ile verilir.
+            await _userManager.AddToRoleAsync(values, Roles.Customer);
+            return Ok("Kullanıcı başarıyla eklendi");
         }
     }
 }
