@@ -44,6 +44,10 @@ namespace MultiShop.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddComment(CreateCommentDto createCommentDto, string pid)
         {
+            // Yorum yapmak için giriş gerekir; form fetch ile gönderildiği için login sayfasına yönlendirmek yerine 401 dönülür.
+            if (User.Identity?.IsAuthenticated != true)
+                return Unauthorized();
+
             createCommentDto.ImageUrl = "test";
             createCommentDto.CreatedDate = DateTime.Parse(DateTime.Now.ToShortDateString());
             createCommentDto.Status = false;
