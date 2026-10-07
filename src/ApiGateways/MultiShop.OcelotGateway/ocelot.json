@@ -1,8 +1,7 @@
 {
   "Routes": [
-    //Catalog Mikroservisi
+    //Catalog Mikroservisi – okuma: ziyaretçi token'ı (CatalogReadPermission) da yeterli
     {
-      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
       "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -11,13 +10,49 @@
           "Port": 7070
         }
       ],
-      //Upstream tarafı client tarafından bize gelen istek tarafı.
       "UpstreamPathTemplate": "/services/catalog/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CatalogReadPermission", "CatalogFullPermission" ]
+      }
+    },
+    //Catalog Mikroservisi – yazma: yalnızca giriş yapmış kullanıcı token'ı (CatalogFullPermission)
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7070
+        }
+      ],
+      "UpstreamPathTemplate": "/services/catalog/{everything}",
+      "UpstreamHttpMethod": [ "Post", "Put", "Delete" ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
         "AllowedScopes": [ "CatalogFullPermission" ]
+      }
+    },
+    //Catalog Mikroservisi – iletişim formu: ziyaretçi giriş yapmadan mesaj gönderebilir
+    {
+      "DownstreamPathTemplate": "/api/contacts",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7070
+        }
+      ],
+      "UpstreamPathTemplate": "/services/catalog/contacts",
+      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "ContactWritePermission", "CatalogFullPermission" ]
       }
     },
     //Discount Mikroservisi
@@ -100,9 +135,8 @@
         "AllowedScopes": [ "BasketFullPermission" ]
       }
     },
-    //Comment Mikroservisi
+    //Comment Mikroservisi – okuma: ziyaretçi token'ı (CommentReadPermission) da yeterli
     {
-      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
       "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -111,9 +145,26 @@
           "Port": 7075
         }
       ],
-      //Upstream tarafı client tarafından bize gelen istek tarafı.
       "UpstreamPathTemplate": "/services/comment/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CommentReadPermission", "CommentFullPermission" ]
+      }
+    },
+    //Comment Mikroservisi – yazma: yorum yapmak için giriş gerekir (CommentFullPermission)
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7075
+        }
+      ],
+      "UpstreamPathTemplate": "/services/comment/{everything}",
+      "UpstreamHttpMethod": [ "Post", "Put", "Delete" ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
