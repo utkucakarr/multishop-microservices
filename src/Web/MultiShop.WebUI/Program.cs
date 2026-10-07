@@ -80,8 +80,11 @@ builder.Services.Configure<ClientSettings>(builder.Configuration.GetSection("Cli
 builder.Services.Configure<ServiceApiSettings>(builder.Configuration.GetSection("ServiceApiSettings"));
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
+builder.Services.AddScoped<IUserAccessTokenService, UserAccessTokenService>();
+// Kullanıcıya özel servisler (sepet, sipariş, admin istatistikleri...): giriş yapmış kullanıcının token'ı.
 builder.Services.AddScoped<ResourceOwnerPasswordTokenHandler>();
-builder.Services.AddScoped<ClientCredentialTokenHandler>();
+// Herkese açık sayfalarda da kullanılan servisler (Catalog, Comment): kullanıcı varsa onun, yoksa ziyaretçi token'ı.
+builder.Services.AddScoped<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IClientCredentialTokenService, ClientCredentialTokenService>();
 
@@ -165,62 +168,62 @@ builder.Services.AddHttpClient<IDiscountService, DiscountService>(opt =>
 builder.Services.AddHttpClient<ICategoryService, CategoryService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IProductService, ProductService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<ISpecialOfferService, SpecialOfferService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IFeatureSliderService, FeatureSliderService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IFeatureService, FeatureService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IOfferDiscountService, OfferDiscountService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IBrandService, BrandService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IAboutService, AboutService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IProductImageService, ProductImageService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IProductDetailService, ProductDetailService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<ICommentService, CommentService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Comment.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IContactService, ContactService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ClientCredentialTokenHandler>();
+}).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
 
 builder.Services.AddLocalization(opt =>
 {

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MultiShop.DtoLayer.IdentityDtos.LoginDtos;
 using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Settings;
+using System.Globalization;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -28,8 +29,19 @@ namespace MultiShop.WebUI.Services.Concrete
             _logger = logger;
         }
 
-        public async Task<bool> GetRefreshToken()
+        public async Task<string?> RefreshAccessTokenAsync()
         {
+            var context = _httpContextAccessor.HttpContext!;
+            var authenticateResult = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var refreshToken = authenticateResult.Properties?.GetTokenValue(OpenIdConnectParameterNames.RefreshToken);
+
+            if (!authenticateResult.Succeeded || string.IsNullOrEmpty(refreshToken))
+            {
+                // KT-7'den önce açılmış oturumlarda refresh token yok; kullanıcı bir kez yeniden giriş yapmalı.
+                await SignOutAfterFailedRefreshAsync(context, "refresh token yok");
+                return null;
+            }
+
             var discoveryEndPoint = await _httpClient.GetDiscoveryDocumentAsync(new DiscoveryDocumentRequest
             {
                 Address = _serviceApiSettings.IdentityServerUrl,
@@ -39,48 +51,65 @@ namespace MultiShop.WebUI.Services.Concrete
                 }
             });
 
-            var refreshToken = await _httpContextAccessor.HttpContext.GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
-
-            RefreshTokenRequest refreshTokenRequest = new()
+            if (discoveryEndPoint.IsError)
             {
-                ClientId = _clientSettings.MultiShopManegerClient.ClientId,
-                ClientSecret = _clientSettings.MultiShopManegerClient.ClientSecret,
+                // IdentityServer'a geçici olarak ulaşılamıyor; oturumu kapatma, bir sonraki istekte tekrar denensin.
+                _logger.LogError("IdentityServer discovery hatası ({Url}): {Error}", _serviceApiSettings.IdentityServerUrl, discoveryEndPoint.Error);
+                return null;
+            }
+
+            var token = await _httpClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                ClientId = _clientSettings.MultiShopWebUIClient.ClientId,
+                ClientSecret = _clientSettings.MultiShopWebUIClient.ClientSecret,
                 RefreshToken = refreshToken,
                 Address = discoveryEndPoint.TokenEndpoint
-            };
+            });
 
-            var token = await _httpClient.RequestRefreshTokenAsync(refreshTokenRequest);
-
-            var authenticationToken = new List<AuthenticationToken>()
+            if (token.IsError)
             {
-                //AccessToken daha kısa ömürlü işlemler için kullanılan token
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.AccessToken,
-                    Value = token.AccessToken
-                },
-                //RefreshToken daha uzun ömürlü işlemler için kullanılan token
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.RefreshToken,
-                    Value = token.RefreshToken
-                },
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.ExpiresIn,
-                    Value = DateTime.Now.AddSeconds(token.ExpiresIn).ToString()
-                }
-            };
+                await SignOutAfterFailedRefreshAsync(context, $"{token.Error} {token.ErrorDescription}");
+                return null;
+            }
 
-            var result = await _httpContextAccessor.HttpContext.AuthenticateAsync();
+            authenticateResult.Properties!.StoreTokens(CreateAuthenticationTokens(token));
 
-            var properties = result.Properties;
-            properties.StoreTokens(authenticationToken);
+            try
+            {
+                await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal!, authenticateResult.Properties);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Yanıt gönderilmeye başlandıysa cookie güncellenemez; yeni token bu istekte yine kullanılır,
+                // refresh token tekrar kullanılabilir olduğu için (ReUse) sonraki istekte yeniden yenilenir.
+                _logger.LogDebug(ex, "Yenilenen token cookie'ye yazılamadı");
+            }
 
-            await _httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal, properties);
-
-            return true;
+            return token.AccessToken;
         }
+
+        private async Task SignOutAfterFailedRefreshAsync(HttpContext context, string reason)
+        {
+            _logger.LogInformation("Oturum yenilenemedi ({Reason}); kullanıcının oturumu kapatılıyor", reason);
+            try
+            {
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+            catch (InvalidOperationException)
+            {
+                // Yanıt başladıysa cookie silinemez; bir sonraki istekte tekrar denenecek.
+            }
+            // Bu isteğin geri kalanı ziyaretçi olarak devam etsin (Catalog/Comment ziyaretçi token'ına düşer).
+            context.User = new ClaimsPrincipal(new ClaimsIdentity());
+        }
+
+        private static List<AuthenticationToken> CreateAuthenticationTokens(TokenResponse token) => new()
+        {
+            new AuthenticationToken { Name = OpenIdConnectParameterNames.AccessToken, Value = token.AccessToken },
+            new AuthenticationToken { Name = OpenIdConnectParameterNames.RefreshToken, Value = token.RefreshToken },
+            // Standart ad ve kültürden bağımsız (ISO 8601, UTC) biçim; UserAccessTokenService süreyi buradan okur.
+            new AuthenticationToken { Name = "expires_at", Value = DateTimeOffset.UtcNow.AddSeconds(token.ExpiresIn).ToString("o", CultureInfo.InvariantCulture) }
+        };
 
         public async Task<bool> SignIn(SignInDto signInDto)
         {
@@ -101,8 +130,8 @@ namespace MultiShop.WebUI.Services.Concrete
 
             var passwordTokenRequest = new PasswordTokenRequest
             {
-                ClientId = _clientSettings.MultiShopManegerClient.ClientId,
-                ClientSecret = _clientSettings.MultiShopManegerClient.ClientSecret,
+                ClientId = _clientSettings.MultiShopWebUIClient.ClientId,
+                ClientSecret = _clientSettings.MultiShopWebUIClient.ClientSecret,
                 UserName = signInDto.UserName,
                 Password = signInDto.Password,
                 Address = discoveryEndPoint.TokenEndpoint
@@ -136,26 +165,7 @@ namespace MultiShop.WebUI.Services.Concrete
 
             var authenticationProperties = new AuthenticationProperties();
 
-            authenticationProperties.StoreTokens(new List<AuthenticationToken>()
-            {
-                //AccessToken daha kısa ömürlü işlemler için kullanılan token
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.AccessToken,
-                    Value = token.AccessToken
-                },
-                //RefreshToken daha uzun ömürlü işlemler için kullanılan token
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.RefreshToken,
-                    Value = token.RefreshToken
-                },
-                new AuthenticationToken
-                {
-                    Name = OpenIdConnectParameterNames.ExpiresIn,
-                    Value = DateTime.Now.AddSeconds(token.ExpiresIn).ToString()
-                }
-            });
+            authenticationProperties.StoreTokens(CreateAuthenticationTokens(token));
 
             authenticationProperties.IsPersistent = false;
 
