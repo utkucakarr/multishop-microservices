@@ -2,9 +2,9 @@
 using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.ProductImageDtos;
 using MultiShop.Catalog.Entities;
-using MultiShop.Catalog.Exceptions;
 using MultiShop.Catalog.Extensions;
 using MultiShop.Catalog.Repositories.Interfaces;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.ProductImageServices
 {
@@ -36,8 +36,9 @@ namespace MultiShop.Catalog.Services.ProductImageServices
 
         public async Task<GetByIdProductImageDto> GetByIdProductImageAsync(string id)
         {
-            var productImage = await _productImageRepository.GetByIdAsync(id);
-            return _mapper.Map<GetByIdProductImageDto?>(productImage);
+            var productImage = await _productImageRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Ürün görseli", id);
+            return _mapper.Map<GetByIdProductImageDto>(productImage);
         }
 
         public async Task<IEnumerable<GetByIdProductImageDto>> GetByProductIdProductImageAsync(string id)
@@ -54,9 +55,7 @@ namespace MultiShop.Catalog.Services.ProductImageServices
                             .GetByIdAsync(updateProductImageDto.ProductImageId);
 
             if (productImage is null)
-                throw new CatalogDomainException(
-                    $"ProductImage not found: {updateProductImageDto.ProductImageId}"
-                );
+                throw new NotFoundException("Ürün görseli", updateProductImageDto.ProductImageId);
 
             productImage.UpdateImage(
                 updateProductImageDto.ImageUrl,

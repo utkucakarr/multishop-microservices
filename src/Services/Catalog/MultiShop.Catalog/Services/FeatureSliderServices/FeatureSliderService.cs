@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.FeatureSliderDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.FeatureSliderServices
 {
@@ -48,7 +49,8 @@ namespace MultiShop.Catalog.Services.FeatureSliderServices
 
         public async Task<GetByIdFeatureSliderDto> GetByIdFeatureSliderAsync(string id)
         {
-            var value = await _featureSliderCollection.Find(x => x.FeatureSliderId == id).FirstOrDefaultAsync();
+            var value = await _featureSliderCollection.Find(x => x.FeatureSliderId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Slider", id);
             return _mapper.Map<GetByIdFeatureSliderDto>(value);
         }
 

@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.BrandDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.BrandServices
 {
@@ -38,7 +39,8 @@ namespace MultiShop.Catalog.Services.BrandServices
 
         public async Task<GetByIdBrandDto> GetByIdBrandAsync(string id)
         {
-            var values = await _brandCollection.Find(x => x.BrandId == id).FirstOrDefaultAsync();
+            var values = await _brandCollection.Find(x => x.BrandId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Marka", id);
             return _mapper.Map<GetByIdBrandDto>(values);
         }
 

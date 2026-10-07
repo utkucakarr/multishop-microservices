@@ -1,6 +1,9 @@
-﻿namespace MultiShop.Catalog.Exceptions
+﻿using MultiShop.BuildingBlocks.Exceptions;
+
+namespace MultiShop.Catalog.Exceptions
 {
-    public class CatalogDomainException : Exception
+    // DomainException'dan türediği için ortak hata middleware'i 400 Bad Request döner.
+    public class CatalogDomainException : DomainException
     {
         // 1. Parametresiz kurucu (Sadece hata fırlatmak istendiğinde)
         public CatalogDomainException()

@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Repositories.Concrete
 {
@@ -13,7 +14,7 @@ namespace MultiShop.Catalog.Repositories.Concrete
         private static FilterDefinition<T> BuildIdFilter(string id)
         {
             if (!ObjectId.TryParse(id, out var objectId))
-                throw new ArgumentException($"Invalid ObjectId format: {id}");
+                throw new BadRequestException($"Geçersiz id biçimi: {id}");
 
             return Builders<T>.Filter.Eq("_id", objectId);
         }

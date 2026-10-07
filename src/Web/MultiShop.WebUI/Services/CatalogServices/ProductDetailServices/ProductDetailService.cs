@@ -1,5 +1,6 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.ProductDetailDtos;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
 {
@@ -40,6 +41,9 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
         public async Task<GetByIdProductDetailDto> GetByProductIdProductDetailAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("productdetails/GetProductDetailByProductId/" + id);
+            // Detay kaydı girilmemiş ürünlerde Catalog 404 döner; sayfa boş açıklamayla gösterilir.
+            if (responseMessage.StatusCode == HttpStatusCode.NotFound)
+                return new GetByIdProductDetailDto();
             var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductDetailDto>();
             return values;
         }
