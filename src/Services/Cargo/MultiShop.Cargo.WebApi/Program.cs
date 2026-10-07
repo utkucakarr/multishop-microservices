@@ -1,29 +1,17 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Cargo.BusinessLayer.Abstract;
 using MultiShop.Cargo.BusinessLayer.Concrete;
 using MultiShop.Cargo.DataAccessLayer.Abstract;
 using MultiShop.Cargo.DataAccessLayer.Concrete;
 using MultiShop.Cargo.DataAccessLayer.EntityFramework;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Re-added after environment variables so this project's user-secrets win over
-// any machine/user-level env vars left by other local projects (e.g. a stray
-// ConnectionStrings__DefaultConnection).
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets(System.Reflection.Assembly.GetExecutingAssembly(), optional: true);
-}
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
-{
-    // authority burada bize jwt kiminle beraber kullan�ca��m�z� belirliyoruz.
-    opt.Authority = builder.Configuration["IdentityServerUrl"];
-    opt.Audience = "ResourceCargo";
-    opt.RequireHttpsMetadata = false;
-});
+builder.AddMultiShopServiceDefaults("Cargo");
+builder.AddMultiShopJwtAuthentication("ResourceCargo");
 
 builder.Services.AddDbContext<CargoContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -37,21 +25,14 @@ builder.Services.AddScoped<ICargoDetailService, CargoDetailManager>();
 builder.Services.AddScoped<ICargoOperationDal, EfCargoOperationDal>();
 builder.Services.AddScoped<ICargoOperationService, CargoOperationManager>();
 
+builder.Services.AddHealthChecks().AddDbContextCheck<CargoContext>("sqlserver");
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddMultiShopSwagger("MultiShop Cargo API");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+app.UseMultiShopServiceDefaults();
 
 app.UseAuthentication();
 

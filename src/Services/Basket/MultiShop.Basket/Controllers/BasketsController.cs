@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MultiShop.Basket.Dtos;
-using MultiShop.Basket.LoginServices;
 using MultiShop.Basket.Services;
-using System.Security.Claims;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Basket.Controllers
 {
@@ -12,27 +10,25 @@ namespace MultiShop.Basket.Controllers
     public class BasketsController : ControllerBase
     {
         private readonly IBasketService _basketService;
-        private readonly ILoginService _loginService;
+        private readonly ICurrentUserService _currentUser;
 
-        public BasketsController(IBasketService basketService, ILoginService loginService)
+        public BasketsController(IBasketService basketService, ICurrentUserService currentUser)
         {
             _basketService = basketService;
-            _loginService = loginService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetMyBasketDetail()
         {
-            //Sisteme girmii olan tokena ait bilgileri almak için.
-            var user = User.Claims;
-            var values = await _basketService.GetBasket(_loginService.GetUserId);
+            var values = await _basketService.GetBasket(_currentUser.GetRequiredUserId());
             return Ok(values);
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveMyBasket(BasketTotalDto basketTotalDto)
         {
-            basketTotalDto.UserId = _loginService.GetUserId;
+            basketTotalDto.UserId = _currentUser.GetRequiredUserId();
             await _basketService.SaveBasket(basketTotalDto);
             return Ok("Sepetteki değişiklikler kaydedildi");
         }
@@ -40,7 +36,7 @@ namespace MultiShop.Basket.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteMyBasket()
         {
-            await _basketService.DeleteBasket(_loginService.GetUserId);
+            await _basketService.DeleteBasket(_currentUser.GetRequiredUserId());
             return Ok("Sepet başarıyla silindi");
         }
     }
