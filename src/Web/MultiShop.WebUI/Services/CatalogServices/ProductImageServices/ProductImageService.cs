@@ -37,11 +37,14 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductImageServices
             return values;
         }
 
-        public async Task<GetByIdProductImageDto> GetByProductIdProductImageAsync(string id)
+        public async Task<List<GetByIdProductImageDto>> GetByProductIdProductImageAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("productimage/ProductImagesByProductId/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductImageDto>();
-            return values;
+            if (!responseMessage.IsSuccessStatusCode)
+                return new List<GetByIdProductImageDto>();
+
+            var values = await responseMessage.Content.ReadFromJsonAsync<List<GetByIdProductImageDto>>();
+            return values ?? new List<GetByIdProductImageDto>();
         }
 
         public async Task UpdateProductImageAsync(UpdateProductImageDto updateProductImageDto)
