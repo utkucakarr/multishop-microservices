@@ -7,6 +7,8 @@
 # Şifreler kökteki .env dosyasından okunur (.env.example'ı kopyalayıp doldurun).
 # Portlar MultiShop'a özeldir; bilgisayardaki yerel SQL Server / MongoDB / PostgreSQL
 # servisleri ve başka projelerin container'larıyla çakışmaz.
+# Hepsi yalnızca 127.0.0.1'e bağlıdır: Redis, MongoDB ve Seq şifresiz olduğu için
+# aynı ağdaki başka cihazlardan erişilemesinler diye.
 
 name: multishop
 
@@ -20,7 +22,7 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD .env dosyasında tanımlı olmalı}
       MSSQL_MEMORY_LIMIT_MB: "2048"
     ports:
-      - "14330:1433"
+      - "127.0.0.1:14330:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
@@ -35,7 +37,7 @@ services:
     image: mongo:8.0
     container_name: multishop-mongo
     ports:
-      - "27018:27017"
+      - "127.0.0.1:27018:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -53,7 +55,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD .env dosyasında tanımlı olmalı}
       POSTGRES_DB: MultiShopMessageDb
     ports:
-      - "5440:5432"
+      - "127.0.0.1:5440:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -68,7 +70,7 @@ services:
     container_name: multishop-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6380:6379"
+      - "127.0.0.1:6380:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -85,8 +87,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-multishop}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD .env dosyasında tanımlı olmalı}
     ports:
-      - "5673:5672"     # AMQP
-      - "15673:15672"   # Yönetim paneli: http://localhost:15673
+      - "127.0.0.1:5673:5672"     # AMQP
+      - "127.0.0.1:15673:15672"   # Yönetim paneli: http://localhost:15673
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
@@ -103,7 +105,7 @@ services:
       ACCEPT_EULA: "Y"
       SEQ_FIRSTRUN_NOAUTHENTICATION: "true"   # Yalnızca geliştirme ortamı için
     ports:
-      - "8091:80"       # Arayüz ve log alımı: http://localhost:8091
+      - "127.0.0.1:8091:80"       # Arayüz ve log alımı: http://localhost:8091
     volumes:
       - seq-data:/data
     restart: unless-stopped

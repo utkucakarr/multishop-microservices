@@ -11,7 +11,7 @@ MultiShop'un ihtiyaç duyduğu tüm veritabanları ve altyapı servisleri kökte
 | RabbitMQ 4 | `multishop-rabbitmq` | AMQP `5673`, panel http://localhost:15673 | (mesajlaşma, ileride) |
 | Seq | `multishop-seq` | http://localhost:8091 | (merkezi loglar, ileride) |
 
-Portlar bilerek standart dışıdır; bilgisayarda kurulu SQL Server / MongoDB / PostgreSQL servisleri ve başka projelerin container'larıyla çakışmaz. Veriler adlandırılmış Docker volume'lerinde kalıcıdır (`docker compose down` verileri silmez; `docker compose down -v` siler).
+Tüm portlar yalnızca `127.0.0.1`'e bağlıdır (Redis, MongoDB ve Seq geliştirme için şifresizdir; aynı ağdaki başka cihazlar erişemez). Portlar bilerek standart dışıdır; bilgisayarda kurulu SQL Server / MongoDB / PostgreSQL servisleri ve başka projelerin container'larıyla çakışmaz. Veriler adlandırılmış Docker volume'lerinde kalıcıdır (`docker compose down` verileri silmez; `docker compose down -v` siler).
 
 ## İlk kurulum
 
