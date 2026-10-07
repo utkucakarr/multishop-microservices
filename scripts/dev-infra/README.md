@@ -45,6 +45,7 @@ Taşınacak eski veri yoksa (yeni bilgisayar) 3a adımını atlayın.
 |--------|----------|
 | `migrate-legacy-data.ps1` | Projelerin **mevcut** user-secrets bağlantılarındaki veritabanlarını yeni container'lara kopyalar (SQL: COPY_ONLY yedek + geri yükleme, Mongo: mongodump/mongorestore, PostgreSQL: pg_dump/pg_restore). Kaynaklarda yalnızca okuma yapar. Hedef doluysa atlar; `-Force` ile üzerine yazar. |
 | `set-dev-secrets.ps1` | `.env`'deki şifrelerle tüm projelerin bağlantı dizelerini user-secrets'a yazar. Önce `secrets.json.bak-<tarih>` yedeği alır. Diğer secret'lara dokunmaz. |
+| `set-identity-secrets.ps1 -AdminEmail <e-posta>` | IdentityServer client secret'larını (Visitor, WebUI) rastgele üretip IdentityServer ve WebUI'a aynı değeri yazar; admin yapılacak hesabın e-postasını ayarlar; eski anahtarları (SharedSecret, JwtSettings:Key, Maneger/Admin client) siler. `-CreateAdmin`: hesap yoksa oluşturulsun (kullanıcı adı ve şifre sorulur). Önce yedek alır, değerleri ekrana yazmaz. |
 | `apply-migrations.ps1` | `dotnet ef database update`'i tüm EF projeleri için sırayla çalıştırır. |
 | `common.ps1` | Ortak yardımcılar (doğrudan çalıştırılmaz). |
 
