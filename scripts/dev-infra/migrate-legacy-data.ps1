@@ -56,13 +56,15 @@ function Copy-SqlDatabase($Service, [string]$SaPassword, [string]$WorkDir) {
     $source = Get-UserSecret $Service.Project $Service.Key
     if (-not $source) { Write-Skip "$($Service.Name): user-secrets içinde $($Service.Key) yok."; return 'skipped' }
 
+    # Not: PowerShell bu nesneyi sözlük gibi gördüğü için anahtarlara indeksleyiciyle erişilir.
     $builder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder $source
-    if ($builder.DataSource -match "[,:]$($script:Ports.SqlServer)$") { Write-Skip "$($Service.Name): zaten yeni SQL Server'ı gösteriyor."; return 'skipped' }
-    $sourceDb = $builder.InitialCatalog
+    $dataSource = [string]$builder['Data Source']
+    if ($dataSource -match "[,:]$($script:Ports.SqlServer)$") { Write-Skip "$($Service.Name): zaten yeni SQL Server'ı gösteriyor."; return 'skipped' }
+    $sourceDb = [string]$builder['Initial Catalog']
     if (-not $sourceDb) { throw "$($Service.Name): bağlantı dizesinde veritabanı adı yok." }
-    $builder.InitialCatalog = 'master'
-    $builder.ConnectTimeout = 15
-    $sourceMaster = $builder.ConnectionString
+    $builder['Initial Catalog'] = 'master'
+    $builder['Connect Timeout'] = 15
+    $sourceMaster = $builder.get_ConnectionString()
 
     $targetDb = $Service.TargetDb
     $target = "Server=127.0.0.1,$($script:Ports.SqlServer);Database=master;User ID=sa;Password=$SaPassword;TrustServerCertificate=True;Connect Timeout=15"
@@ -75,14 +77,14 @@ SELECT @@SERVERNAME AS ServerName,
        (SELECT TOP 1 host_platform FROM sys.dm_os_host_info) AS Platform,
        DB_ID(N'$($sourceDb.Replace("'", "''"))') AS DbId
 "@).Rows[0]
-    if ($info.DbId -is [DBNull]) { Write-Skip "$($Service.Name): kaynakta '$sourceDb' veritabanı yok ($($builder.DataSource))."; return 'skipped' }
+    if ($info.DbId -is [DBNull]) { Write-Skip "$($Service.Name): kaynakta '$sourceDb' veritabanı yok ($dataSource)."; return 'skipped' }
 
     $fileName = "$($targetDb)_kt5.bak"
     $localFile = Join-Path $WorkDir $fileName
     $escapedSourceDb = $sourceDb.Replace(']', ']]')
 
     if ($info.Platform -eq 'Linux') {
-        $container = Find-ContainerForSqlServer $info.ServerName $builder.DataSource
+        $container = Find-ContainerForSqlServer $info.ServerName $dataSource
         $remote = "/var/opt/mssql/data/$fileName"
         Invoke-SqlQuery $sourceMaster "BACKUP DATABASE [$escapedSourceDb] TO DISK = N'$remote' WITH COPY_ONLY, INIT" | Out-Null
         Invoke-Docker cp "$($container):$remote" $localFile | Out-Null
@@ -95,7 +97,7 @@ SELECT @@SERVERNAME AS ServerName,
         try { Copy-Item $remote $localFile -Force }
         catch { throw "$($Service.Name): yedek dosyası okunamadı ($remote). PowerShell'i 'Yönetici olarak' açıp tekrar deneyin." }
         Remove-Item $remote -ErrorAction SilentlyContinue
-        $origin = "yerel SQL Server ($($builder.DataSource))"
+        $origin = "yerel SQL Server ($dataSource)"
     }
 
     Invoke-Docker cp $localFile "multishop-sqlserver:/tmp/$fileName" | Out-Null

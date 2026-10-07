@@ -51,21 +51,20 @@ function Get-UserSecretsPath([string]$ProjectRelativePath) {
     return Join-Path $env:APPDATA "Microsoft\UserSecrets\$id\secrets.json"
 }
 
-# user-secrets'tan bir değeri okur; hem düz ("A:B": "x") hem iç içe ({"A": {"B": "x"}}) yazımı destekler.
+# user-secrets'tan bir değeri okur. Dosyayı .NET'in kendi aracıyla (dotnet user-secrets list) okur;
+# böylece iç içe yazım, yorum satırları ve sondaki virgüller uygulamadaki gibi sorunsuz okunur.
+$script:UserSecretsCache = @{}
 function Get-UserSecret([string]$ProjectRelativePath, [string]$Key) {
-    $path = Get-UserSecretsPath $ProjectRelativePath
-    if (-not (Test-Path $path)) { return $null }
-    $json = Get-Content $path -Raw -Encoding UTF8 | ConvertFrom-Json
-    $flat = $json.PSObject.Properties | Where-Object { $_.Name -eq $Key } | Select-Object -First 1
-    if ($flat) { return [string]$flat.Value }
-    $node = $json
-    foreach ($part in $Key.Split(':')) {
-        if ($null -eq $node) { return $null }
-        $prop = $node.PSObject.Properties | Where-Object { $_.Name -eq $part } | Select-Object -First 1
-        if (-not $prop) { return $null }
-        $node = $prop.Value
+    if (-not $script:UserSecretsCache.ContainsKey($ProjectRelativePath)) {
+        $values = @{}
+        $output = & dotnet user-secrets list --project (Join-Path $script:RepoRoot $ProjectRelativePath) 2>$null
+        foreach ($line in $output) {
+            $index = $line.IndexOf(' = ')
+            if ($index -gt 0) { $values[$line.Substring(0, $index)] = $line.Substring($index + 3) }
+        }
+        $script:UserSecretsCache[$ProjectRelativePath] = $values
     }
-    return [string]$node
+    return $script:UserSecretsCache[$ProjectRelativePath][$Key]
 }
 
 # "Key=Value;Key2=Value2" biçimindeki bağlantı dizesini sözlüğe çevirir (anahtarlar küçük harf).
