@@ -85,6 +85,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShop.DtoLayer", "src\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShop.WebUI", "src\Web\MultiShop.WebUI\MultiShop.WebUI.csproj", "{644FDF60-511C-4518-8133-802256E53014}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShop.BuildingBlocks", "src\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj", "{20B4C258-44DF-493E-950F-C34BE49DE5F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -359,6 +361,18 @@ Global
 		{644FDF60-511C-4518-8133-802256E53014}.Release|x64.Build.0 = Release|Any CPU
 		{644FDF60-511C-4518-8133-802256E53014}.Release|x86.ActiveCfg = Release|Any CPU
 		{644FDF60-511C-4518-8133-802256E53014}.Release|x86.Build.0 = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|x64.Build.0 = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Debug|x86.Build.0 = Debug|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|x64.ActiveCfg = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|x64.Build.0 = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|x86.ActiveCfg = Release|Any CPU
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -404,5 +418,6 @@ Global
 		{03997797-E7F5-0643-168D-B8EA7178C2FE} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{2782D89F-9481-46E6-8FC8-4720EF52C42B} = {03997797-E7F5-0643-168D-B8EA7178C2FE}
 		{644FDF60-511C-4518-8133-802256E53014} = {03997797-E7F5-0643-168D-B8EA7178C2FE}
+		{20B4C258-44DF-493E-950F-C34BE49DE5F3} = {90298CBA-BD6F-3A0A-69D5-97CAD7B05E7E}
 	EndGlobalSection
 EndGlobal
