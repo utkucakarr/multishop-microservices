@@ -24,10 +24,11 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 
 $script:Docker = Get-Docker
+# Bilerek param() bloğu yok: "advanced function" olsaydı PowerShell -d, -e, -p gibi docker/psql
+# argümanlarını kendi ortak parametreleri (-Debug, -ErrorAction, -PipelineVariable) sanıp yakalardı.
 function Invoke-Docker {
-    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$DockerArgs)
-    $output = & $script:Docker @DockerArgs
-    if ($LASTEXITCODE -ne 0) { throw "docker $($DockerArgs[0]) başarısız oldu (çıkış kodu $LASTEXITCODE)." }
+    $output = & $script:Docker @args
+    if ($LASTEXITCODE -ne 0) { throw "docker $($args[0]) başarısız oldu (çıkış kodu $LASTEXITCODE)." }
     return $output
 }
 
