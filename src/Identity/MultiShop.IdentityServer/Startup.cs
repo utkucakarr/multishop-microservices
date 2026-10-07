@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MultiShop.BuildingBlocks.HealthChecks;
-using Serilog;
+using MultiShop.BuildingBlocks.Logging;
 
 namespace MultiShop.IdentityServer
 {
@@ -86,7 +86,7 @@ namespace MultiShop.IdentityServer
 
             app.UseMultiShopHealthChecks();
             app.UseStaticFiles();
-            app.UseSerilogRequestLogging();
+            app.UseMultiShopRequestLogging();
 
             app.UseRouting();
             app.UseIdentityServer();

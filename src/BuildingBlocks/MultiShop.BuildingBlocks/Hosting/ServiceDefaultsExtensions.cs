@@ -8,7 +8,6 @@ using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
-using Serilog;
 
 namespace MultiShop.BuildingBlocks.Hosting;
 
@@ -47,7 +46,7 @@ public static class ServiceDefaultsExtensions
         // Sıra önemli: health check istekleri loglanmaz; istek logu hata middleware'inin dışında kalır,
         // böylece exception'ın kendisini değil, istemciye dönen son durum kodunu (ör. 404) loglar.
         app.UseMultiShopHealthChecks();
-        app.UseSerilogRequestLogging();
+        app.UseMultiShopRequestLogging();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         if (app.Environment.IsDevelopment())

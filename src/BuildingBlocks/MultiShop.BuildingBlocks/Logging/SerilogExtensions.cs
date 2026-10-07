@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -24,4 +25,11 @@ public static class SerilogExtensions
             .Enrich.WithProperty("Application", applicationName)
             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
             .WriteTo.Seq(context.Configuration["Seq:ServerUrl"] ?? DefaultSeqUrl));
+
+    /// <summary>
+    /// Her isteği tek satır olarak loglar: <c>HTTP GET /api/products responded 200 in 12 ms</c>.
+    /// Hata middleware'inden önce eklenmeli ki istemciye dönen son durum kodunu görsün.
+    /// </summary>
+    public static IApplicationBuilder UseMultiShopRequestLogging(this IApplicationBuilder app)
+        => app.UseSerilogRequestLogging();
 }

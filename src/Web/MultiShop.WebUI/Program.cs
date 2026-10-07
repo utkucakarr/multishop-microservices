@@ -34,7 +34,6 @@ using MultiShop.WebUI.Services.StatisticServices.UserStatisticServices;
 using MultiShop.WebUI.Services.UserIdentityServices;
 using MultiShop.WebUI.Settings;
 using MultiShop.WebUI.Services.PaymentServices;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -243,7 +242,7 @@ if (!app.Environment.IsDevelopment())
 app.UseMultiShopHealthChecks();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseSerilogRequestLogging();
+app.UseMultiShopRequestLogging();
 
 app.UseRouting();
 app.UseAuthentication();
