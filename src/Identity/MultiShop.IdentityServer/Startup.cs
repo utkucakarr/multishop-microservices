@@ -30,8 +30,6 @@ namespace MultiShop.IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            Tools.JwtTokenDefault.Key = Configuration["JwtSettings:Key"];
-
             services.AddLocalApiAuthentication();
             services.AddControllersWithViews();
 
