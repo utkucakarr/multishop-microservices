@@ -10,6 +10,11 @@ namespace MultiShop.WebUI.Services.Interfaces
 
         bool IsAuthenticated();
 
-        Task<bool> GetRefreshToken();
+        /// <summary>
+        /// Cookie'deki refresh token ile yeni access token alır ve cookie'yi günceller.
+        /// Yenilenemezse (refresh token süresi dolmuş, IdentityServer yeniden başlamış vb.) kullanıcının
+        /// oturumunu kapatır ve <c>null</c> döner.
+        /// </summary>
+        Task<string?> RefreshAccessTokenAsync();
     }
 }
