@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.ContactDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.ContactServices
 {
@@ -38,7 +39,8 @@ namespace MultiShop.Catalog.Services.ContactServices
 
         public async Task<GetByIdContactDto> GetByIdContactAsync(string id)
         {
-            var values = await _contactCollection.Find(x => x.ContactId == id).FirstOrDefaultAsync();
+            var values = await _contactCollection.Find(x => x.ContactId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("İletişim mesajı", id);
             return _mapper.Map<GetByIdContactDto>(values);
         }
 

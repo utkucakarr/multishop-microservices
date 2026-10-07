@@ -2,9 +2,9 @@
 using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.ProductDetailDtos;
 using MultiShop.Catalog.Entities;
-using MultiShop.Catalog.Exceptions;
 using MultiShop.Catalog.Extensions;
 using MultiShop.Catalog.Repositories.Interfaces;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.ProductDetailServices
 {
@@ -35,14 +35,16 @@ namespace MultiShop.Catalog.Services.ProductDetailServices
 
         public async Task<GetByIdProductDetailDto> GetByIdProductDetailAsync(string id)
         {
-            var productDetail = await _repository.GetByIdAsync(id);
-            return _mapper.Map<GetByIdProductDetailDto?>(productDetail);
+            var productDetail = await _repository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Ürün detayı", id);
+            return _mapper.Map<GetByIdProductDetailDto>(productDetail);
         }
 
         public async Task<GetByIdProductDetailDto> GetByProductIdProductDetailAsync(string id)
         {
-            var productDetail = await _repository.GetByProductIdAsync(id);
-            return _mapper.Map<GetByIdProductDetailDto?>(productDetail);
+            var productDetail = await _repository.GetByProductIdAsync(id)
+                ?? throw new NotFoundException($"Ürünün detay kaydı yok: {id}");
+            return _mapper.Map<GetByIdProductDetailDto>(productDetail);
         }
 
         public async Task UpdateProductDetailAsyn(UpdateProductDetailDto updateProductDetailDto)
@@ -51,9 +53,7 @@ namespace MultiShop.Catalog.Services.ProductDetailServices
                 .GetByIdAsync(updateProductDetailDto.ProductDetailId);
 
             if (productDetail is null)
-                throw new CatalogDomainException(
-                    $"ProductDetail not found: {updateProductDetailDto.ProductDetailId}"
-                );
+                throw new NotFoundException("Ürün detayı", updateProductDetailDto.ProductDetailId);
 
             productDetail.UpdateDetails(
                 updateProductDetailDto.ShortDescription,

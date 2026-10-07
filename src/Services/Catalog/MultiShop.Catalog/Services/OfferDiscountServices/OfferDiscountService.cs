@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.OfferDiscountDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.OfferDiscountServices
 {
@@ -38,7 +39,8 @@ namespace MultiShop.Catalog.Services.OfferDiscountServices
 
         public async Task<GetByIdOfferDiscountDto> GetByIdOfferDiscountAsync(string id)
         {
-            var values = await _offerDiscountCollection.Find(x => x.OfferDiscountId == id).FirstOrDefaultAsync();
+            var values = await _offerDiscountCollection.Find(x => x.OfferDiscountId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("İndirim teklifi", id);
             return _mapper.Map<GetByIdOfferDiscountDto>(values);
         }
 
