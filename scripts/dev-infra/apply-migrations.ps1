@@ -31,7 +31,7 @@ foreach ($target in $targets) {
     Write-Step "$($target.Name)"
     $arguments = @('ef', 'database', 'update', '--project', (Join-Path $script:RepoRoot $target.Project))
     if ($target.Startup) { $arguments += @('--startup-project', (Join-Path $script:RepoRoot $target.Startup)) }
-    & dotnet @arguments | Where-Object { $_ -match 'Applying migration|No migrations were applied|Done\.|error|Error' } | ForEach-Object { "    $_" } | Write-Host
+    & dotnet @arguments | Where-Object { $_ -match 'Applying migration|No migrations were applied|error|Error' } | ForEach-Object { $_.Trim() } | Select-Object -Unique | ForEach-Object { "    $_" } | Write-Host
     if ($LASTEXITCODE -ne 0) { Write-Fail "$($target.Name): migration uygulanamadı."; $failed = $true } else { Write-Ok $target.Name }
 }
 
