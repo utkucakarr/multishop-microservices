@@ -12,7 +12,7 @@ namespace MultiShop.Catalog.Services.ProductImageServices
 
         Task DeleteProductImageAsync(string id);
 
-        Task<GetByIdProductImageDto?> GetByIdProductImageAsync(string id);
+        Task<GetByIdProductImageDto> GetByIdProductImageAsync(string id);
 
         Task<IEnumerable<GetByIdProductImageDto>> GetByProductIdProductImageAsync(string id);
     }

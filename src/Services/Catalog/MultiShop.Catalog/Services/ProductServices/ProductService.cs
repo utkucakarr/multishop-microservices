@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using MultiShop.Catalog.Dtos.ProductDtos;
-using MultiShop.Catalog.Exceptions;
 using MultiShop.Catalog.Extensions;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.ProductServices
 {
@@ -40,10 +40,10 @@ namespace MultiShop.Catalog.Services.ProductServices
 
         public async Task<GetByIdProductDto> GetByIdProductAsync(string id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            var dto = _mapper.Map<GetByIdProductDto?>(product);
-            if (dto is not null)
-                await ApplyMainImagesAsync(new List<GetByIdProductDto> { dto }, x => x.ProductId, (x, url) => x.ProductImageUrl = url);
+            var product = await _productRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Ürün", id);
+            var dto = _mapper.Map<GetByIdProductDto>(product);
+            await ApplyMainImagesAsync(new List<GetByIdProductDto> { dto }, x => x.ProductId, (x, url) => x.ProductImageUrl = url);
             return dto;
         }
 
@@ -85,7 +85,7 @@ namespace MultiShop.Catalog.Services.ProductServices
             // Önce entity çekiliyor, sonra domain metodları ile güncelleniyor
             var product = await _productRepository.GetByIdAsync(updateProductDto.ProductId);
             if (product is null)
-                throw new CatalogDomainException($"Product not found: {updateProductDto.ProductId}");
+                throw new NotFoundException("Ürün", updateProductDto.ProductId);
 
             product.UpdateCoreDetails(
                 updateProductDto.ProductName,

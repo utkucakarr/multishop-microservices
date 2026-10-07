@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Razor;
+using MultiShop.BuildingBlocks.HealthChecks;
+using MultiShop.BuildingBlocks.Logging;
 using MultiShop.WebUI.Handlers;
 using MultiShop.WebUI.Services.BasketServices;
 using MultiShop.WebUI.Services.CargoServices.CargoCompanyServices;
@@ -34,6 +36,9 @@ using MultiShop.WebUI.Settings;
 using MultiShop.WebUI.Services.PaymentServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseMultiShopSerilog("WebUI");
+builder.Services.AddHealthChecks();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddCookie(JwtBearerDefaults.AuthenticationScheme,
     opt =>
@@ -234,8 +239,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseMultiShopHealthChecks();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseMultiShopRequestLogging();
 
 app.UseRouting();
 app.UseAuthentication();

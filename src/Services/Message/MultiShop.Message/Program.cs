@@ -1,26 +1,15 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Message.DAL.Context;
 using MultiShop.Message.Services;
 using System.Reflection;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Re-added after environment variables so this project's user-secrets win over
-// any machine/user-level env vars left by other local projects (e.g. a stray
-// ConnectionStrings__DefaultConnection).
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
-}
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
-{
-    opt.Authority = builder.Configuration["IdentityServerUrl"];
-    opt.Audience = "ResourceMessage";
-    opt.RequireHttpsMetadata = false;
-});
+builder.AddMultiShopServiceDefaults("Message");
+builder.AddMultiShopJwtAuthentication("ResourceMessage");
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -32,21 +21,14 @@ builder.Services.AddDbContext<MessageContext>(opt =>
 builder.Services.AddScoped<IUserMessageService, UserMessageService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
+builder.Services.AddHealthChecks().AddDbContextCheck<MessageContext>("postgresql");
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddMultiShopSwagger("MultiShop Message API");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+app.UseMultiShopServiceDefaults();
 
 app.UseAuthentication();
 

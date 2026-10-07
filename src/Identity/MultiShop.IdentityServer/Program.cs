@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MultiShop.BuildingBlocks.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -18,6 +19,7 @@ namespace MultiShop.IdentityServer
     {
         public static int Main(string[] args)
         {
+            // Host kurulana kadar (ve kurulum hatalarında) kullanılan geçici logger; asıl yapılandırma UseMultiShopSerilog'da.
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -33,7 +35,7 @@ namespace MultiShop.IdentityServer
                 //    shared: true,
                 //    flushToDiskInterval: TimeSpan.FromSeconds(1))
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
-                .CreateLogger();
+                .CreateBootstrapLogger();
 
             try
             {
@@ -72,7 +74,7 @@ namespace MultiShop.IdentityServer
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
+                .UseMultiShopSerilog("IdentityServer")
                 // Re-added after environment variables so this project's user-secrets
                 // win over any machine/user-level env vars from other local projects
                 // (e.g. a stray ConnectionStrings__DefaultConnection left by another app).

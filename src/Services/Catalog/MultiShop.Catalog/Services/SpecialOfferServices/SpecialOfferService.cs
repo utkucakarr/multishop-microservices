@@ -5,6 +5,7 @@ using MultiShop.Catalog.Dtos.CategoryDtos;
 using MultiShop.Catalog.Dtos.SpecialOfferDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.SpecialOfferServices
 {
@@ -40,7 +41,8 @@ namespace MultiShop.Catalog.Services.SpecialOfferServices
 
         public async Task<GetByIdSpecialOfferDto> GetByIdSpecialOfferAsync(string id)
         {
-            var values = await _specialOfferCollection.Find(x => x.SpecialOfferId == id).FirstOrDefaultAsync();
+            var values = await _specialOfferCollection.Find(x => x.SpecialOfferId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Özel teklif", id);
             return _mapper.Map<GetByIdSpecialOfferDto>(values);
         }
 

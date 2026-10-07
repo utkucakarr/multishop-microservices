@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.CategoryDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.CategoryServices
 {
@@ -39,7 +40,8 @@ namespace MultiShop.Catalog.Services.CategoryServices
 
         public async Task<GetByIdCategoryDto> GetByIdCategoryAsync(string id)
         {
-            var values = await _categoryCollection.Find(x => x.CategoryId == id).FirstOrDefaultAsync();
+            var values = await _categoryCollection.Find(x => x.CategoryId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Kategori", id);
             return _mapper.Map<GetByIdCategoryDto>(values);
         }
 

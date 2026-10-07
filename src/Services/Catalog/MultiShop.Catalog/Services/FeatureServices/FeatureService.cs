@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.FeatureDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Services.FeatureServices
 {
@@ -38,7 +39,8 @@ namespace MultiShop.Catalog.Services.FeatureServices
 
         public async Task<GetByIdFeatureDto> GetByIdFeatureAsync(string id)
         {
-            var values = await _featureCollection.Find(x => x.FeatureId == id).FirstOrDefaultAsync();
+            var values = await _featureCollection.Find(x => x.FeatureId == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException("Özellik", id);
             return _mapper.Map<GetByIdFeatureDto>(values);
         }
 

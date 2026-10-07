@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MultiShop.DtoLayer\MultiShop.DtoLayer.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj" />
   </ItemGroup>
 
 </Project>

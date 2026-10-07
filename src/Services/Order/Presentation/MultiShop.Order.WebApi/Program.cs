@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers;
 using MultiShop.Order.Application.Features.CQRS.Handlers.OrderDetailHandlers;
@@ -6,23 +5,14 @@ using MultiShop.Order.Application.Interfaces;
 using MultiShop.Order.Application.Services;
 using MultiShop.Order.Persistence.Context;
 using MultiShop.Order.Persistence.Repositories;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Re-added after environment variables so this project's user-secrets win over
-// any machine/user-level env vars left by other local projects (e.g. a stray
-// ConnectionStrings__OrderConnection).
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets(System.Reflection.Assembly.GetExecutingAssembly(), optional: true);
-}
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
-{
-    opt.Authority = builder.Configuration["IdentityServerUrl"];
-    opt.Audience = "ResourceOrder";
-    opt.RequireHttpsMetadata = false;
-});
+builder.AddMultiShopServiceDefaults("Order");
+builder.AddMultiShopJwtAuthentication("ResourceOrder");
 
 builder.Services.AddDbContext<OrderContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("OrderConnection")));
@@ -47,23 +37,14 @@ builder.Services.AddScoped<GetOrderDetailByOrderingIdQueryHandler>();
 builder.Services.AddScoped<RemoveOrderDetailQueryHandler>();
 #endregion
 
-// Add services to the container.
+builder.Services.AddHealthChecks().AddDbContextCheck<OrderContext>("sqlserver");
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddMultiShopSwagger("MultiShop Order API");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+app.UseMultiShopServiceDefaults();
 
 app.UseAuthentication();
 
