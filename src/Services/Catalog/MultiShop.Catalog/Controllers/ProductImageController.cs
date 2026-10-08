@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.ProductImageDtos;
 using MultiShop.Catalog.Services.ProductImageServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductImageController : ControllerBase
@@ -33,6 +34,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(productImagesId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateProductImage(CreateProductImageDto createProductImageDto)
         {
@@ -40,6 +42,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün resmi başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteProductImage(string id)
         {
@@ -47,6 +50,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün resmi başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateProductImage(UpdateProductImageDto updateProductImageDto)
         {

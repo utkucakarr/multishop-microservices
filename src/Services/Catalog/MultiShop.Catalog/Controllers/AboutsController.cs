@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.AboutDtos;
 using MultiShop.Catalog.Services.AboutServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class AboutsController : ControllerBase
@@ -32,6 +33,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(aboutId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateAbout(CreateAboutDto createAboutDto)
         {
@@ -39,6 +41,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Hakkımda alanı başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteAbout(string id)
         {
@@ -46,6 +49,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Hakkımda alanı başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateAbout(UpdateAboutDto updateAboutDto)
         {

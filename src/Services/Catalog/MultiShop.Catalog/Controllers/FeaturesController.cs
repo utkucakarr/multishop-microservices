@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.FeatureDtos;
 using MultiShop.Catalog.Services.FeatureServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class FeaturesController : ControllerBase
@@ -32,6 +33,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(featureId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateFeature(CreateFeatureDto createFeatureDto)
         {
@@ -39,6 +41,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Öne çıkan alan başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteFeature(string id)
         {
@@ -46,6 +49,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Öne çıkan alan başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateFeature(UpdateFeatureDto updateFeatureDto)
         {

@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.BrandDtos;
 using MultiShop.Catalog.Services.BrandServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class BrandsController : ControllerBase
@@ -32,6 +33,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(brandId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateBrand(CreateBrandDto createBrandDto)
         {
@@ -39,6 +41,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Marka baraşıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(string id)
         {
@@ -46,6 +49,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Marka baraşıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateBrand(UpdateBrandDto updateBrandDto)
         {

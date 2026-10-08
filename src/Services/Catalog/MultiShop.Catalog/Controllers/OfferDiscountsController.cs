@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 using MultiShop.Catalog.Dtos.OfferDiscountDtos;
 using MultiShop.Catalog.Services.OfferDiscountServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    // Todo : [Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class OfferDiscountsController : ControllerBase
@@ -34,6 +35,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(offerDiscountId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateOfferDiscount(CreateOfferDiscountDto createOfferDiscountDto)
         {
@@ -41,6 +43,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Özel teklif başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteOfferDiscount(string id)
         {
@@ -48,6 +51,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Özel teklif başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateOfferDiscount(UpdateOfferDiscountDto updateOfferDiscountDto)
         {
