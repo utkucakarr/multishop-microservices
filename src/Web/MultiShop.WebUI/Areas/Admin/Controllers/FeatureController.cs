@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.FeatureDtos;
 using MultiShop.WebUI.Services.CatalogServices.FeautureServices;
 using Newtonsoft.Json;
@@ -7,6 +8,7 @@ using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
+    [Authorize(Roles = MultiShopRoles.Admin)]
     [Area("Admin")]
     [Route("Admin/Feature")]
     public class FeatureController : Controller

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Razor;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
@@ -40,24 +39,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseMultiShopSerilog("WebUI");
 builder.Services.AddHealthChecks();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddCookie(JwtBearerDefaults.AuthenticationScheme,
-    opt =>
-    {
-        //Sisteme giri� yapmadan y�nlenen biri olursa y�nlendirilecek sayfa belirleniyor.
-        opt.LoginPath = "/Login/Index/";
-        opt.LogoutPath = "/Login/Logout/";
-        //Kullan�c� yetkisi olmayan bir sayfaya gitmeye �al��t���nda y�nlendirilecek sayfa
-        opt.AccessDeniedPath = "/Pages/AccessDenied/";
-        opt.Cookie.HttpOnly = true;
-        opt.Cookie.SameSite = SameSiteMode.Strict;
-        opt.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        opt.Cookie.Name = "MultiShopJwt";
-    });
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
     AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
 {
     opt.LoginPath = "/Login/Index/";
+    // Giriş yapmış ama yetkisi olmayan kullanıcı (ör. müşteri /Admin/...) bu sayfaya yönlenir.
+    opt.AccessDeniedPath = "/Login/AccessDenied/";
     opt.ExpireTimeSpan = TimeSpan.FromDays(5);
     opt.Cookie.Name = "MultiShopCookie";
     opt.SlidingExpiration = true;
