@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
 using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
 using MultiShop.WebUI.ViewComponents.OrderViewComponents;
 
 namespace MultiShop.WebUI.Areas.User.Controllers
 {
+    [Authorize]
     [Area("User")]
     public class MyOrderController : Controller
     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;
 using MultiShop.WebUI.Services.BasketServices;
 using MultiShop.WebUI.Services.Interfaces;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.Controllers
 {
+    [Authorize]
     public class OrderController : Controller
     {
         private readonly IOrderAddressService _orderAddressService;

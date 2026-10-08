@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.OrderDtos.OrderDetailDtos;
 using MultiShop.DtoLayer.OrderDtos.OrderOrderingDtos;
 using MultiShop.DtoLayer.PaymentDto;
@@ -11,6 +12,7 @@ using System.Globalization;
 
 namespace MultiShop.WebUI.Controllers
 {
+    [Authorize]
     public class PaymentController : Controller
     {
         private readonly IPaymentService _paymentService;

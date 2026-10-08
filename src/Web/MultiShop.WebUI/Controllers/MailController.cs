@@ -1,12 +1,15 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.WebUI.Models;
 using MultiShop.WebUI.Settings;
 
 namespace MultiShop.WebUI.Controllers
 {
+    [Authorize(Roles = MultiShopRoles.Admin)]
     public class MailController : Controller
     {
         private readonly SmtpSettings _smtpSettings;

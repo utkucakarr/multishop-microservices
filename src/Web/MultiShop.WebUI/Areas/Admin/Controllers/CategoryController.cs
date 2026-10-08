@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.CategoryDtos;
 using MultiShop.WebUI.Services.CatalogServices.CategoryServices;
 using Newtonsoft.Json;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = MultiShopRoles.Admin)]
     [Area("Admin")]
     [Route("Admin/Category")]
     public class CategoryController : Controller

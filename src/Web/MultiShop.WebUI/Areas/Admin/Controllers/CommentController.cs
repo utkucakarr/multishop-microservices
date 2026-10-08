@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CommentDtos;
 using MultiShop.WebUI.Services.CommentServices;
 using Newtonsoft.Json;
@@ -8,8 +9,8 @@ using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
+    [Authorize(Roles = MultiShopRoles.Admin)]
     [Area("Admin")]
-    [AllowAnonymous]
     [Route("Admin/Comment")]
     public class CommentController : Controller
     {

@@ -44,6 +44,14 @@ namespace MultiShop.WebUI.Controllers
             return Redirect(returnUrl);
         }
 
+        // Giriş yapmış ama yetkisi olmayan kullanıcı buraya yönlenir (Program.cs → AccessDeniedPath).
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View();
+        }
+
         public async Task<IActionResult> Logout()
         {
             await _identityService.Logout();

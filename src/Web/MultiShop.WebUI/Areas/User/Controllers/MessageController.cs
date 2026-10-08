@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MultiShop.WebUI.Services.MessageServices;
 
 namespace MultiShop.WebUI.Areas.User.Controllers
 {
+    [Authorize]
     [Area("User")]
     public class MessageController : Controller
     {

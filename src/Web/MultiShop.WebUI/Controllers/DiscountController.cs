@@ -1,4 +1,5 @@
 ﻿using AspNetCoreGeneratedDocument;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.BasketDtos;
 using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.Controllers
 {
+    [Authorize]
     public class DiscountController : Controller
     {
         private readonly IDiscountService _discountService;
