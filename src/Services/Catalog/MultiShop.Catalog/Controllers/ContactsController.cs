@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.ContactDtos;
 using MultiShop.Catalog.Services.ContactServices;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Catalog.Security;
 
 namespace MultiShop.Catalog.Controllers
 {
-    // Todo : [Authorize]
-    [AllowAnonymous]
+    // İletişim mesajları: ziyaretçi gönderebilir, yalnızca Admin okur/siler.
     [Route("api/[controller]")]
     [ApiController]
     public class ContactsController : ControllerBase
@@ -19,6 +20,7 @@ namespace MultiShop.Catalog.Controllers
             _contactService = contactService;
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet]
         public async Task<IActionResult> ContactList()
         {
@@ -26,6 +28,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(contacts);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContactById(string id)
         {
@@ -33,6 +36,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(contactId);
         }
 
+        [Authorize(Policy = CatalogPolicies.ContactWrite)]
         [HttpPost]
         public async Task<IActionResult> CreateContact(CreateContactDto createContactDto)
         {
@@ -40,6 +44,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("İletişim bilgileri başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteContact(string id)
         {
@@ -47,6 +52,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("İletişim bilgileri başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateContact(UpdateContactDto updateContactDto)
         {
