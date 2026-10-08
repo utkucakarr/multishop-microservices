@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.IdentityDtos.LoginDtos;
 using MultiShop.WebUI.Models;
 using MultiShop.WebUI.Services.Interfaces;
@@ -31,17 +32,23 @@ namespace MultiShop.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(SignInDto signInDto, string returnUrl)
         {
-            var isSignedIn = await _identityService.SignIn(signInDto);
-            if (!isSignedIn)
+            var user = await _identityService.SignIn(signInDto);
+            if (user is null)
             {
                 ViewBag.LoginError = "Kullanıcı adı veya şifre hatalı ya da kimlik sunucusuna ulaşılamadı.";
                 return View();
             }
-            if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
+            // Korumalı bir sayfadan girişe yönlendirildiyse oraya geri dön.
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
-                return RedirectToAction("Index", "Default");
+                return Redirect(returnUrl);
             }
-            return Redirect(returnUrl);
+            // Doğrudan giriş: admin yönetim paneline, müşteri ana sayfaya.
+            if (user.IsInRole(MultiShopRoles.Admin))
+            {
+                return RedirectToAction("Index", "Statistic", new { area = "Admin" });
+            }
+            return RedirectToAction("Index", "Default");
         }
 
         // Giriş yapmış ama yetkisi olmayan kullanıcı buraya yönlenir (Program.cs → AccessDeniedPath).

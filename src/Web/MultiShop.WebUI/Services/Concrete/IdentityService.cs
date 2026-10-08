@@ -111,7 +111,7 @@ namespace MultiShop.WebUI.Services.Concrete
             new AuthenticationToken { Name = "expires_at", Value = DateTimeOffset.UtcNow.AddSeconds(token.ExpiresIn).ToString("o", CultureInfo.InvariantCulture) }
         };
 
-        public async Task<bool> SignIn(SignInDto signInDto)
+        public async Task<ClaimsPrincipal?> SignIn(SignInDto signInDto)
         {
             var discoveryEndPoint = await _httpClient.GetDiscoveryDocumentAsync(new DiscoveryDocumentRequest
             {
@@ -125,7 +125,7 @@ namespace MultiShop.WebUI.Services.Concrete
             if (discoveryEndPoint.IsError)
             {
                 _logger.LogError("IdentityServer discovery hatası ({Url}): {Error}", _serviceApiSettings.IdentityServerUrl, discoveryEndPoint.Error);
-                return false;
+                return null;
             }
 
             var passwordTokenRequest = new PasswordTokenRequest
@@ -142,7 +142,7 @@ namespace MultiShop.WebUI.Services.Concrete
             if (token.IsError)
             {
                 _logger.LogWarning("Token alınamadı ({StatusCode}): {Error} - {ErrorDescription}", token.HttpStatusCode, token.Error, token.ErrorDescription);
-                return false;
+                return null;
             }
 
             var userInfoRequest = new UserInfoRequest
@@ -156,7 +156,7 @@ namespace MultiShop.WebUI.Services.Concrete
             if (userValues.IsError)
             {
                 _logger.LogError("Kullanıcı bilgisi alınamadı ({StatusCode}): {Error}", userValues.HttpStatusCode, userValues.Error);
-                return false;
+                return null;
             }
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(userValues.Claims, CookieAuthenticationDefaults.AuthenticationScheme, "name", "role");
@@ -172,7 +172,8 @@ namespace MultiShop.WebUI.Services.Concrete
             await _httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 claimsPrincipal, authenticationProperties);
 
-            return true;
+            // HttpContext.User bu istekte henüz güncellenmez; yönlendirme kararı için kullanıcıyı geri ver.
+            return claimsPrincipal;
         }
 
         public async Task<bool> Logout()

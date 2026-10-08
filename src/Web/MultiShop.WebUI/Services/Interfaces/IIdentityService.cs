@@ -1,10 +1,15 @@
 ﻿using MultiShop.DtoLayer.IdentityDtos.LoginDtos;
+using System.Security.Claims;
 
 namespace MultiShop.WebUI.Services.Interfaces
 {
     public interface IIdentityService
     {
-        Task<bool> SignIn(SignInDto signInDto);
+        /// <summary>
+        /// Kullanıcıyı IdentityServer'da doğrular ve cookie ile oturum açar.
+        /// Giriş yapan kullanıcıyı (rolleriyle birlikte) döner; giriş başarısızsa <c>null</c>.
+        /// </summary>
+        Task<ClaimsPrincipal?> SignIn(SignInDto signInDto);
 
         Task<bool> Logout();
 
