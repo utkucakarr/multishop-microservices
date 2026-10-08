@@ -27,6 +27,10 @@ public static class JwtAuthenticationExtensions
                 options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
                 // .NET 8: claim adları token'daki gibi kalsın ("sub" → ClaimTypes.NameIdentifier'a çevrilmesin).
                 options.MapInboundClaims = false;
+                // Claim adları çevrilmediği için rol ve ad da token'daki adlarıyla okunmalı;
+                // aksi halde User.IsInRole / RequireRole uzun Microsoft claim adını arar ve "role" claim'ini hiç görmez.
+                options.TokenValidationParameters.RoleClaimType = "role";
+                options.TokenValidationParameters.NameClaimType = "name";
             });
     }
 }
