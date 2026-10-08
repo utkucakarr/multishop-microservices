@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Discount");
 builder.AddMultiShopJwtAuthentication("ResourceDiscount");
+builder.Services.AddMultiShopAuthorization(fullScope: "DiscountFullPermission");
 
 builder.Services.AddTransient<DapperContext>();
 builder.Services.AddTransient<IDiscountService, DiscountService>();

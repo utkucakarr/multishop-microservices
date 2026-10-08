@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using IdentityModel;
 using IdentityServer4;
 using MultiShop.IdentityServer.Data;
 using MultiShop.IdentityServer.Models;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
 
@@ -31,6 +33,14 @@ namespace MultiShop.IdentityServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLocalApiAuthentication();
+            // Kullanıcı listesi ve istatistik: local API token'ı + role = Admin.
+            // Local API token'ındaki claim adları eşlenmeden gelir ("role"), bu yüzden RequireRole yerine RequireClaim.
+            services.AddAuthorization(options =>
+                options.AddPolicy(MultiShopPolicies.Admin, policy => policy
+                    .AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme)
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(JwtClaimTypes.Scope, IdentityServerConstants.LocalApi.ScopeName)
+                    .RequireClaim(JwtClaimTypes.Role, MultiShopRoles.Admin)));
             services.AddControllersWithViews();
 
             services.AddDbContext<ApplicationDbContext>(options =>

@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.Cargo.BusinessLayer.Abstract;
 using MultiShop.Cargo.DtoLayer.Dtos.CargoOperationDtos;
 using MultiShop.Cargo.EntityLayer.Concrete;
 
 namespace MultiShop.Cargo.WebApi.Controllers
 {
-    [Authorize]
+    // Kargo yönetimi yalnızca admin panelinden yapılır; müşteri tarafında kargo takibi yok.
+    [Authorize(Policy = MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class CargoOperationsController : ControllerBase
