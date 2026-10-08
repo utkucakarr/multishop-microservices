@@ -1,4 +1,5 @@
-﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+﻿@using MultiShop.BuildingBlocks.Authentication
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
 @model List<ResultCategoryDto>
 
 <div class="container-fluid bg-dark mb-30">
@@ -46,6 +47,10 @@
                             </div>
                         </div>
                         <a href="/Contact/Index" class="nav-item nav-link">İletişim</a>
+                        @if (User.IsInRole(MultiShopRoles.Admin))
+                        {
+                            <a href="/Admin/Statistic/Index" class="nav-item nav-link">Yönetim Paneli</a>
+                        }
                     </div>
                     <div class="navbar-nav ml-auto py-0 d-none d-lg-block">
                         <a href="" class="btn px-0">
