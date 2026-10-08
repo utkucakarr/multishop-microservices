@@ -2,7 +2,8 @@
 {
     public class CreatePaymentDto
     {
-        public string UserId { get; set; }
+        // Yok sayılır; ödeme token'daki kullanıcı adına kaydedilir.
+        public string? UserId { get; set; }
 
         public string CardNumber { get; set; }
 
