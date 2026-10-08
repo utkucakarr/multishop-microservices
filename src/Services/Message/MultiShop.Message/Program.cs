@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Message");
 builder.AddMultiShopJwtAuthentication("ResourceMessage");
+builder.Services.AddMultiShopAuthorization(fullScope: "MessageFullPermission");
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

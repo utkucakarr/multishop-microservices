@@ -22,7 +22,7 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var user = await _userService.GetUserInfo();
-            int messageCount = await _messageService.GetTotalMessageCountByRecieverId(user.Id);
+            int messageCount = await _messageService.GetInboxMessageCountAsync();
             ViewBag.messageCount = messageCount;
             int commentCount = await _commentStatisticService.GetTotalCommentCountAsync();
             ViewBag.commentCount = commentCount;

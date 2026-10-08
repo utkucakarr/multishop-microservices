@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Message.DAL.Context;
 using MultiShop.Message.Services;
-using System.Runtime.InteropServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Message.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Policy = MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class UserMessageStatisticsController : ControllerBase
