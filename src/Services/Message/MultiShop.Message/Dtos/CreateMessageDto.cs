@@ -2,7 +2,8 @@
 {
     public class CreateMessageDto
     {
-        public string SenderId { get; set; }
+        // Yok sayılır; gönderen her zaman token'daki kullanıcıdır.
+        public string? SenderId { get; set; }
 
         public string ReveiverId { get; set; }
 
