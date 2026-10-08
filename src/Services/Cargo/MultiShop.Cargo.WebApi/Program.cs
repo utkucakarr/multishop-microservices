@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Cargo");
 builder.AddMultiShopJwtAuthentication("ResourceCargo");
+builder.Services.AddMultiShopAuthorization(fullScope: "CargoFullPermission");
 
 builder.Services.AddDbContext<CargoContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

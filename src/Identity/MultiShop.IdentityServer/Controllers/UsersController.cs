@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.IdentityServer.Dtos;
 using MultiShop.IdentityServer.Models;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using static IdentityServer4.IdentityServerConstants;
 
 namespace MultiShop.IdentityServer.Controllers
 {
+    // Kendi profil bilgisi (GetUser) giriş yapan herkese; tüm kullanıcı listesi yalnızca Admin.
     [Authorize(LocalApi.PolicyName)]
     [Route("api/[controller]")]
     [ApiController]
@@ -41,6 +43,7 @@ namespace MultiShop.IdentityServer.Controllers
             });
         }
 
+        [Authorize(MultiShopPolicies.Admin)]
         [HttpGet("GetAllUserList")]
         public async Task<IActionResult> GetAllUserList()
         {
