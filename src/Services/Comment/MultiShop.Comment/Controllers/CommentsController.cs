@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Comment.Context;
 using MultiShop.Comment.Entities;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Comment.Controllers
 {
+    // Ziyaretçi bir ürünün yorumlarını okur, giriş yapan yorum yazar; liste, düzenleme, silme ve sayaçlar (moderasyon) Admin.
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -18,6 +20,7 @@ namespace MultiShop.Comment.Controllers
             _commentContext = commentContext;
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet]
         public IActionResult CommentList()
         {
@@ -25,6 +28,7 @@ namespace MultiShop.Comment.Controllers
             return Ok(values);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Authenticated)]
         [HttpPost]
         public IActionResult CreateComment(UserComment userComment)
         {
@@ -33,6 +37,7 @@ namespace MultiShop.Comment.Controllers
             return Ok("Yorum başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public IActionResult DeleteComment(int id)
         {
@@ -42,6 +47,7 @@ namespace MultiShop.Comment.Controllers
             return Ok("Yorum başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet("{id}")]
         public IActionResult GetCommentById(int id)
         {
@@ -49,6 +55,7 @@ namespace MultiShop.Comment.Controllers
             return Ok(value);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public IActionResult UpdateComment(UserComment userComment)
         {
@@ -57,6 +64,7 @@ namespace MultiShop.Comment.Controllers
             return Ok("Yorum başarıyla güncellendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Read)]
         [HttpGet("CommentListByProductId/{id}")]
         public IActionResult CommentListByProductId(string id)
         {
@@ -64,6 +72,7 @@ namespace MultiShop.Comment.Controllers
             return Ok(value);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet("GetActiveCommentCount")]
         public IActionResult GetActiveCommentCount()
         {
@@ -71,6 +80,7 @@ namespace MultiShop.Comment.Controllers
             return Ok(value);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet("GetPassiveCommentCount")]
         public IActionResult GetPassiveCommentCount()
         {
@@ -78,6 +88,7 @@ namespace MultiShop.Comment.Controllers
             return Ok(value);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet("GetTotalCommentCount")]
         public IActionResult GetTotalCommentCount()
         {

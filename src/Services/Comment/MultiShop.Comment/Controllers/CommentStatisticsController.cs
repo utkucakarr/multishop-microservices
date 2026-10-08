@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Comment.Context;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Comment.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Policy = MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentStatisticsController : ControllerBase
