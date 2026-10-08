@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.Order.Application.Features.CQRS.Commands.OrderDetailCommands;
 using MultiShop.Order.Application.Features.CQRS.Handlers.OrderDetailHandlers;
 using MultiShop.Order.Application.Features.CQRS.Queries.OrderDetailQueries;
+using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Order.WebApi.Security;
 
 namespace MultiShop.Order.WebApi.Controllers
 {
-    [Authorize]
+    // Sipariş detayına erişim, bağlı olduğu siparişin sahipliğine göre kontrol edilir.
+    [Authorize(Policy = MultiShopPolicies.Authenticated)]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderDetailsController : ControllerBase
@@ -17,8 +20,9 @@ namespace MultiShop.Order.WebApi.Controllers
         private readonly UpdateOrderDetailQueryHandler _updateOrderDetailQueryHandler;
         private readonly RemoveOrderDetailQueryHandler _removeOrderDetailQueryHandler;
         private readonly GetOrderDetailByOrderingIdQueryHandler _getOrderDetailByOrderingIdQueryHandler;
+        private readonly OrderAccessGuard _accessGuard;
 
-        public OrderDetailsController(GetOrderDetailQueryHandler getOrderDetailQueryHandler, GetOrderDetailByIdQueryHandler getOrderDetailByIdQueryHandler, CreateOrderDetailCommandHandler createOrderDetailCommandHandler, UpdateOrderDetailQueryHandler updateOrderDetailQueryHandler, RemoveOrderDetailQueryHandler removeOrderDetailQueryHandler, GetOrderDetailByOrderingIdQueryHandler getOrderDetailByOrderingIdQueryHandler)
+        public OrderDetailsController(OrderAccessGuard accessGuard, GetOrderDetailQueryHandler getOrderDetailQueryHandler, GetOrderDetailByIdQueryHandler getOrderDetailByIdQueryHandler, CreateOrderDetailCommandHandler createOrderDetailCommandHandler, UpdateOrderDetailQueryHandler updateOrderDetailQueryHandler, RemoveOrderDetailQueryHandler removeOrderDetailQueryHandler, GetOrderDetailByOrderingIdQueryHandler getOrderDetailByOrderingIdQueryHandler)
         {
             _getOrderDetailQueryHandler = getOrderDetailQueryHandler;
             _getOrderDetailByIdQueryHandler = getOrderDetailByIdQueryHandler;
@@ -26,8 +30,10 @@ namespace MultiShop.Order.WebApi.Controllers
             _updateOrderDetailQueryHandler = updateOrderDetailQueryHandler;
             _removeOrderDetailQueryHandler = removeOrderDetailQueryHandler;
             _getOrderDetailByOrderingIdQueryHandler = getOrderDetailByOrderingIdQueryHandler;
+            _accessGuard = accessGuard;
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet]
         public async Task<IActionResult> OrderDetailList()
         {
@@ -35,9 +41,11 @@ namespace MultiShop.Order.WebApi.Controllers
             return Ok(values);
         }
 
+        // Not: adına rağmen parametre sipariş numarasıdır (OrderingId); o siparişin satırlarını döner.
         [HttpGet("GetOrderDetailById")]
         public async Task<IActionResult> GetOrderDetailById(int id)
         {
+            await _accessGuard.EnsureOrderingAccessAsync(id);
             var value = await _getOrderDetailByIdQueryHandler.Handle(new GetOrderDetailByQuery(id));
             return Ok(value);
         }
@@ -52,10 +60,13 @@ namespace MultiShop.Order.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrderDetail(CreateOrderDetailCommand command)
         {
+            // Satır yalnızca kullanıcının kendi siparişine eklenebilir.
+            await _accessGuard.EnsureOrderingAccessAsync(command.OrderingId);
             await _createOrderDetailCommandHandler.Handle(command);
             return Ok("Sipariş detayı başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateOrderDetail(UpdateOrderDetailCommand command)
         {
@@ -63,6 +74,7 @@ namespace MultiShop.Order.WebApi.Controllers
             return Ok("Sipariş detayı başarıyla güncellendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> RemoveOrderDetail(int id)
         {

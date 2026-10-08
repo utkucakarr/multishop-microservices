@@ -7,6 +7,7 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderDetailServices
     {
         Task CreateOrderDetailAsync(CreateOrderDetailDto createOrderDetailDto);
 
-        Task<List<GetOrderDetailByOrderIdDto>> GetOrderDetailByOrderingId(int orderingId);
+        /// <summary>Siparişin satırları; sipariş yoksa ya da kullanıcıya ait değilse <c>null</c>.</summary>
+        Task<List<GetOrderDetailByOrderIdDto>?> GetOrderDetailByOrderingId(int orderingId);
     }
 }
