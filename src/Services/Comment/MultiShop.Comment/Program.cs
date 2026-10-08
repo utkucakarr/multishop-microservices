@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Comment");
 builder.AddMultiShopJwtAuthentication("ResourceComment");
+builder.Services.AddMultiShopAuthorization(fullScope: "CommentFullPermission", readScope: "CommentReadPermission");
 
 builder.Services.AddDbContext<CommentContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
