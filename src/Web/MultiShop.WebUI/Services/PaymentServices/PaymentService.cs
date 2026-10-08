@@ -1,6 +1,4 @@
-﻿using MultiShop.DtoLayer.IdentityDtos.RegisterDtos;
-using MultiShop.DtoLayer.OrderDtos.OrderDetailDtos;
-using MultiShop.DtoLayer.PaymentDto;
+﻿using MultiShop.DtoLayer.PaymentDto;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
@@ -9,27 +7,34 @@ namespace MultiShop.WebUI.Services.PaymentServices
 {
     public class PaymentService : IPaymentService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public PaymentService(IHttpClientFactory httpClientFactory)
+        // Gateway üzerinden ve giriş yapmış kullanıcının token'ıyla gider (bkz. Program.cs);
+        // önceden doğrudan http://localhost:7076'ya token'sız gidiyordu.
+        public PaymentService(HttpClient httpClient)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
         }
 
         public async Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto)
         {
-            var client = _httpClientFactory.CreateClient();
             var jsonData = JsonConvert.SerializeObject(createPaymentDto);
             StringContent stringContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
-            var responseMessage = await client.PostAsync("http://localhost:7076/api/Payments", stringContent);
+            var responseMessage = await _httpClient.PostAsync("payments", stringContent);
             if (responseMessage.IsSuccessStatusCode)
             {
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
                 var responseDto = JsonConvert.DeserializeObject<CreatePaymentResponseDto>(responseContent);
-                return responseDto;
+                if (responseDto is not null)
+                    return responseDto;
             }
 
-            return null;
+            // Önceden null dönüyordu ve PaymentController response.IsSuccess'te çöküyordu.
+            return new CreatePaymentResponseDto
+            {
+                IsSuccess = false,
+                ErrorMessage = "Ödeme şu anda alınamıyor, lütfen tekrar deneyin."
+            };
         }
     }
 }
