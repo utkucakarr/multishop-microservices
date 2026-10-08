@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MultiShop.DtoLayer.MessageDtos;
+﻿using MultiShop.DtoLayer.MessageDtos;
 
 namespace MultiShop.WebUI.Services.MessageServices
 {
@@ -12,23 +11,24 @@ namespace MultiShop.WebUI.Services.MessageServices
             _httpClient = httpClient;
         }
 
-        public async Task<List<ResultInboxMessageDto>> GetInboxMessageAsync(string id)
+        // Kullanıcı ID'si gönderilmiyor; Message servisi token'daki kullanıcının kutusunu döner.
+        public async Task<List<ResultInboxMessageDto>> GetInboxMessageAsync()
         {
-            var responseMessage = await _httpClient.GetAsync("http://localhost:5020/services/Message/UserMessage/GetMesssageInBox?id=" + id);
+            var responseMessage = await _httpClient.GetAsync("UserMessage/inbox");
             var values = await responseMessage.Content.ReadFromJsonAsync<List<ResultInboxMessageDto>>();
             return values;
         }
 
-        public async Task<List<ResultSendboxMessageDto>> GetSendboxMessageAsync(string id)
+        public async Task<List<ResultSendboxMessageDto>> GetSendboxMessageAsync()
         {
-            var responseMessage = await _httpClient.GetAsync("http://localhost:5020/services/Message/UserMessage/GetMessageSendBox?id=" + id);
+            var responseMessage = await _httpClient.GetAsync("UserMessage/sendbox");
             var values = await responseMessage.Content.ReadFromJsonAsync<List<ResultSendboxMessageDto>>();
             return values;
         }
 
-        public async Task<int> GetTotalMessageCountByRecieverId(string id)
+        public async Task<int> GetInboxMessageCountAsync()
         {
-            var responseMessage = await _httpClient.GetAsync("UserMessage/GetTotalMessageCountByRecieverId?id=" + id);
+            var responseMessage = await _httpClient.GetAsync("UserMessage/inbox/count");
             var values = await responseMessage.Content.ReadFromJsonAsync<int>();
             return values;
         }

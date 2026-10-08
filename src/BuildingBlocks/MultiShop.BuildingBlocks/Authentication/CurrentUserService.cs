@@ -9,6 +9,8 @@ public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor)
 
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 
+    public bool IsAdmin => httpContextAccessor.HttpContext?.User.IsInRole(MultiShopRoles.Admin) ?? false;
+
     public string GetRequiredUserId()
         => UserId ?? throw new UnauthorizedAccessException("Token'da kullanıcı kimliği (sub) bulunamadı.");
 }

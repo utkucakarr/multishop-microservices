@@ -19,9 +19,9 @@ namespace MultiShop.WebUI.Areas.User.ViewComponents.UserLayoutViewComponents
         {
             var user = await _userService.GetUserInfo();
             ViewBag.userName = user.UserName + " " + user.Surname;
-            var inboxMessage = await _messageService.GetInboxMessageAsync(user.Id);
+            var inboxMessage = await _messageService.GetInboxMessageAsync();
             ViewBag.inboxMessageCount = inboxMessage.Count();
-            var senboxMessage = await _messageService.GetSendboxMessageAsync(user.Id);
+            var senboxMessage = await _messageService.GetSendboxMessageAsync();
             ViewBag.sendboxMessageCount = senboxMessage.Count();
             return View();
         }

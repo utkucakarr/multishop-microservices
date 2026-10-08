@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Services.StatisticServices;
 using System.Threading.Tasks;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
+    // Admin dashboard istatistikleri.
+    [Authorize(Policy = MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class StatisticsController : ControllerBase

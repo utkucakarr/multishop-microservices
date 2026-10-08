@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.ProductDtos;
 using MultiShop.Catalog.Services.ProductServices;
+using MultiShop.BuildingBlocks.Authentication;
 
 namespace MultiShop.Catalog.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    // Okuma: ziyaretçi token'ı da yeterli; yazma (POST/PUT/DELETE) yalnızca Admin.
+    [Authorize(Policy = MultiShopPolicies.Read)]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -34,6 +35,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok(productId);
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductDto createProductDto)
         {
@@ -41,6 +43,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün başarıyla eklendi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteProduct(string id)
         {
@@ -48,6 +51,7 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün başarıyla silindi");
         }
 
+        [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateProduct(UpdateProductDto updateProductDto)
         {

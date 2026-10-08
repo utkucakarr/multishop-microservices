@@ -3,12 +3,16 @@ using MultiShop.Payment.Context;
 using MultiShop.Payment.Repositories;
 using MultiShop.Payment.Services.PaymentServices;
 using MultiShop.Payment.Settings;
+using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Payment");
+// Önceden Payment'ta hiç kimlik doğrulama yoktu (G-09).
+builder.AddMultiShopJwtAuthentication("ResourcePayment");
+builder.Services.AddMultiShopAuthorization(fullScope: "PaymentFullPermission");
 
 builder.Services.AddDbContext<PaymentContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -26,6 +30,7 @@ var app = builder.Build();
 
 app.UseMultiShopServiceDefaults();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

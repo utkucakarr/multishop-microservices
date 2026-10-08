@@ -1,32 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MultiShop.WebUI.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MultiShop.WebUI.Services.MessageServices;
 
 namespace MultiShop.WebUI.Areas.User.Controllers
 {
+    [Authorize]
     [Area("User")]
     public class MessageController : Controller
     {
         private readonly IMessageService _messageService;
-        private readonly IUserService _userService;
 
-        public MessageController(IMessageService messageService, IUserService userService)
+        public MessageController(IMessageService messageService)
         {
             _messageService = messageService;
-            _userService = userService;
         }
 
         public async Task<IActionResult> Inbox()
         {
-            var user = await _userService.GetUserInfo();
-            var values = await _messageService.GetInboxMessageAsync(user.Id);
+            var values = await _messageService.GetInboxMessageAsync();
             return View(values);
         }
 
         public async Task<IActionResult> Sendbox()
         {
-            var user = await _userService.GetUserInfo();
-            var values = await _messageService.GetSendboxMessageAsync(user.Id);
+            var values = await _messageService.GetSendboxMessageAsync();
             return View(values);
         }
     }

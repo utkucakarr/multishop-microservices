@@ -2,24 +2,22 @@
 
 namespace MultiShop.Message.Services
 {
+    // Tüm metotlar işlemi yapan kullanıcının kimliğini (token'daki "sub") alır;
+    // kullanıcı yalnızca göndericisi ya da alıcısı olduğu mesajlara erişebilir.
     public interface IUserMessageService
     {
-        Task<List<ResultMessageDto>> GetAllMessageAsync();
+        Task<List<ResultInboxMessageDto>> GetInboxMessageAsync(string userId);
 
-        Task<List<ResultInboxMessageDto>> GetInboxMessageAsync(string id);
+        Task<List<ResultSendBoxMessageDto>> GetSendBoxMessageAsync(string userId);
 
-        Task<List<ResultSendBoxMessageDto>> GetSendBoxMessageAsync(string id);
+        Task CreateMessageAsync(CreateMessageDto createMessageDto, string senderId);
 
-        Task CreateMessageAsync (CreateMessageDto createMessageDto);
+        Task UpdateMessageAsync(UpdateMessageDto updateMessageDto, string userId);
 
-        Task UpdateMessageAsync (UpdateMessageDto updateMessageDto);
-
-        Task DeleteMessageAsync (int id);
-
-        Task<GetByIdMessageDto> GetByIdMessageAsync (int id);
+        Task DeleteMessageAsync(int id, string userId);
 
         Task<int> GetTotalMessageCountAsync();
 
-        Task<int> GetTotalMessageCountByRecieverId(string id);
+        Task<int> GetInboxMessageCountAsync(string userId);
     }
 }

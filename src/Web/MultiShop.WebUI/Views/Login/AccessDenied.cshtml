@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Erişim reddedildi";
+    Layout = "~/Views/UILayout/_UILayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="/Default/Index">Ana Sayfa</a>
+                <span class="breadcrumb-item active">Erişim reddedildi</span>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12 mb-5">
+            <div class="bg-light p-30 text-center">
+                <i class="fa fa-lock fa-3x text-primary mb-3"></i>
+                <h3 class="mb-3">Erişim reddedildi</h3>
+                <p class="mb-4">Bu sayfayı görüntüleme yetkiniz yok. Farklı bir hesapla işlem yapmak istiyorsanız çıkış yapıp yeniden giriş yapabilirsiniz.</p>
+                <a href="/Default/Index" class="btn btn-primary px-4 mr-2">Ana Sayfaya Dön</a>
+                <a href="/Login/Logout/" class="btn btn-outline-dark px-4">Çıkış Yap</a>
+            </div>
+        </div>
+    </div>
+</div>

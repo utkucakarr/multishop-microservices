@@ -4,10 +4,10 @@ namespace MultiShop.WebUI.Services.MessageServices
 {
     public interface IMessageService
     {
-        Task<List<ResultInboxMessageDto>> GetInboxMessageAsync(string id);
+        Task<List<ResultInboxMessageDto>> GetInboxMessageAsync();
 
-        Task<List<ResultSendboxMessageDto>> GetSendboxMessageAsync(string id);
+        Task<List<ResultSendboxMessageDto>> GetSendboxMessageAsync();
 
-        Task<int> GetTotalMessageCountByRecieverId(string id);
+        Task<int> GetInboxMessageCountAsync();
     }
 }

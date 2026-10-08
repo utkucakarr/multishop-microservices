@@ -6,6 +6,7 @@ using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Swagger;
 using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
+using MultiShop.Catalog.Security;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Services.AboutServices;
 using MultiShop.Catalog.Services.BrandServices;
@@ -33,6 +34,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Catalog");
 builder.AddMultiShopJwtAuthentication("ResourceCatalog");
+builder.Services.AddMultiShopAuthorization(fullScope: "CatalogFullPermission", readScope: "CatalogReadPermission")
+    .AddPolicy(CatalogPolicies.ContactWrite, policy => policy
+        .RequireAuthenticatedUser()
+        .RequireAssertion(context => AuthorizationExtensions.HasAnyScope(context.User, "ContactWritePermission", "CatalogFullPermission")));
 
 // Entity'lerdeki [BsonRepresentation(BsonType.ObjectId)] alanları, geçersiz bir id ile sorgulanınca
 // FormatException fırlatır; bu bir istemci hatasıdır (500 değil 400).
