@@ -30,8 +30,6 @@ namespace MultiShop.IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            Tools.JwtTokenDefault.Key = Configuration["JwtSettings:Key"];
-
             services.AddLocalApiAuthentication();
             services.AddControllersWithViews();
 
@@ -53,6 +51,10 @@ namespace MultiShop.IdentityServer
 
                 // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
                 options.EmitStaticAudienceClaim = true;
+
+                // WebUI token isterken scope belirtmiyor; IdentityServer client'ın izinli tüm scope'larını birleştiriyor.
+                // Bu metin varsayılan 300 karakter sınırını aşınca istek "invalid_scope" ile reddediliyordu.
+                options.InputLengthRestrictions.Scope = 1000;
             })
                 .AddInMemoryIdentityResources(Config.IdentityResources)
                 .AddInMemoryApiResources(Config.ApiResources)

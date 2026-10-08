@@ -32,6 +32,15 @@
             </div>
             <form class="form-detail" method="post">
                 <h2>MultiShop Kayıt Formu</h2>
+                @if (ViewBag.Errors is IEnumerable<string> errors)
+                {
+                    <ul style="color: #c0392b; margin-bottom: 15px;">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                }
                 <div class="form-group">
                     <div class="form-row form-row-1">
                         <label for="first_name">Adınız</label>

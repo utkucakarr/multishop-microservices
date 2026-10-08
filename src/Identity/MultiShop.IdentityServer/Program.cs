@@ -39,23 +39,10 @@ namespace MultiShop.IdentityServer
 
             try
             {
-                var seed = args.Contains("/seed");
-                if (seed)
-                {
-                    args = args.Except(new[] { "/seed" }).ToArray();
-                }
-
                 var host = CreateHostBuilder(args).Build();
 
-                if (seed)
-                {
-                    Log.Information("Seeding database...");
-                    var config = host.Services.GetRequiredService<IConfiguration>();
-                    var connectionString = config.GetConnectionString("DefaultConnection");
-                    SeedData.EnsureSeedData(connectionString);
-                    Log.Information("Done seeding database.");
-                    return 0;
-                }
+                // Admin/Customer rolleri ve admin kullanıcısı (bkz. IdentitySeeder).
+                IdentitySeeder.SeedAsync(host.Services).GetAwaiter().GetResult();
 
                 Log.Information("Starting host...");
                 host.Run();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MultiShop.IdentityServer.Dtos;
 using MultiShop.IdentityServer.Models;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -43,7 +44,17 @@ namespace MultiShop.IdentityServer.Controllers
         [HttpGet("GetAllUserList")]
         public async Task<IActionResult> GetAllUserList()
         {
-            var users = await _userManager.Users.ToListAsync();
+            // Entity'nin kendisi değil DTO dönüyor: PasswordHash, SecurityStamp gibi alanlar dışarı sızmasın.
+            var users = await _userManager.Users
+                .Select(user => new UserListDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Name = user.Name,
+                    Surname = user.Surname
+                })
+                .ToListAsync();
             return Ok(users);
         }
     }
