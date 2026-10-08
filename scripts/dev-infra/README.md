@@ -33,24 +33,3 @@ docker compose ps
 
 # 5) Migration'ları uygula (taşınan veride eksik kalanları; boş kurulumda tüm şemayı oluşturur)
 .\scripts\dev-infra\apply-migrations.ps1
-```
-
-Taşınacak eski veri yoksa (yeni bilgisayar) 3a adımını atlayın.
-
-> PowerShell script çalıştırmaya izin vermiyorsa bir kez: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
-
-## Script'ler
-
-| Script | Ne yapar |
-|--------|----------|
-| `migrate-legacy-data.ps1` | Projelerin **mevcut** user-secrets bağlantılarındaki veritabanlarını yeni container'lara kopyalar (SQL: COPY_ONLY yedek + geri yükleme, Mongo: mongodump/mongorestore, PostgreSQL: pg_dump/pg_restore). Kaynaklarda yalnızca okuma yapar. Hedef doluysa atlar; `-Force` ile üzerine yazar. |
-| `set-dev-secrets.ps1` | `.env`'deki şifrelerle tüm projelerin bağlantı dizelerini user-secrets'a yazar. Önce `secrets.json.bak-<tarih>` yedeği alır. Diğer secret'lara dokunmaz. |
-| `set-identity-secrets.ps1 -AdminEmail <e-posta>` | IdentityServer client secret'larını (Visitor, WebUI) rastgele üretip IdentityServer ve WebUI'a aynı değeri yazar; admin yapılacak hesabın e-postasını ayarlar; eski anahtarları (SharedSecret, JwtSettings:Key, Maneger/Admin client) siler. `-CreateAdmin`: hesap yoksa oluşturulsun (kullanıcı adı ve şifre sorulur). Önce yedek alır, değerleri ekrana yazmaz. |
-| `apply-migrations.ps1` | `dotnet ef database update`'i tüm EF projeleri için sırayla çalıştırır. |
-| `common.ps1` | Ortak yardımcılar (doğrudan çalıştırılmaz). |
-
-## Sık karşılaşılanlar
-
-- **`container name "/multishop-redis" is already in use`** — Eski elle oluşturulmuş Redis container'ı: `docker rm -f multishop-redis` (içinde yalnızca sepet verisi vardı).
-- **SQL Server "unhealthy"** — `.env`'deki `MSSQL_SA_PASSWORD` SQL Server şifre kuralına uymuyor olabilir (en az 8 karakter; büyük/küçük harf, rakam, sembol). Şifre ilk açılışta volume'e yazılır; değiştirmek için `docker compose down`, `docker volume rm multishop_sqlserver-data`, ardından tekrar `up`.
-- **Docker Desktop kapanıyor** — Bellek yetersizliği. Eski SQL Server container'ları (`IdentityDb`, `OrderDb`, ...) taşıma doğrulandıktan sonra durdurulabilir: `docker stop IdentityDb OrderDb CargoDb CommentDb DiscountDb`.
