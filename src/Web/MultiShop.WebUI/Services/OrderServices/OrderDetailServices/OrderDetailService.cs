@@ -18,9 +18,12 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderDetailServices
             var response = await _httpClient.PostAsJsonAsync<CreateOrderDetailDto>("orderDetails", createOrderDetailDto);
         }
 
-        public async Task<List<GetOrderDetailByOrderIdDto>> GetOrderDetailByOrderingId(int orderingId)
+        public async Task<List<GetOrderDetailByOrderIdDto>?> GetOrderDetailByOrderingId(int orderingId)
         {
             var responseMessage = await _httpClient.GetAsync("orderDetails/GetOrderDetailById?id=" + orderingId);
+            // Order servisi başka kullanıcının siparişi için 404 döner.
+            if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
             var jsonData = await responseMessage.Content.ReadAsStringAsync();
             var values = JsonConvert.DeserializeObject<List<GetOrderDetailByOrderIdDto>>(jsonData);
             return values;

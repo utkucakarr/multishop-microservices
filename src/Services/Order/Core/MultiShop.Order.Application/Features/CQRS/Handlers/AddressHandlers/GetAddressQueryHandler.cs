@@ -19,9 +19,12 @@ namespace MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers
             _repository = repository;
         }
 
-        public async Task<List<GetAddressQueryResult>> Handle()
+        /// <param name="userId">Verilirse yalnızca o kullanıcının adresleri döner; <c>null</c> ise hepsi (Admin).</param>
+        public async Task<List<GetAddressQueryResult>> Handle(string? userId = null)
         {
-            var values = await _repository.GetAllAsync();
+            var values = userId is null
+                ? await _repository.GetAllAsync()
+                : await _repository.GetListByFilterAsync(x => x.UserId == userId);
             return values.Select(x => new GetAddressQueryResult
             {
                 AddressId = x.AddressId,

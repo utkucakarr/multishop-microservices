@@ -5,6 +5,7 @@ using MultiShop.Order.Application.Interfaces;
 using MultiShop.Order.Application.Services;
 using MultiShop.Order.Persistence.Context;
 using MultiShop.Order.Persistence.Repositories;
+using MultiShop.Order.WebApi.Security;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Swagger;
@@ -13,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Order");
 builder.AddMultiShopJwtAuthentication("ResourceOrder");
+builder.Services.AddMultiShopAuthorization(fullScope: "OrderFullPermission");
 
 builder.Services.AddDbContext<OrderContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("OrderConnection")));
@@ -21,6 +23,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IOrderingRepository), typeof(OrderingRepository));
 builder.Services.AddScoped(typeof(IOrderDetailRepository), typeof(OrderDetailRepository));
 builder.Services.AddApplicationService(builder.Configuration);
+builder.Services.AddScoped<OrderAccessGuard>();
 
 #region
 builder.Services.AddScoped<GetAddressQueryHandler>();
