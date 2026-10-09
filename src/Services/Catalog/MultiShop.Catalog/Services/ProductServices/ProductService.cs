@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using MongoDB.Bson;
 using MultiShop.Catalog.Dtos.ProductDtos;
+using MultiShop.Catalog.Exceptions;
 using MultiShop.Catalog.Extensions;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Settings;
@@ -12,16 +14,19 @@ namespace MultiShop.Catalog.Services.ProductServices
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
         private readonly IProductImageRepository _productImageRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository)
+        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository, ICategoryRepository categoryRepository)
         {
             _productRepository = productRepository;
             _productImageRepository = productImageRepository;
+            _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 
         public async Task CreateProductAsync(CreateProductDto createProductDto)
         {
+            await EnsureCategoryAndBrandExistAsync(createProductDto.CategoryId, createProductDto.BrandId);
             // ✅ Manual mapping — Factory Method üzerinden geçiyor
             var product = createProductDto.ToEntity();
             await _productRepository.CreateAsync(product);
@@ -40,7 +45,7 @@ namespace MultiShop.Catalog.Services.ProductServices
 
         public async Task<GetByIdProductDto> GetByIdProductAsync(string id)
         {
-            var product = await _productRepository.GetByIdAsync(id)
+            var product = await _productRepository.GetByIdWithBrandAsync(id)
                 ?? throw new NotFoundException("Ürün", id);
             var dto = _mapper.Map<GetByIdProductDto>(product);
             await ApplyMainImagesAsync(new List<GetByIdProductDto> { dto }, x => x.ProductId, (x, url) => x.ProductImageUrl = url);
@@ -87,10 +92,13 @@ namespace MultiShop.Catalog.Services.ProductServices
             if (product is null)
                 throw new NotFoundException("Ürün", updateProductDto.ProductId);
 
+            await EnsureCategoryAndBrandExistAsync(updateProductDto.CategoryId, updateProductDto.BrandId);
+
             product.UpdateCoreDetails(
                 updateProductDto.ProductName,
                 updateProductDto.ProductPrice,
-                updateProductDto.CategoryId
+                updateProductDto.CategoryId,
+                updateProductDto.BrandId
             );
             product.UpdateProductDetails(
                 updateProductDto.ProductDescription,
@@ -98,6 +106,18 @@ namespace MultiShop.Catalog.Services.ProductServices
             );
 
             await _productRepository.UpdateAsync(product.ProductId, product);
+        }
+
+        // Ürün var olmayan bir kategoriye ya da markaya bağlanamaz. Kategori boşsa kontrolü
+        // domain (ProductCreationParameters / UpdateCoreDetails) kendi mesajıyla yapar.
+        private async Task EnsureCategoryAndBrandExistAsync(string categoryId, string? brandId)
+        {
+            if (!string.IsNullOrWhiteSpace(categoryId)
+                && (!ObjectId.TryParse(categoryId, out _) || await _categoryRepository.GetByIdAsync(categoryId) is null))
+                throw new CatalogDomainException($"Kategori bulunamadı: {categoryId}");
+
+            if (!string.IsNullOrWhiteSpace(brandId) && !await _productRepository.BrandExistsAsync(brandId))
+                throw new CatalogDomainException($"Marka bulunamadı: {brandId}");
         }
     }
 }

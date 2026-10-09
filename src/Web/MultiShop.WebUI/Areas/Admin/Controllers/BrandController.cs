@@ -57,7 +57,10 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [Route("DeleteBrand/{id}")]
         public async Task<IActionResult> DeleteBrand(string id)
         {
-            await _brandService.DeleteBrandAsync(id);
+            // Markaya bağlı ürün varsa Catalog silmeyi reddeder; mesaj liste sayfasında gösterilir.
+            var error = await _brandService.DeleteBrandAsync(id);
+            if (error is not null)
+                TempData["BrandError"] = error;
             return RedirectToAction("Index", "Brand", new { area = "Admin" });
         }
 

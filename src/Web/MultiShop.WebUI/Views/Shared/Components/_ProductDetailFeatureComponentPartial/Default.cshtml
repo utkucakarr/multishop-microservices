@@ -1,7 +1,11 @@
-﻿@model UpdateProductDto
+﻿@model GetByIdProductDto
 <div class="col-lg-7 h-auto mb-30">
     <div class="h-100 bg-light p-30">
         <h3>@Model.ProductName</h3>
+        @if (Model.BrandName != null)
+        {
+            <p class="mb-2">Marka: <strong>@Model.BrandName</strong></p>
+        }
         <div class="d-flex mb-3">
             <div class="text-primary mr-2">
                 <small class="fas fa-star"></small>

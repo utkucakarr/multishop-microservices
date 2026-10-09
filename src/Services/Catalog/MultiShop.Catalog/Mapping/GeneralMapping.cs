@@ -23,14 +23,16 @@ namespace MultiShop.Catalog.Mapping
             CreateMap<Category, GetByIdCategoryDto>().ReverseMap();
 
             CreateMap<Product, ResultProductDto>();
-            CreateMap<Product, GetByIdProductDto>();
+            CreateMap<Product, GetByIdProductDto>()
+                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.BrandName : null));
             CreateMap<Product, UpdateProductDto>();
 
             CreateMap<Product, ResultProductsWithCategoryDto>()
                 .ForMember(
                     dest => dest.Category,
                     opt => opt.MapFrom(src => src.Category)
-                );
+                )
+                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.BrandName : null));
 
             CreateMap<ProductDetail, ResultProductDetailDto>();
             CreateMap<ProductDetail, GetByIdProductDetailDto>();

@@ -7,8 +7,8 @@ namespace MultiShop.Catalog.Repositories.Concrete
 {
     public class MongoProductDetailRepository : MongoGenericRepository<ProductDetail>, IProductDetailRepository
     {
-        public MongoProductDetailRepository(IDatabaseSettings settings)
-            : base(settings, settings.ProductDetailCollectionName) { }
+        public MongoProductDetailRepository(IMongoDatabase database, IDatabaseSettings settings)
+            : base(database, settings.ProductDetailCollectionName) { }
 
         public async Task<ProductDetail?> GetByProductIdAsync(string productId)
             => await _collection

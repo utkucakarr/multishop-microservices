@@ -7,7 +7,7 @@ namespace MultiShop.Catalog.Repositories.Concrete
 {
     public class MongoProductImageRepository : MongoGenericRepository<ProductImage>, IProductImageRepository
     {
-        public MongoProductImageRepository(IDatabaseSettings settings) : base(settings, settings.ProductImageCollectionName)
+        public MongoProductImageRepository(IMongoDatabase database, IDatabaseSettings settings) : base(database, settings.ProductImageCollectionName)
         {
         }
 

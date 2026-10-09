@@ -12,10 +12,8 @@ namespace MultiShop.Catalog.Services.StatisticServices
         private readonly IMongoCollection<Category> _categoryCollection;
         private readonly IMongoCollection<Brand> _brandCollection;
 
-        public StatisticService(IDatabaseSettings _databaseSettings)
+        public StatisticService(IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _productCollection = database.GetCollection<Product>(_databaseSettings.ProductCollectionName);
             _categoryCollection = database.GetCollection<Category>(_databaseSettings.CategoryCollectionName);
             _brandCollection = database.GetCollection<Brand>(_databaseSettings.BrandCollectionName);

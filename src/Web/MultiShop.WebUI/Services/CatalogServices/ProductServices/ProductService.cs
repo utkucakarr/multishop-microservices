@@ -12,9 +12,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateProductAsync(CreateProductDto createProductDto)
+        public async Task<string?> CreateProductAsync(CreateProductDto createProductDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateProductDto>("products", createProductDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync<CreateProductDto>("products", createProductDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task DeleteProductAsync(string id)
@@ -30,10 +31,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
             return values;
         }
 
-        public async Task<UpdateProductDto> GetByIdProductAsync(string id)
+        public async Task<GetByIdProductDto> GetByIdProductAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("products/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateProductDto>();
+            var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductDto>();
             return values;
         }
 
@@ -53,9 +54,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
             return values;
         }
 
-        public async Task UpdateProductAsync(UpdateProductDto updateProductDto)
+        public async Task<string?> UpdateProductAsync(UpdateProductDto updateProductDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateProductDto>("products", updateProductDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync<UpdateProductDto>("products", updateProductDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MultiShop.Catalog.Entities.ValueObject
         public int MaxStockThreshold { get; init; }
         public string? ProductDescription { get; init; }
         public string? ProductImageUrl { get; init; }
+        public string? BrandId { get; init; }
 
         // Constructor içinde validasyon — domain kuralları burada da korunur
         public ProductCreationParameters(
@@ -22,7 +23,8 @@ namespace MultiShop.Catalog.Entities.ValueObject
             int restockThreshold,
             int maxStockThreshold,
             string? productDescription = null,
-            string? productImageUrl = null)
+            string? productImageUrl = null,
+            string? brandId = null)
         {
             if (string.IsNullOrWhiteSpace(productName))
                 throw new CatalogDomainException("Product name cannot be empty.");
@@ -45,6 +47,7 @@ namespace MultiShop.Catalog.Entities.ValueObject
             MaxStockThreshold = maxStockThreshold;
             ProductDescription = productDescription;
             ProductImageUrl = productImageUrl;
+            BrandId = string.IsNullOrWhiteSpace(brandId) ? null : brandId;
         }
     }
 }

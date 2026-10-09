@@ -19,10 +19,8 @@ namespace MultiShop.Catalog.Repositories.Concrete
             return Builders<T>.Filter.Eq("_id", objectId);
         }
 
-        public MongoGenericRepository(IDatabaseSettings settings, string collectionName)
+        public MongoGenericRepository(IMongoDatabase database, string collectionName)
         {
-            var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
             _collection = database.GetCollection<T>(collectionName);
         }
 

@@ -17,9 +17,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.BrandServices
             await _httpClient.PostAsJsonAsync<CreateBrandDto>("brands", createBrandDto);
         }
 
-        public async Task DeleteBrandAsync(string id)
+        public async Task<string?> DeleteBrandAsync(string id)
         {
-            await _httpClient.DeleteAsync("brands?id=" + id);
+            var responseMessage = await _httpClient.DeleteAsync("brands?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultBrandDto>> GetAllBrandAsync()
