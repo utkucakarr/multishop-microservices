@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShop.OcelotGateway", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{90298CBA-BD6F-3A0A-69D5-97CAD7B05E7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "src\BuildingBlocks\Messages\Messages.csproj", "{688DBB0F-FF73-4245-9F9F-113D03553150}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiShop.Contracts", "src\BuildingBlocks\MultiShop.Contracts\MultiShop.Contracts.csproj", "{688DBB0F-FF73-4245-9F9F-113D03553150}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{65ABFB5D-2B10-DF64-BF12-C17976F8E5D9}"
 EndProject

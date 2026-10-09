@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Servisler arası event sözleşmeleri. Kurallar: README.md. Bilerek hiçbir pakete ve projeye bağımlı değil. -->
+
+</Project>
