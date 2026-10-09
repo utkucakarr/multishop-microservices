@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.Hosting;
@@ -63,6 +64,13 @@ builder.Services.AddScoped<IDatabaseSettings>(sp =>
 {
     return sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 });
+
+// MongoClient thread-safe'tir ve bağlantı havuzunu kendisi yönetir; uygulama boyunca tek örnek kullanılır
+// (MongoDB'nin önerisi). Servisler ve repository'ler hazır IMongoDatabase'i alır.
+builder.Services.AddSingleton<IMongoClient>(sp =>
+    new MongoClient(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.ConnectionString));
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.DatabaseName));
 
 // Mongo erişilemezken sunucu seçimi 30 sn bekler; health check daha erken yanıt versin.
 builder.Services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", timeout: TimeSpan.FromSeconds(5));

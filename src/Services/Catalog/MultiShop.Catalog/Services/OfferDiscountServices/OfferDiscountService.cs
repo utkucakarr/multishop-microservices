@@ -12,10 +12,8 @@ namespace MultiShop.Catalog.Services.OfferDiscountServices
         private readonly IMongoCollection<OfferDiscount> _offerDiscountCollection;
         private readonly IMapper _mapper;
 
-        public OfferDiscountService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public OfferDiscountService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _offerDiscountCollection = database.GetCollection<OfferDiscount>(_databaseSettings.OfferDiscountCollectionName);
             _mapper = mapper;
         }
