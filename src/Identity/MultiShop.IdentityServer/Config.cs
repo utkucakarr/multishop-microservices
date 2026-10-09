@@ -20,7 +20,7 @@ namespace MultiShop.IdentityServer
         {
             new ApiResource("ResourceCatalog", new[] { JwtClaimTypes.Role })
             {
-                Scopes={"CatalogFullPermission","CatalogReadPermission","ContactWritePermission"}
+                Scopes={"CatalogFullPermission","CatalogReadPermission"}
             },
             new ApiResource("ResourceDiscount", new[] { JwtClaimTypes.Role })
             {
@@ -56,7 +56,7 @@ namespace MultiShop.IdentityServer
             },
             new ApiResource("ResourceMessage", new[] { JwtClaimTypes.Role })
             {
-                Scopes={"MessageFullPermission"}
+                Scopes={"MessageFullPermission","ContactWritePermission"}
             },
             new ApiResource(IdentityServerConstants.LocalApi.ScopeName, new[] { JwtClaimTypes.Role })
         };

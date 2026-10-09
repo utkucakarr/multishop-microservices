@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Message.DAL.Context;
+using MultiShop.Message.Security;
 using MultiShop.Message.Services;
 using System.Reflection;
 using MultiShop.BuildingBlocks.Authentication;
@@ -10,7 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Message");
 builder.AddMultiShopJwtAuthentication("ResourceMessage");
-builder.Services.AddMultiShopAuthorization(fullScope: "MessageFullPermission");
+builder.Services.AddMultiShopAuthorization(fullScope: "MessageFullPermission")
+    .AddPolicy(MessagePolicies.ContactWrite, policy => policy
+        .RequireAuthenticatedUser()
+        .RequireAssertion(context => AuthorizationExtensions.HasAnyScope(context.User, "ContactWritePermission", "MessageFullPermission")));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -19,7 +23,7 @@ builder.Services.AddDbContext<MessageContext>(opt =>
     opt.UseNpgsql(connectionString);
 });
 
-builder.Services.AddScoped<IUserMessageService, UserMessageService>();
+builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddHealthChecks().AddDbContextCheck<MessageContext>("postgresql");

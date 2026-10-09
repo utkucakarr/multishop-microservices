@@ -36,25 +36,6 @@
         "AllowedScopes": [ "CatalogFullPermission" ]
       }
     },
-    //Catalog Mikroservisi – iletişim formu: ziyaretçi giriş yapmadan mesaj gönderebilir
-    {
-      "DownstreamPathTemplate": "/api/contacts",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7070
-        }
-      ],
-      "UpstreamPathTemplate": "/services/catalog/contacts",
-      "UpstreamHttpMethod": [ "Post" ],
-      "UpstreamScheme": "http",
-      "Priority": 2,
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
-        "AllowedScopes": [ "ContactWritePermission", "CatalogFullPermission" ]
-      }
-    },
     //Discount Mikroservisi
     {
       //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
@@ -209,6 +190,25 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
         "AllowedScopes": [ "ImageFullPermission" ]
+      }
+    },
+    //Message Mikroservisi – iletişim formu: ziyaretçi giriş yapmadan mesaj gönderebilir
+    {
+      "DownstreamPathTemplate": "/api/contacts",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7078
+        }
+      ],
+      "UpstreamPathTemplate": "/services/message/contacts",
+      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "ContactWritePermission", "MessageFullPermission" ]
       }
     },
     //Message Mikroservisi

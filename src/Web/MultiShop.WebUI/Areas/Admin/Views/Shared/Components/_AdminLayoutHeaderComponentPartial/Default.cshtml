@@ -19,50 +19,28 @@
         </div>
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
-                @* Mesajlar *@
+                @* Mesajlar: iletişim formundan gelenler *@
                 <li class="dropdown messages-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="icon-envelope"><span class="badge" style="position:relative;top:-10px"><strong>@ViewBag.messageCount</strong></span></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="header">You have 4 messages</li>
+                        <li class="header">@ViewBag.messageCount okunmamış mesaj</li>
                         <li>
                             <ul class="menu">
-                                <li>
-                                    <a href="#">
-                                        <div class="pull-left"><img src="../dist/img/img1.jpg" class="img-circle" alt="User Image"></div>
-                                        <h4>Admin Panali</h4>
-                                        <p>Lorem ipsum dolor sit amet.</p>
-                                        <p><small><i class="fa fa-clock-o"></i> 2 mins</small></p>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <div class="pull-left"><img src="../dist/img/img2.jpg" class="img-circle" alt="User Image"></div>
-                                        <h4>Douglas Smith</h4>
-                                        <p>Lorem ipsum dolor sit amet.</p>
-                                        <p><small><i class="fa fa-clock-o"></i> 15 mins</small></p>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <div class="pull-left"><img src="../dist/img/img3.jpg" class="img-circle" alt="User Image"></div>
-                                        <h4>Lorence Deo</h4>
-                                        <p>Lorem ipsum dolor sit amet.</p>
-                                        <p><small><i class="fa fa-clock-o"></i> 35 mins</small></p>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <div class="pull-left"><img src="../dist/img/img1.jpg" class="img-circle" alt="User Image"></div>
-                                        <h4>Florence Douglas</h4>
-                                        <p>Lorem ipsum dolor sit amet.</p>
-                                        <p><small><i class="fa fa-clock-o"></i> 2 mins</small></p>
-                                    </a>
-                                </li>
+                                @foreach (var item in (List<ResultContactMessageDto>)ViewBag.latestContactMessages)
+                                {
+                                    <li>
+                                        <a href="/Admin/ContactMessage/Detail/@item.ContactMessageId">
+                                            <h4 style="@(item.IsRead ? "" : "font-weight:bold")">@item.NameSurname</h4>
+                                            <p>@item.Subject</p>
+                                            <p><small><i class="fa fa-clock-o"></i> @item.SendDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small></p>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </li>
-                        <li class="footer"><a href="#">Check all notifications</a></li>
+                        <li class="footer"><a href="/Admin/ContactMessage/Index">Tüm mesajlar</a></li>
                     </ul>
                 </li>
                 @* Bildirimler *@
@@ -93,7 +71,7 @@
                         </li>
                         <li><a href="#"><i class="icon-profile-male"></i> Profilim</a></li>
                         <li><a href="#"><i class="icon-wallet"></i> Bakiyem</a></li>
-                        <li><a href="#"><i class="icon-envelope"></i> Gelen Kutusu</a></li>
+                        <li><a href="/Admin/ContactMessage/Index"><i class="icon-envelope"></i> Mesajlar</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="#"><i class="icon-gears"></i> Hesap Ayarları</a></li>
                         <li role="separator" class="divider"></li>

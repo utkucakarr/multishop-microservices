@@ -6,12 +6,10 @@ using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Swagger;
 using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
-using MultiShop.Catalog.Security;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Services.AboutServices;
 using MultiShop.Catalog.Services.BrandServices;
 using MultiShop.Catalog.Services.CategoryServices;
-using MultiShop.Catalog.Services.ContactServices;
 using MultiShop.Catalog.Services.FeatureServices;
 using MultiShop.Catalog.Services.FeatureSliderServices;
 using MultiShop.Catalog.Services.OfferDiscountServices;
@@ -34,10 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Catalog");
 builder.AddMultiShopJwtAuthentication("ResourceCatalog");
-builder.Services.AddMultiShopAuthorization(fullScope: "CatalogFullPermission", readScope: "CatalogReadPermission")
-    .AddPolicy(CatalogPolicies.ContactWrite, policy => policy
-        .RequireAuthenticatedUser()
-        .RequireAssertion(context => AuthorizationExtensions.HasAnyScope(context.User, "ContactWritePermission", "CatalogFullPermission")));
+builder.Services.AddMultiShopAuthorization(fullScope: "CatalogFullPermission", readScope: "CatalogReadPermission");
 
 // Entity'lerdeki [BsonRepresentation(BsonType.ObjectId)] alanları, geçersiz bir id ile sorgulanınca
 // FormatException fırlatır; bu bir istemci hatasıdır (500 değil 400).
@@ -58,7 +53,6 @@ builder.Services.AddScoped<IFeatureService, FeatureService>();
 builder.Services.AddScoped<IOfferDiscountService, OfferDiscountService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IAboutService, AboutService>();
-builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 //Otomapper i�in konfig�rasyon i�lemi
