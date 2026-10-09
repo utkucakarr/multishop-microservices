@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
 using MultiShop.WebUI.Services.StatisticServices.CatalogStatisticServices;
 using MultiShop.WebUI.Services.StatisticServices.CommentStatisticServices;
 using MultiShop.WebUI.Services.StatisticServices.DiscountStatisticServices;
-using MultiShop.WebUI.Services.StatisticServices.MessageStatisticServices;
 using MultiShop.WebUI.Services.StatisticServices.UserStatisticServices;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
@@ -17,15 +17,15 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         private readonly IUserStatisticService _userStatisticService;
         private readonly ICommentStatisticService _commentStatisticService;
         private readonly IDiscountStatisticService _discountStatisticService;
-        private readonly IMessageStatisticService _messageStatisticService;
+        private readonly IContactMessageService _contactMessageService;
 
-        public StatisticController(ICatalogStatisticService catalogStatisticService, IUserStatisticService userStatisticService, ICommentStatisticService commentStatisticService, IDiscountStatisticService discountStatisticService, IMessageStatisticService messageStatisticService)
+        public StatisticController(ICatalogStatisticService catalogStatisticService, IUserStatisticService userStatisticService, ICommentStatisticService commentStatisticService, IDiscountStatisticService discountStatisticService, IContactMessageService contactMessageService)
         {
             _catalogStatisticService = catalogStatisticService;
             _userStatisticService = userStatisticService;
             _commentStatisticService = commentStatisticService;
             _discountStatisticService = discountStatisticService;
-            _messageStatisticService = messageStatisticService;
+            _contactMessageService = contactMessageService;
         }
 
         public async Task<IActionResult> Index()
@@ -41,7 +41,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             var getPassiveCommentCount = await _commentStatisticService.GetPassiveTotalCommentCountAsync();
             var getTotalCommentCount = await _commentStatisticService.GetTotalCommentCountAsync();
             var getDiscountCouponCount = await _discountStatisticService.GetDiscountCouponCountAsync();
-            var getTotalMessageCount = await _messageStatisticService.GetTotalMessageCountAsync();
+            var getTotalMessageCount = (await _contactMessageService.GetCountAsync()).Total;
 
             ViewBag.getBrandCount = getBrandCount;
             ViewBag.getCategoryCount = getCategoryCount;

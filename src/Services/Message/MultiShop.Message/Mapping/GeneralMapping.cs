@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MultiShop.Message.DAL.Entities;
-using MultiShop.Message.Dtos;
+using MultiShop.Message.Dtos.ContactMessageDtos;
 
 namespace MultiShop.Message.Mapping
 {
@@ -8,12 +8,8 @@ namespace MultiShop.Message.Mapping
     {
         public GeneralMapping()
         {
-            CreateMap<UserMessage, ResultMessageDto>().ReverseMap();
-            CreateMap<UserMessage, CreateMessageDto>().ReverseMap();
-            CreateMap<UserMessage, UpdateMessageDto>().ReverseMap();
-            CreateMap<UserMessage, ResultInboxMessageDto>().ReverseMap();
-            CreateMap<UserMessage, ResultSendBoxMessageDto>().ReverseMap();
-            CreateMap<UserMessage, GetByIdMessageDto>().ReverseMap();
+            CreateMap<CreateContactMessageDto, ContactMessage>();
+            CreateMap<ContactMessage, ResultContactMessageDto>();
         }
     }
 }

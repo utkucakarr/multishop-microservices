@@ -1,0 +1,31 @@
+﻿@model ResultContactMessageDto
+
+@{
+    ViewData["Title"] = "İletişim Mesajı";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>@Model.Subject</h4>
+                <p>
+                    <strong>Gönderen:</strong> @Model.NameSurname
+                    (<a href="mailto:@Model.Email">@Model.Email</a>)
+                    <br />
+                    <strong>Tarih:</strong> @Model.SendDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                </p>
+                <hr />
+                <p style="white-space:pre-wrap">@Model.Message</p>
+                <hr />
+                <a href="/Admin/ContactMessage/Index" class="btn btn-default">Listeye Dön</a>
+                <form method="post" action="/Admin/ContactMessage/Delete/@Model.ContactMessageId" style="display:inline"
+                      onsubmit="return confirm('Bu mesaj silinsin mi?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
