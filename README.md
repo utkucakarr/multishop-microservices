@@ -45,10 +45,9 @@ Bu proje, mikro hizmetler mimarisi kullanılarak geliştirilmiştir ve **ASP.NET
 ## Mikroservisler
 -	Basket - Docker Redis
 -	Cargo - Docker MsSql
--	Catalog - MongoDb
+-	Catalog - MongoDb (ürün görselleri: yerel disk ya da Google Cloud Storage)
 -	Comment - Docker MsSql
 -	Discount - Local MsSql Dapper ORM
--	Images - Local MsSql
 -	Message - PostgreSql
 -	IdentityServer4 -Docker MsSql
 -	RabbitMq

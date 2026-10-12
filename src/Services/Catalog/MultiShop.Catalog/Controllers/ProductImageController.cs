@@ -42,6 +42,23 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün resmi başarıyla eklendi");
         }
 
+        // Dosya yükleme (multipart/form-data): dosya depolamaya yazılır, ürüne görsel olarak eklenir.
+        [Authorize(Policy = MultiShopPolicies.Admin)]
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadProductImage([FromForm] UploadProductImageDto uploadProductImageDto)
+        {
+            var productImage = await _productImageService.UploadProductImageAsync(uploadProductImageDto);
+            return Ok(productImage);
+        }
+
+        [Authorize(Policy = MultiShopPolicies.Admin)]
+        [HttpPut("{id}/main")]
+        public async Task<IActionResult> SetMainProductImage(string id)
+        {
+            await _productImageService.SetMainProductImageAsync(id);
+            return Ok("Ana görsel güncellendi");
+        }
+
         [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteProductImage(string id)

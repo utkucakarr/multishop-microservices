@@ -36,6 +36,21 @@
         "AllowedScopes": [ "CatalogFullPermission" ]
       }
     },
+    //Ürün görselleri – Catalog'un yerel depolaması (FileStorage:Provider=Local). Token yok:
+    //tarayıcı <img> isteğine token ekleyemez. Yalnızca GET; yükleme /services/catalog üzerinden (Admin).
+    {
+      "DownstreamPathTemplate": "/uploads/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7070
+        }
+      ],
+      "UpstreamPathTemplate": "/uploads/{everything}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http"
+    },
     //Discount Mikroservisi
     {
       //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
@@ -170,26 +185,6 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
         "AllowedScopes": [ "PaymentFullPermission" ]
-      }
-    },
-    //Images Mikroservisi
-    {
-      //Downstream tarafı ise bu gelen isteği ocelet tarafında nasıl karşılıcaz ve geri göndericez.
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7077
-        }
-      ],
-      //Upstream tarafı client tarafından bize gelen istek tarafı.
-      "UpstreamPathTemplate": "/services/images/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
-        "AllowedScopes": [ "ImageFullPermission" ]
       }
     },
     //Message Mikroservisi – iletişim formu: ziyaretçi giriş yapmadan mesaj gönderebilir

@@ -46,10 +46,6 @@ namespace MultiShop.IdentityServer
             {
                 Scopes={"PaymentFullPermission"}
             },
-            new ApiResource("ResourceImage", new[] { JwtClaimTypes.Role })
-            {
-                Scopes={"ImageFullPermission"}
-            },
             new ApiResource("ResourceOcelot", new[] { JwtClaimTypes.Role })
             {
                 Scopes={"OcelotFullPermission"}
@@ -83,7 +79,6 @@ namespace MultiShop.IdentityServer
             new ApiScope("CommentFullPermission", "Full authority for comment operations"),
             new ApiScope("CommentReadPermission", "Reading authority for comment operations"),
             new ApiScope("PaymentFullPermission", "Full authority for payment operations"),
-            new ApiScope("ImageFullPermission", "Full authority for image operations"),
             new ApiScope("OcelotFullPermission", "Full authority for ocelot operations"),
             new ApiScope("MessageFullPermission", "Full authority for message operations"),
             new ApiScope(IdentityServerConstants.LocalApi.ScopeName)
@@ -124,7 +119,7 @@ namespace MultiShop.IdentityServer
                     {
                         "CatalogFullPermission", "CatalogReadPermission", "ContactWritePermission",
                         "BasketFullPermission", "CommentFullPermission", "CommentReadPermission",
-                        "PaymentFullPermission", "ImageFullPermission", "DiscountFullPermission",
+                        "PaymentFullPermission", "DiscountFullPermission",
                         "OrderFullPermission", "MessageFullPermission", "CargoFullPermission",
                         "OcelotFullPermission",
                         IdentityServerConstants.LocalApi.ScopeName,
