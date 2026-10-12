@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Storage;
 using MultiShop.BuildingBlocks.Swagger;
 using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
@@ -56,6 +57,9 @@ builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IAboutService, AboutService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 
+// Ürün görselleri: FileStorage:Provider ayarına göre yerel disk (uploads/) ya da Google Cloud Storage.
+builder.Services.AddMultiShopFileStorage(builder.Configuration);
+
 //Otomapper i�in konfig�rasyon i�lemi
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
@@ -81,6 +85,9 @@ builder.Services.AddMultiShopSwagger("MultiShop Catalog API");
 var app = builder.Build();
 
 app.UseMultiShopServiceDefaults();
+
+// Yerel depolamada görseller /uploads altında token'sız sunulur (tarayıcı <img> isteğine token ekleyemez).
+app.UseMultiShopFileStorage();
 
 app.UseAuthentication();
 

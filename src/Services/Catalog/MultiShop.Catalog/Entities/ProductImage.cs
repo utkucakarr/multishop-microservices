@@ -44,5 +44,8 @@ namespace MultiShop.Catalog.Entities
             DisplayOrder = displayOrder;
             IsMain = isMain;
         }
+
+        // Üründe tek ana görsel olması servisin sorumluluğu: önce diğerleri ClearMainAsync ile kapatılır.
+        public void MarkAsMain() => IsMain = true;
     }
 }

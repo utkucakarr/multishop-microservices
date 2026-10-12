@@ -4,6 +4,7 @@ using MultiShop.Catalog.Dtos.ProductDtos;
 using MultiShop.Catalog.Exceptions;
 using MultiShop.Catalog.Extensions;
 using MultiShop.Catalog.Repositories.Interfaces;
+using MultiShop.Catalog.Services.ProductImageServices;
 using MultiShop.Catalog.Settings;
 using MultiShop.BuildingBlocks.Exceptions;
 
@@ -15,9 +16,11 @@ namespace MultiShop.Catalog.Services.ProductServices
         private readonly IProductRepository _productRepository;
         private readonly IProductImageRepository _productImageRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductImageService _productImageService;
 
-        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository, ICategoryRepository categoryRepository)
+        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository, ICategoryRepository categoryRepository, IProductImageService productImageService)
         {
+            _productImageService = productImageService;
             _productRepository = productRepository;
             _productImageRepository = productImageRepository;
             _categoryRepository = categoryRepository;
@@ -33,7 +36,11 @@ namespace MultiShop.Catalog.Services.ProductServices
         }
 
         public async Task DeleteProductAsync(string id)
-            => await _productRepository.DeleteAsync(id);
+        {
+            await _productRepository.DeleteAsync(id);
+            // Ürünün görsel kayıtları ve dosyaları sahipsiz kalmasın.
+            await _productImageService.DeleteByProductIdAsync(id);
+        }
 
         public async Task<IEnumerable<ResultProductDto>> GetAllProductAsync()
         {
@@ -100,9 +107,11 @@ namespace MultiShop.Catalog.Services.ProductServices
                 updateProductDto.CategoryId,
                 updateProductDto.BrandId
             );
+            // Görseller ProductImage'dan yönetiliyor; admin formu bu alanı göndermez. Boş gelirse eski verilerdeki
+            // yedek görsel URL'si silinmesin.
             product.UpdateProductDetails(
                 updateProductDto.ProductDescription,
-                updateProductDto.ProductImageUrl
+                string.IsNullOrWhiteSpace(updateProductDto.ProductImageUrl) ? product.ProductImageUrl : updateProductDto.ProductImageUrl
             );
 
             await _productRepository.UpdateAsync(product.ProductId, product);

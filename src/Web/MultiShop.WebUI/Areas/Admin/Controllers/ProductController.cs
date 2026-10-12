@@ -105,7 +105,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 ProductPrice = product.ProductPrice,
-                ProductImageUrl = product.ProductImageUrl,
+                // ProductImageUrl bilerek boş: görseller "Görseller" sayfasından yönetilir; Catalog boş gelen değerde mevcut değeri korur.
                 ProductDescription = product.ProductDescription,
                 CategoryId = product.CategoryId,
                 BrandId = product.BrandId
