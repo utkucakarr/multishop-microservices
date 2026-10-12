@@ -1,123 +1,54 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿@model MultiShop.DtoLayer.StatisticDtos.AdminDashboardDto
+
+@{
+    ViewData["Title"] = "İstatistikler";
     Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+
+    // Yanıt vermeyen servisin kutuları "—" gösterir.
+    const string NotAvailable = "—";
+    var catalog = Model.Catalog;
+    var comment = Model.Comment;
+    var discount = Model.Discount;
+    var message = Model.Message;
+    var identity = Model.Identity;
+
+    var tiles = new List<(string Title, string Value)>
+    {
+        ("Toplam Marka", catalog?.BrandCount.ToString() ?? NotAvailable),
+        ("Toplam Ürün", catalog?.ProductCount.ToString() ?? NotAvailable),
+        ("Toplam Kategori", catalog?.CategoryCount.ToString() ?? NotAvailable),
+        ("Ortalama Fiyat", catalog is null ? NotAvailable : $"{catalog.AveragePrice:N2} ₺"),
+        ("En Pahalı Ürün", catalog?.MostExpensiveProduct ?? NotAvailable),
+        ("En Ucuz Ürün", catalog?.CheapestProduct ?? NotAvailable),
+        ("Toplam Kullanıcı", identity?.UserCount.ToString() ?? NotAvailable),
+        ("Onaylı Yorumlar", comment?.Approved.ToString() ?? NotAvailable),
+        ("Onay Bekleyen Yorumlar", comment?.Pending.ToString() ?? NotAvailable),
+        ("Toplam Yorumlar", comment?.Total.ToString() ?? NotAvailable),
+        ("İndirim Kuponları", discount is null ? NotAvailable : $"{discount.CouponCount} ({discount.ActiveCouponCount} aktif)"),
+        ("İletişim Mesajları", message is null ? NotAvailable : $"{message.ContactMessages} ({message.Unread} okunmamış)")
+    };
+
+    // Temadaki dört renk/ikon sırayla kullanılır.
+    var styles = new[] { ("", "icon-bargraph"), ("bg-sea", "icon-wallet"), ("bg-blue", "icon-basket"), ("bg-green", "icon-layers") };
 }
 
 <section class="content container-fluid">
-    <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box">
-                <div class="media-icon pull-left"><i class="icon-bargraph"></i> </div>
-                <div class="media-info">
-                    <h5>Toplam Marka</h5>
-                    <h3>@ViewBag.getBrandCount</h3>
+    @foreach (var row in tiles.Chunk(4))
+    {
+        <div class="row">
+            @for (int i = 0; i < row.Length; i++)
+            {
+                var (boxClass, icon) = styles[i];
+                <div class="col-lg-3 col-xs-6">
+                    <div class="media-box @boxClass">
+                        <div class="media-icon pull-left"><i class="@icon"></i> </div>
+                        <div class="media-info">
+                            <h5>@row[i].Title</h5>
+                            <h3>@row[i].Value</h3>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-sea">
-                <div class="media-icon pull-left"><i class="icon-wallet"></i> </div>
-                <div class="media-info">
-                    <h5>Toplam Ürün</h5>
-                    <h3>@ViewBag.getProductCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-blue">
-                <div class="media-icon pull-left"><i class="icon-basket"></i> </div>
-                <div class="media-info">
-                    <h5>Toplam Kategori</h5>
-                    <h3>@ViewBag.getCategoryCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-green">
-                <div class="media-icon pull-left"><i class="icon-layers"></i> </div>
-                <div class="media-info">
-                    <h5>Ortalama Ürün</h5>
-                    <h3>25.2 ₺</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box">
-                <div class="media-icon pull-left"><i class="icon-bargraph"></i> </div>
-                <div class="media-info">
-                    <h5>En Pahalı Ürün</h5>
-                    <h3>@ViewBag.getMaxPriceProductName</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-sea">
-                <div class="media-icon pull-left"><i class="icon-wallet"></i> </div>
-                <div class="media-info">
-                    <h5>En Ucuz Ürün</h5>
-                    <h3>@ViewBag.getMinPriceProductName</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-blue">
-                <div class="media-icon pull-left"><i class="icon-basket"></i> </div>
-                <div class="media-info">
-                    <h5>Toplam Kullanıcı</h5>
-                    <h3>@ViewBag.getUserCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-green">
-                <div class="media-icon pull-left"><i class="icon-layers"></i> </div>
-                <div class="media-info">
-                    <h5>Aktif Yorumlar</h5>
-                    <h3>@ViewBag.getActiveCommentCount</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box">
-                <div class="media-icon pull-left"><i class="icon-bargraph"></i> </div>
-                <div class="media-info">
-                    <h5>Pasif Yorumlar</h5>
-                    <h3>@ViewBag.getPassiveCommentCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-sea">
-                <div class="media-icon pull-left"><i class="icon-wallet"></i> </div>
-                <div class="media-info">
-                    <h5>Toplam Yorumlar</h5>
-                    <h3>@ViewBag.getTotalCommentCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-blue">
-                <div class="media-icon pull-left"><i class="icon-basket"></i> </div>
-                <div class="media-info">
-                    <h5>İndirim Kuponu Sayısı</h5>
-                    <h3>@ViewBag.getDiscountCouponCount</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="media-box bg-green">
-                <div class="media-icon pull-left"><i class="icon-layers"></i> </div>
-                <div class="media-info">
-                    <h5>İletişim Mesajları</h5>
-                    <h3>@ViewBag.getTotalMessageCount</h3>
-                </div>
-            </div>
-        </div>
-    </div>
+    }
 </section>

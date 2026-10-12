@@ -25,7 +25,7 @@
                         <i class="icon-envelope"><span class="badge" style="position:relative;top:-10px"><strong>@ViewBag.messageCount</strong></span></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="header">@ViewBag.messageCount okunmamış mesaj</li>
+                        <li class="header">@(ViewBag.messageCount ?? "—") okunmamış mesaj</li>
                         <li>
                             <ul class="menu">
                                 @foreach (var item in (List<ResultContactMessageDto>)ViewBag.latestContactMessages)

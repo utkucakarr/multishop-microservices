@@ -60,14 +60,5 @@ namespace MultiShop.Message.Controllers
             await _contactMessageService.DeleteAsync(id);
             return NoContent();
         }
-
-        /// <summary>Toplam ve okunmamış mesaj sayısı (admin üst menüsü ve istatistik sayfası).</summary>
-        [Authorize(Policy = MultiShopPolicies.Admin)]
-        [HttpGet("count")]
-        public async Task<IActionResult> GetCount()
-        {
-            var value = await _contactMessageService.GetCountAsync();
-            return Ok(value);
-        }
     }
 }

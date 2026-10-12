@@ -24,10 +24,7 @@ using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
 using MultiShop.WebUI.Services.OrderServices.OrderAddressServices;
 using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
 using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
-using MultiShop.WebUI.Services.StatisticServices.CatalogStatisticServices;
-using MultiShop.WebUI.Services.StatisticServices.CommentStatisticServices;
-using MultiShop.WebUI.Services.StatisticServices.DiscountStatisticServices;
-using MultiShop.WebUI.Services.StatisticServices.UserStatisticServices;
+using MultiShop.WebUI.Services.StatisticServices;
 using MultiShop.WebUI.Services.UserIdentityServices;
 using MultiShop.WebUI.Settings;
 using MultiShop.WebUI.Services.PaymentServices;
@@ -84,24 +81,10 @@ builder.Services.AddHttpClient<IUserIdentityService, UserIdentityService>(opt =>
     opt.BaseAddress = new Uri(values.IdentityServerUrl);
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
 
-builder.Services.AddHttpClient<IUserStatisticService, UserStatisticService>(opt =>
+// Admin istatistikleri: dashboard tek istekte (Ocelot aggregate /services/admin/dashboard) + üst menü için tekil uçlar.
+builder.Services.AddHttpClient<IDashboardService, DashboardService>(opt =>
 {
-    opt.BaseAddress = new Uri(values.IdentityServerUrl);
-}).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
-
-builder.Services.AddHttpClient<ICatalogStatisticService, CatalogStatisticService>(opt =>
-{
-    opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Catalog.Path}");
-}).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
-
-builder.Services.AddHttpClient<IDiscountStatisticService, DiscountStatisticService>(opt =>
-{
-    opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Discount.Path}");
-}).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
-
-builder.Services.AddHttpClient<ICommentStatisticService, CommentStatisticService>(opt =>
-{
-    opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Comment.Path}");
+    opt.BaseAddress = new Uri($"{values.OcelotUrl}/services/");
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
 
 builder.Services.AddHttpClient<IBasketService, BasketService>(opt =>
