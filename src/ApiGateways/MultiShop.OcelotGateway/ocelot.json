@@ -230,6 +230,115 @@
         "AuthenticationProviderKey": "OcelotAuthenticationSheme",
         "AllowedScopes": [ "MessageFullPermission" ]
       }
+    },
+    //Admin dashboard – Catalog istatistikleri (aggregate: /services/admin/dashboard). Servis ayrıca Admin rolü ister.
+    {
+      "Key": "catalog",
+      "DownstreamPathTemplate": "/api/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7070
+        }
+      ],
+      "UpstreamPathTemplate": "/services/catalog/statistics",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CatalogFullPermission" ]
+      }
+    },
+    //Admin dashboard – Comment istatistikleri
+    {
+      "Key": "comment",
+      "DownstreamPathTemplate": "/api/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7075
+        }
+      ],
+      "UpstreamPathTemplate": "/services/comment/statistics",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "CommentFullPermission" ]
+      }
+    },
+    //Admin dashboard – Discount istatistikleri
+    {
+      "Key": "discount",
+      "DownstreamPathTemplate": "/api/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7071
+        }
+      ],
+      "UpstreamPathTemplate": "/services/discount/statistics",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "DiscountFullPermission" ]
+      }
+    },
+    //Admin dashboard – Message istatistikleri (üst menüdeki zarf da kullanır)
+    {
+      "Key": "message",
+      "DownstreamPathTemplate": "/api/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7078
+        }
+      ],
+      "UpstreamPathTemplate": "/services/message/statistics",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "MessageFullPermission" ]
+      }
+    },
+    //Admin dashboard – Identity istatistikleri (kullanıcı sayısı). WebUI önceden IdentityServer'ı gateway'siz çağırıyordu
+    {
+      "Key": "identity",
+      "DownstreamPathTemplate": "/api/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5010
+        }
+      ],
+      "UpstreamPathTemplate": "/services/identity/statistics",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamScheme": "http",
+      "Priority": 2,
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "IdentityServerApi" ]
+      }
+    }
+  ],
+  // Admin dashboard: beş servisin istatistik ucu paralel çağrılır, DashboardAggregator tek JSON'da birleştirir.
+  // Her alt route kendi AuthenticationOptions'ıyla ayrıca doğrulanır (Ocelot'ta multiplexing, kimlik doğrulamadan önce çalışır).
+  "Aggregates": [
+    {
+      "RouteKeys": [ "catalog", "comment", "discount", "message", "identity" ],
+      "UpstreamPathTemplate": "/services/admin/dashboard",
+      "Aggregator": "DashboardAggregator"
     }
   ],
   "GlobalConfiguration": {

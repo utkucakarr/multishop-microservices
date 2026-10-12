@@ -2,7 +2,7 @@
 using MultiShop.WebUI.Services.CommentServices;
 using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
-using MultiShop.WebUI.Services.StatisticServices.CommentStatisticServices;
+using MultiShop.WebUI.Services.StatisticServices;
 
 namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
 {
@@ -10,24 +10,25 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
     {
         private readonly IContactMessageService _contactMessageService;
         private readonly IUserService _userService;
-        private readonly ICommentStatisticService _commentStatisticService;
+        private readonly IDashboardService _dashboardService;
 
-        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, ICommentStatisticService commentStatisticService)
+        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, IDashboardService dashboardService)
         {
             _contactMessageService = contactMessageService;
             _userService = userService;
-            _commentStatisticService = commentStatisticService;
+            _dashboardService = dashboardService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var user = await _userService.GetUserInfo();
             // Zarf simgesi: okunmamış iletişim mesajı sayısı ve en yeni 5 mesaj.
-            var contactMessageCount = await _contactMessageService.GetCountAsync();
-            ViewBag.messageCount = contactMessageCount.Unread;
+            // Servis yanıt vermezse rozet boş kalır (sayfa çökmez).
+            var messageStatistics = await _dashboardService.GetMessageStatisticsAsync();
+            ViewBag.messageCount = messageStatistics?.Unread;
             ViewBag.latestContactMessages = await _contactMessageService.GetAllAsync(take: 5);
-            int commentCount = await _commentStatisticService.GetTotalCommentCountAsync();
-            ViewBag.commentCount = commentCount;
+            var commentStatistics = await _dashboardService.GetCommentStatisticsAsync();
+            ViewBag.commentCount = commentStatistics?.Total;
             ViewBag.userName = user.UserName + " " + user.Surname;
             ViewBag.userMail = user.Email;
             return View();

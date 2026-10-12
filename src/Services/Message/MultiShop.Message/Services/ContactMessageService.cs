@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.Message.DAL.Context;
 using MultiShop.Message.DAL.Entities;
+using MultiShop.Message.Dtos;
 using MultiShop.Message.Dtos.ContactMessageDtos;
 
 namespace MultiShop.Message.Services
@@ -55,9 +56,9 @@ namespace MultiShop.Message.Services
             await _messageContext.SaveChangesAsync();
         }
 
-        public async Task<ContactMessageCountDto> GetCountAsync() => new()
+        public async Task<MessageStatisticsDto> GetStatisticsAsync() => new()
         {
-            Total = await _messageContext.ContactMessages.CountAsync(),
+            ContactMessages = await _messageContext.ContactMessages.CountAsync(),
             Unread = await _messageContext.ContactMessages.CountAsync(x => !x.IsRead)
         };
 

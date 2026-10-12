@@ -77,13 +77,15 @@ namespace MultiShop.Discount.Services
             }
         }
 
-        public async Task<int> GetDiscountCouponCountAsync()
+        public async Task<DiscountStatisticsDto> GetStatisticsAsync()
         {
-            string query = "Select Count(*) From Coupons";
+            // Tek sorgu; tablo boşken SUM null döndüğü için ISNULL.
+            string query = "Select Count(*) As CouponCount, " +
+                "ISNULL(Sum(Case When IsActive = 1 And ValidDate >= CAST(GETDATE() AS date) Then 1 Else 0 End), 0) As ActiveCouponCount " +
+                "From Coupons";
             using (var connection = _context.CreateConnection())
             {
-                var values = await connection.QueryFirstOrDefaultAsync<int>(query);
-                return values;
+                return await connection.QuerySingleAsync<DiscountStatisticsDto>(query);
             }
         }
 

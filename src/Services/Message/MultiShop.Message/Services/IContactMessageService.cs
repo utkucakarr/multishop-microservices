@@ -1,4 +1,5 @@
-﻿using MultiShop.Message.Dtos.ContactMessageDtos;
+﻿using MultiShop.Message.Dtos;
+using MultiShop.Message.Dtos.ContactMessageDtos;
 
 namespace MultiShop.Message.Services
 {
@@ -9,6 +10,6 @@ namespace MultiShop.Message.Services
         Task<ResultContactMessageDto> GetByIdAsync(int id);
         Task MarkAsReadAsync(int id);
         Task DeleteAsync(int id);
-        Task<ContactMessageCountDto> GetCountAsync();
+        Task<MessageStatisticsDto> GetStatisticsAsync();
     }
 }

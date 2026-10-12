@@ -38,8 +38,5 @@ namespace MultiShop.WebUI.Services.MessageServices.ContactMessageServices
 
         public async Task DeleteAsync(int id)
             => (await _httpClient.DeleteAsync($"contacts/{id}")).EnsureSuccessStatusCode();
-
-        public async Task<ContactMessageCountDto> GetCountAsync()
-            => await _httpClient.GetFromJsonAsync<ContactMessageCountDto>("contacts/count") ?? new();
     }
 }

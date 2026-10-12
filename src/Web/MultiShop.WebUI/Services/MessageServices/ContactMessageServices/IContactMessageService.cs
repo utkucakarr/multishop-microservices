@@ -11,6 +11,5 @@ namespace MultiShop.WebUI.Services.MessageServices.ContactMessageServices
         Task<ResultContactMessageDto?> GetByIdAsync(int id);
         Task MarkAsReadAsync(int id);
         Task DeleteAsync(int id);
-        Task<ContactMessageCountDto> GetCountAsync();
     }
 }
