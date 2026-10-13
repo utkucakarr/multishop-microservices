@@ -23,6 +23,8 @@
         public ServiceApi Message { get; set; }
 
         public ServiceApi Notification { get; set; }
+
+        public ServiceApi NotificationHub { get; set; }
     }
 
     public class ServiceApi

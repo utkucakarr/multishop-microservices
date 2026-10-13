@@ -6,7 +6,7 @@ namespace MultiShop.Notification.Hubs;
 
 /// <summary>
 /// Admin paneline anlık bildirim kanalı. Yalnızca sunucu → istemci: istemcinin çağırabileceği metot yok,
-/// bildirimler <see cref="Notifications.IAdminNotifier"/> üzerinden gönderilir.
+/// bildirimler Dispatcher → <see cref="Channels.InApp.InAppChannel"/> üzerinden gönderilir.
 /// </summary>
 [Authorize(Policy = MultiShopPolicies.Admin)]
 public class NotificationHub : Hub<INotificationClient>

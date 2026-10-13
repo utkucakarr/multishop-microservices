@@ -14,6 +14,7 @@ $script:SqlServices = @(
 )
 $script:CatalogService = @{ Name = 'Catalog'; Project = 'src\Services\Catalog\MultiShop.Catalog\MultiShop.Catalog.csproj'; Key = 'DataBaseSettings:ConnectionString' }
 $script:MessageService = @{ Name = 'Message'; Project = 'src\Services\Message\MultiShop.Message\MultiShop.Message.csproj'; Key = 'ConnectionStrings:DefaultConnection'; TargetDb = 'MultiShopMessageDb' }
+$script:NotificationService = @{ Name = 'Notification'; Project = 'src\Services\Notification\MultiShop.Notification\MultiShop.Notification.csproj'; Key = 'ConnectionStrings:DefaultConnection'; TargetDb = 'MultiShopNotificationDb' }
 
 $script:Ports = @{ SqlServer = 14330; Mongo = 27018; Postgres = 5440; Redis = 6380 }
 

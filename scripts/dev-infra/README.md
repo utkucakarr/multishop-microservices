@@ -6,7 +6,7 @@ MultiShop'un ihtiyaç duyduğu tüm veritabanları ve altyapı servisleri kökte
 |--------|-----------|----------------------|----------|
 | SQL Server 2022 | `multishop-sqlserver` | `127.0.0.1,14330` (kullanıcı `sa`) | Identity, Order, Cargo, Comment, Discount, Payment |
 | MongoDB 8 | `multishop-mongo` | `mongodb://localhost:27018` | Catalog |
-| PostgreSQL 17 | `multishop-postgres` | `localhost:5440` | Message |
+| PostgreSQL 17 | `multishop-postgres` | `localhost:5440` | Message, Notification |
 | Redis 7 | `multishop-redis` | `localhost:6380` | Basket |
 | RabbitMQ 4 | `multishop-rabbitmq` | AMQP `5673`, panel http://localhost:15673 | (mesajlaşma, ileride) |
 | Seq | `multishop-seq` | http://localhost:8091 | (merkezi loglar, ileride) |

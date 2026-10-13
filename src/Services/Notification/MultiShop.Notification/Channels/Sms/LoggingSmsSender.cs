@@ -13,10 +13,10 @@ public class LoggingSmsSender : ISmsSender
         _logger = logger;
     }
 
-    public Task SendAsync(string phoneNumber, string message, CancellationToken cancellationToken = default)
+    public Task<SmsSendResult> SendAsync(string phoneNumber, string message, CancellationToken cancellationToken = default)
     {
         var masked = phoneNumber.Length > 4 ? new string('*', phoneNumber.Length - 4) + phoneNumber[^4..] : "****";
         _logger.LogWarning("SMS sağlayıcısı yok, gönderilmedi. Alıcı: {PhoneNumber}, mesaj: {SmsMessage}", masked, message);
-        return Task.CompletedTask;
+        return Task.FromResult(SmsSendResult.Simulated);
     }
 }
