@@ -59,6 +59,20 @@ namespace MultiShop.Catalog.Services.ProductServices
             return dto;
         }
 
+        public async Task<List<ProductPriceDto>> GetPricesByIdsAsync(IReadOnlyCollection<string> ids)
+        {
+            var products = await _productRepository.GetByIdsAsync(ids);
+            var dtos = products.Select(x => new ProductPriceDto
+            {
+                ProductId = x.ProductId,
+                ProductName = x.ProductName,
+                ProductPrice = x.ProductPrice,
+                ProductImageUrl = x.ProductImageUrl,
+            }).ToList();
+            await ApplyMainImagesAsync(dtos, x => x.ProductId, (x, url) => x.ProductImageUrl = url);
+            return dtos;
+        }
+
         public async Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync()
         {
             // N+1 problemi C# tarafında In-Memory Join (Dictionary) kullanılarak çözüldü.
