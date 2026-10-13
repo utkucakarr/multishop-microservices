@@ -1,0 +1,89 @@
+﻿@model NotificationDetailDto
+
+@{
+    ViewData["Title"] = "Bildirim";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+    // Link Notification servisinin şablonlarından gelir; yine de yalnızca site içi adres bağlantı olur.
+    var safeLink = Model.Link is { Length: > 1 } link && link[0] == '/' && link[1] != '/' ? link : null;
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                @if (TempData["NotificationError"] is string error)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                <h4>@Model.Title</h4>
+                <p>
+                    <strong>Tarih:</strong> @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                    <br />
+                    <strong>Durum:</strong> @(Model.ReadAt is null ? "Yeni" : $"Okundu – {Model.ReadBy}, {Model.ReadAt.Value.ToLocalTime():dd.MM.yyyy HH:mm}")
+                </p>
+                <hr />
+                <p style="white-space: pre-wrap">@Model.Message</p>
+                @if (safeLink is not null)
+                {
+                    <a href="@safeLink" class="btn btn-info">İlgili sayfaya git</a>
+                }
+                <hr />
+
+                <h5>Mail / SMS gönderimleri</h5>
+                @if (Model.Deliveries.Count == 0)
+                {
+                    <p class="text-muted">Bu bildirim için mail ya da SMS gönderimi yok (kanal kapalı ya da alıcı tanımlı değil).</p>
+                }
+                else
+                {
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Kanal</th>
+                                <th>Alıcı</th>
+                                <th>Durum</th>
+                                <th>Deneme</th>
+                                <th>Sonraki deneme / Gönderim</th>
+                                <th>Son hata</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var delivery in Model.Deliveries)
+                            {
+                                <tr>
+                                    <td>@NotificationLabels.Channel(delivery.Channel)</td>
+                                    <td>@delivery.Recipient</td>
+                                    <td><span class="label @NotificationLabels.StatusCss(delivery.Status)">@NotificationLabels.Status(delivery.Status)</span></td>
+                                    <td>@delivery.Attempts</td>
+                                    <td>
+                                        @if (delivery.SentAt is { } sentAt)
+                                        {
+                                            @sentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+                                        }
+                                        else if (delivery.NextAttemptAt is { } nextAttemptAt)
+                                        {
+                                            @nextAttemptAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+                                        }
+                                    </td>
+                                    <td style="max-width: 300px; word-break: break-word;">@delivery.LastError</td>
+                                    <td>
+                                        @if (delivery.CanRetry)
+                                        {
+                                            <form method="post" asp-area="Admin" asp-controller="Notification" asp-action="Retry" asp-route-deliveryId="@delivery.Id">
+                                                <input type="hidden" name="notificationId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-warning btn-sm">Tekrar gönder</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <p class="text-muted"><small>Başarısız gönderimler 1, 5 ve 15 dakika sonra otomatik tekrar denenir; sonra "Tekrar gönder" ile elle gönderilebilir.</small></p>
+                }
+                <a href="/Admin/Notification/Index" class="btn btn-default">Listeye dön</a>
+            </div>
+        </div>
+    </div>
+</section>

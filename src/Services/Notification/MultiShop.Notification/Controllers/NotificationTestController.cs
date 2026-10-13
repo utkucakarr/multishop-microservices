@@ -1,35 +1,41 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
-using MultiShop.Notification.Notifications;
+using MultiShop.Notification.Data;
+using MultiShop.Notification.Data.Entities;
+using MultiShop.Notification.Dispatching;
 
 namespace MultiShop.Notification.Controllers;
 
 /// <summary>
-/// Yalnızca Development: admin paneline test bildirimi gönderir. Event'ler (KT-10) gelene kadar hub'ı
-/// uçtan uca denemenin yolu budur. Servisin başka bir REST ucu yoktur.
+/// Admin panelindeki "Test gönder": bildirim kanallarını uçtan uca dener. <c>channel</c> verilirse kuraldan
+/// bağımsız olarak yalnızca o kanal kullanılır; verilmezse "test" türünün kuralı geçerlidir.
 /// </summary>
 [Authorize(Policy = MultiShopPolicies.Admin)]
 [Route("api/notifications")]
 [ApiController]
 public class NotificationTestController : ControllerBase
 {
-    private readonly IAdminNotifier _adminNotifier;
-    private readonly IWebHostEnvironment _environment;
+    private readonly INotificationDispatcher _dispatcher;
 
-    public NotificationTestController(IAdminNotifier adminNotifier, IWebHostEnvironment environment)
+    public NotificationTestController(INotificationDispatcher dispatcher)
     {
-        _adminNotifier = adminNotifier;
-        _environment = environment;
+        _dispatcher = dispatcher;
     }
 
     [HttpPost("test")]
-    public async Task<IActionResult> SendTest(CancellationToken cancellationToken)
+    public async Task<IActionResult> SendTest([FromQuery] NotificationChannel? channel, CancellationToken cancellationToken)
     {
-        if (!_environment.IsDevelopment())
-            return NotFound();
+        var sentBy = User.FindFirst("name")?.Value ?? "admin";
+        var request = new NotificationRequest(
+            NotificationTypes.Test,
+            NotificationTarget.Admins,
+            new Dictionary<string, string> { ["SentBy"] = sentBy },
+            channel is { } only ? new[] { only } : null);
 
-        await _adminNotifier.NotifyAdminsAsync("test", "Test bildirimi", "Notification servisi çalışıyor.", "/Admin/Statistic/Index", cancellationToken);
-        return Ok("Test bildirimi gönderildi");
+        var notificationId = await _dispatcher.DispatchAsync(request, cancellationToken);
+        return notificationId is null
+            ? Ok("Test bildirimi için açık kanal yok.")
+            : Ok("Test bildirimi gönderildi");
     }
 }
