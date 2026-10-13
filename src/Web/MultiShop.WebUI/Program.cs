@@ -21,6 +21,7 @@ using MultiShop.WebUI.Services.Concrete;
 using MultiShop.WebUI.Services.DiscountServices;
 using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
+using MultiShop.WebUI.Services.NotificationServices;
 using MultiShop.WebUI.Services.OrderServices.OrderAddressServices;
 using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
 using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
@@ -187,6 +188,12 @@ builder.Services.AddHttpClient<IContactMessageService, ContactMessageService>(op
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Message.Path}");
 }).AddHttpMessageHandler<UserOrVisitorTokenHandler>();
+
+// Admin bildirim kutusu ve ayarları (Notification servisi): admin'in kendi token'ı.
+builder.Services.AddHttpClient<INotificationService, NotificationService>(opt =>
+{
+    opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Notification.Path}");
+}).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
 
 builder.Services.AddLocalization(opt =>
 {

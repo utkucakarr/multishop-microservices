@@ -28,6 +28,7 @@ foreach ($service in $script:SqlServices) {
 }
 $settings += @{ Name = 'Catalog'; Project = $script:CatalogService.Project; Key = $script:CatalogService.Key; Value = "mongodb://localhost:$($script:Ports.Mongo)" }
 $settings += @{ Name = 'Message'; Project = $script:MessageService.Project; Key = $script:MessageService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:MessageService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
+$settings += @{ Name = 'Notification'; Project = $script:NotificationService.Project; Key = $script:NotificationService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:NotificationService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
 
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 Write-Step 'user-secrets güncelleniyor'

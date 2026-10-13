@@ -1,0 +1,127 @@
+﻿@model NotificationSettingsDto?
+
+@{
+    ViewData["Title"] = "Bildirim Ayarları";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>Bildirim Ayarları</h4>
+                <br />
+                @if (TempData["NotificationSettingsSuccess"] is string success)
+                {
+                    <div class="alert alert-success">@success</div>
+                }
+                @if (TempData["NotificationSettingsError"] is string error)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                @if (ViewBag.ServiceError is string serviceError)
+                {
+                    <div class="alert alert-warning">@serviceError</div>
+                }
+                else
+                {
+                    @foreach (var warning in Model!.Warnings)
+                    {
+                        <div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> @warning</div>
+                    }
+
+                    <h5>Kurallar <small>– hangi bildirim hangi kanaldan gitsin</small></h5>
+                    <form method="post" asp-area="Admin" asp-controller="NotificationSettings" asp-action="UpdateRules">
+                        <table class="table table-bordered" style="max-width: 700px;">
+                            <thead>
+                                <tr>
+                                    <th>Bildirim</th>
+                                    <th class="text-center">Panel içi</th>
+                                    <th class="text-center">Mail</th>
+                                    <th class="text-center">SMS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < Model.Rules.Count; i++)
+                                {
+                                    var rule = Model.Rules[i];
+                                    <tr>
+                                        <td>
+                                            @rule.DisplayName <small class="text-muted">(@rule.Type)</small>
+                                            <input type="hidden" name="rules[@i].Type" value="@rule.Type" />
+                                        </td>
+                                        <td class="text-center">@Html.CheckBox($"rules[{i}].InAppEnabled", rule.InAppEnabled)</td>
+                                        <td class="text-center">@Html.CheckBox($"rules[{i}].EmailEnabled", rule.EmailEnabled)</td>
+                                        <td class="text-center">@Html.CheckBox($"rules[{i}].SmsEnabled", rule.SmsEnabled)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <button type="submit" class="btn btn-primary">Kuralları kaydet</button>
+                    </form>
+
+                    <hr />
+                    <h5>Alıcılar <small>– admin bildirimlerinin gideceği mail adresleri ve telefonlar</small></h5>
+                    @if (Model.Recipients.Count == 0)
+                    {
+                        <p class="text-muted">Henüz alıcı yok. Mail ve SMS gönderimi için en az bir alıcı ekleyin.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-bordered" style="max-width: 900px;">
+                            <thead>
+                                <tr>
+                                    <th>Kanal</th>
+                                    <th>Adres</th>
+                                    <th>Ad</th>
+                                    <th>Durum</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var recipient in Model.Recipients)
+                                {
+                                    <tr style="@(recipient.IsActive ? "" : "color:#999")">
+                                        <td>@NotificationLabels.Channel(recipient.Channel)</td>
+                                        <td>@recipient.Address</td>
+                                        <td>@recipient.Name</td>
+                                        <td>@(recipient.IsActive ? "Aktif" : "Pasif")</td>
+                                        <td>
+                                            <form method="post" asp-area="Admin" asp-controller="NotificationSettings" asp-action="SetRecipientActive" asp-route-id="@recipient.Id" style="display: inline;">
+                                                <input type="hidden" name="isActive" value="@(recipient.IsActive ? "false" : "true")" />
+                                                <button type="submit" class="btn btn-default btn-sm">@(recipient.IsActive ? "Devre dışı bırak" : "Etkinleştir")</button>
+                                            </form>
+                                            <form method="post" asp-area="Admin" asp-controller="NotificationSettings" asp-action="DeleteRecipient" asp-route-id="@recipient.Id" style="display: inline;"
+                                                  onsubmit="return confirm('Alıcı silinsin mi?');">
+                                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <form method="post" asp-area="Admin" asp-controller="NotificationSettings" asp-action="AddRecipient" class="form-inline">
+                        <select name="Channel" class="form-control">
+                            <option value="Email">Mail</option>
+                            <option value="Sms">SMS</option>
+                        </select>
+                        <input type="text" name="Address" class="form-control" placeholder="ornek@site.com ya da +905xxxxxxxxx" required style="width: 280px;" />
+                        <input type="text" name="Name" class="form-control" placeholder="Ad (isteğe bağlı)" />
+                        <button type="submit" class="btn btn-success">Alıcı ekle</button>
+                    </form>
+
+                    <hr />
+                    <h5>Test <small>– kanalları denemek için</small></h5>
+                    <p class="text-muted"><small>Kanal butonları kuraldan bağımsız olarak yalnızca o kanalı dener; "Kurala göre" test bildirimi kuralını kullanır.</small></p>
+                    <form method="post" asp-area="Admin" asp-controller="NotificationSettings" asp-action="SendTest" style="display: inline;">
+                        <button type="submit" name="channel" value="InApp" class="btn btn-default">Panel içi</button>
+                        <button type="submit" name="channel" value="Email" class="btn btn-default">Mail</button>
+                        <button type="submit" name="channel" value="Sms" class="btn btn-default">SMS</button>
+                        <button type="submit" name="channel" value="" class="btn btn-primary">Kurala göre</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</section>

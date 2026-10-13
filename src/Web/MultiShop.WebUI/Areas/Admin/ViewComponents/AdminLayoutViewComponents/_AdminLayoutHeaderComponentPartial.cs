@@ -2,6 +2,7 @@
 using MultiShop.WebUI.Services.CommentServices;
 using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
+using MultiShop.WebUI.Services.NotificationServices;
 using MultiShop.WebUI.Services.StatisticServices;
 
 namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
@@ -11,9 +12,11 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
         private readonly IContactMessageService _contactMessageService;
         private readonly IUserService _userService;
         private readonly IDashboardService _dashboardService;
+        private readonly INotificationService _notificationService;
 
-        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, IDashboardService dashboardService)
+        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, IDashboardService dashboardService, INotificationService notificationService)
         {
+            _notificationService = notificationService;
             _contactMessageService = contactMessageService;
             _userService = userService;
             _dashboardService = dashboardService;
@@ -27,8 +30,9 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
             var messageStatistics = await _dashboardService.GetMessageStatisticsAsync();
             ViewBag.messageCount = messageStatistics?.Unread;
             ViewBag.latestContactMessages = await _contactMessageService.GetAllAsync(take: 5);
-            var commentStatistics = await _dashboardService.GetCommentStatisticsAsync();
-            ViewBag.commentCount = commentStatistics?.Total;
+            // Zil: okunmamış bildirim sayısı ve en yeni 5 bildirim; admin-notifications.js canlı günceller.
+            ViewBag.notificationCount = await _notificationService.GetUnreadCountAsync();
+            ViewBag.latestNotifications = (await _notificationService.GetListAsync(1, 5, false))?.Items ?? new List<MultiShop.DtoLayer.NotificationDtos.NotificationListItemDto>();
             ViewBag.userName = user.UserName + " " + user.Surname;
             ViewBag.userMail = user.Email;
             return View();

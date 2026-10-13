@@ -226,6 +226,24 @@
         "AllowedScopes": [ "MessageFullPermission" ]
       }
     },
+    //Notification – admin paneli REST API'si (bildirim kutusu, ayarlar, test). Servis ayrıca Admin rolü ister.
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7079
+        }
+      ],
+      "UpstreamPathTemplate": "/services/notification/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "OcelotAuthenticationSheme",
+        "AllowedScopes": [ "NotificationFullPermission" ]
+      }
+    },
     //Notification – admin paneli SignalR hub'ı (WebSocket). Ocelot WebSocket rotalarında kimlik doğrulama yapamaz;
     //token (?access_token=) hub'da doğrulanır (Admin rolü + NotificationFullPermission). İstemci negotiate'i atlar (skipNegotiation).
     {

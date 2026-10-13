@@ -1,0 +1,110 @@
+﻿@model PagedResultDto<NotificationListItemDto>?
+
+@{
+    ViewData["Title"] = "Bildirimler";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+    bool unreadOnly = ViewBag.UnreadOnly ?? false;
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>
+                    Bildirimler
+                    @if (Model is not null)
+                    {
+                        <small>(@Model.TotalCount @(unreadOnly ? "okunmamış" : "toplam"))</small>
+                    }
+                </h4>
+                <br />
+                @if (TempData["NotificationError"] is string error)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                @if (ViewBag.ServiceError is string serviceError)
+                {
+                    <div class="alert alert-warning">@serviceError</div>
+                }
+                else
+                {
+                    <div style="margin-bottom: 15px;">
+                        @if (unreadOnly)
+                        {
+                            <a href="/Admin/Notification/Index" class="btn btn-default">Tümünü göster</a>
+                        }
+                        else
+                        {
+                            <a href="/Admin/Notification/Index?unreadOnly=true" class="btn btn-default">Yalnız okunmamışlar</a>
+                        }
+                        <form method="post" asp-area="Admin" asp-controller="Notification" asp-action="MarkAllRead" style="display: inline;">
+                            <button type="submit" class="btn btn-primary">Tümünü okundu yap</button>
+                        </form>
+                        <a href="/Admin/NotificationSettings/Index" class="btn btn-default pull-right"><i class="fa fa-cog"></i> Bildirim Ayarları</a>
+                    </div>
+
+                    @if (Model!.Items.Count == 0)
+                    {
+                        <p class="text-muted">Gösterilecek bildirim yok.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Başlık</th>
+                                    <th>Mesaj</th>
+                                    <th>Mail/SMS</th>
+                                    <th>Durum</th>
+                                    <th>Aç</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr style="@(item.ReadAt is null ? "font-weight:bold" : "")">
+                                        <td>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@item.Title</td>
+                                        <td>@item.Message</td>
+                                        <td>
+                                            @if (item.DeliveryCount == 0)
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                            else
+                                            {
+                                                @item.DeliveryCount
+                                                @if (item.FailedDeliveryCount > 0)
+                                                {
+                                                    <span class="label label-danger">@item.FailedDeliveryCount başarısız</span>
+                                                }
+                                            }
+                                        </td>
+                                        <td>@(item.ReadAt is null ? "Yeni" : $"Okundu ({item.ReadBy})")</td>
+                                        <td><a href="/Admin/Notification/Detail/@item.Id" class="btn btn-primary btn-sm">Aç</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div>
+                                @if (Model.Page > 1)
+                                {
+                                    <a href="/Admin/Notification/Index?page=@(Model.Page - 1)&unreadOnly=@unreadOnly" class="btn btn-default btn-sm">&laquo; Önceki</a>
+                                }
+                                <span style="margin: 0 10px;">Sayfa @Model.Page / @Model.TotalPages</span>
+                                @if (Model.Page < Model.TotalPages)
+                                {
+                                    <a href="/Admin/Notification/Index?page=@(Model.Page + 1)&unreadOnly=@unreadOnly" class="btn btn-default btn-sm">Sonraki &raquo;</a>
+                                }
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</section>
