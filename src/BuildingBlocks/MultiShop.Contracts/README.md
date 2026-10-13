@@ -18,3 +18,5 @@ Mimari kararlar: `docs/02-mikroservis-bolumleme.md` → "Mesajlaşma mimarisi ka
 | Event | Yayınlayan | Dinleyen | Ne zaman eklendi |
 |-------|-----------|----------|------------------|
 | `Orders/OrderCreated` | Order | Catalog | KT-9 (sözleşme); kullanım KT-12 |
+| `Comments/CommentCreated` | Comment | Notification | KT-10 |
+| `Messages/ContactMessageReceived` | Message | Notification | KT-10 (gönderenin e-postasını taşır, kural 1'e bilinçli istisna: admin mailinde gösteriliyor; mesaj metni yok) |

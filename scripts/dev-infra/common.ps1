@@ -16,7 +16,14 @@ $script:CatalogService = @{ Name = 'Catalog'; Project = 'src\Services\Catalog\Mu
 $script:MessageService = @{ Name = 'Message'; Project = 'src\Services\Message\MultiShop.Message\MultiShop.Message.csproj'; Key = 'ConnectionStrings:DefaultConnection'; TargetDb = 'MultiShopMessageDb' }
 $script:NotificationService = @{ Name = 'Notification'; Project = 'src\Services\Notification\MultiShop.Notification\MultiShop.Notification.csproj'; Key = 'ConnectionStrings:DefaultConnection'; TargetDb = 'MultiShopNotificationDb' }
 
-$script:Ports = @{ SqlServer = 14330; Mongo = 27018; Postgres = 5440; Redis = 6380 }
+# RabbitMQ üzerinden event yayınlayan/dinleyen servisler (KT-10); hepsine ConnectionStrings:RabbitMQ yazılır.
+$script:MessagingProjects = @(
+    @{ Name = 'Comment';      Project = 'src\Services\Comment\MultiShop.Comment\MultiShop.Comment.csproj' },
+    @{ Name = 'Message';      Project = $script:MessageService.Project },
+    @{ Name = 'Notification'; Project = $script:NotificationService.Project }
+)
+
+$script:Ports = @{ SqlServer = 14330; Mongo = 27018; Postgres = 5440; Redis = 6380; RabbitMq = 5673 }
 
 function Write-Step([string]$Message) { Write-Host "`n==> $Message" -ForegroundColor Cyan }
 function Write-Ok([string]$Message)   { Write-Host "    [OK] $Message" -ForegroundColor Green }

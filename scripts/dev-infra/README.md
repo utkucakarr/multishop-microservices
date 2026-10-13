@@ -8,7 +8,7 @@ MultiShop'un ihtiyaç duyduğu tüm veritabanları ve altyapı servisleri kökte
 | MongoDB 8 | `multishop-mongo` | `mongodb://localhost:27018` | Catalog |
 | PostgreSQL 17 | `multishop-postgres` | `localhost:5440` | Message, Notification |
 | Redis 7 | `multishop-redis` | `localhost:6380` | Basket |
-| RabbitMQ 4 | `multishop-rabbitmq` | AMQP `5673`, panel http://localhost:15673 | (mesajlaşma, ileride) |
+| RabbitMQ 4 | `multishop-rabbitmq` | AMQP `5673`, panel http://localhost:15673 (`.env`'deki RabbitMQ kullanıcısı) | Comment, Message → Notification (event'ler) |
 | Seq | `multishop-seq` | http://localhost:8091 | (merkezi loglar, ileride) |
 
 Tüm portlar yalnızca `127.0.0.1`'e bağlıdır (Redis, MongoDB ve Seq geliştirme için şifresizdir; aynı ağdaki başka cihazlar erişemez). Portlar bilerek standart dışıdır; bilgisayarda kurulu SQL Server / MongoDB / PostgreSQL servisleri ve başka projelerin container'larıyla çakışmaz. Veriler adlandırılmış Docker volume'lerinde kalıcıdır (`docker compose down` verileri silmez; `docker compose down -v` siler).
@@ -44,7 +44,7 @@ Taşınacak eski veri yoksa (yeni bilgisayar) 3a adımını atlayın.
 | Script | Ne yapar |
 |--------|----------|
 | `migrate-legacy-data.ps1` | Projelerin **mevcut** user-secrets bağlantılarındaki veritabanlarını yeni container'lara kopyalar (SQL: COPY_ONLY yedek + geri yükleme, Mongo: mongodump/mongorestore, PostgreSQL: pg_dump/pg_restore). Kaynaklarda yalnızca okuma yapar. Hedef doluysa atlar; `-Force` ile üzerine yazar. |
-| `set-dev-secrets.ps1` | `.env`'deki şifrelerle tüm projelerin bağlantı dizelerini user-secrets'a yazar. Önce `secrets.json.bak-<tarih>` yedeği alır. Diğer secret'lara dokunmaz. |
+| `set-dev-secrets.ps1` | `.env`'deki şifrelerle tüm projelerin bağlantı dizelerini (veritabanı ve `ConnectionStrings:RabbitMQ`) user-secrets'a yazar. Önce `secrets.json.bak-<tarih>` yedeği alır. Diğer secret'lara dokunmaz. |
 | `set-identity-secrets.ps1 -AdminEmail <e-posta>` | IdentityServer client secret'larını (Visitor, WebUI) rastgele üretip IdentityServer ve WebUI'a aynı değeri yazar; admin yapılacak hesabın e-postasını ayarlar; eski anahtarları (SharedSecret, JwtSettings:Key, Maneger/Admin client) siler. `-CreateAdmin`: hesap yoksa oluşturulsun (kullanıcı adı ve şifre sorulur). Önce yedek alır, değerleri ekrana yazmaz. |
 | `apply-migrations.ps1` | `dotnet ef database update`'i tüm EF projeleri için sırayla çalıştırır. |
 | `common.ps1` | Ortak yardımcılar (doğrudan çalıştırılmaz). |
@@ -53,4 +53,5 @@ Taşınacak eski veri yoksa (yeni bilgisayar) 3a adımını atlayın.
 
 - **`container name "/multishop-redis" is already in use`** — Eski elle oluşturulmuş Redis container'ı: `docker rm -f multishop-redis` (içinde yalnızca sepet verisi vardı).
 - **SQL Server "unhealthy"** — `.env`'deki `MSSQL_SA_PASSWORD` SQL Server şifre kuralına uymuyor olabilir (en az 8 karakter; büyük/küçük harf, rakam, sembol). Şifre ilk açılışta volume'e yazılır; değiştirmek için `docker compose down`, `docker volume rm multishop_sqlserver-data`, ardından tekrar `up`.
+- **RabbitMQ panelinde eski kuyruklar görünmüyor** — Container sabit `hostname` olmadan oluşturulmuşsa veriler eski (rastgele) düğüm adıyla saklanmıştır. `docker compose up -d rabbitmq` container'ı sabit adla yeniden oluşturur; o tarihten önceki boş kuyruklar kaybolur, bu beklenen bir durumdur.
 - **Docker Desktop kapanıyor** — Bellek yetersizliği. Eski SQL Server container'ları (`IdentityDb`, `OrderDb`, ...) taşıma doğrulandıktan sonra durdurulabilir: `docker stop IdentityDb OrderDb CargoDb CommentDb DiscountDb`.

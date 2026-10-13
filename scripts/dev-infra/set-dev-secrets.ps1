@@ -1,10 +1,10 @@
 ﻿<#
 .SYNOPSIS
-    Tüm MultiShop projelerinin veritabanı bağlantılarını docker-compose altyapısına yönlendirir.
+    Tüm MultiShop projelerinin veritabanı ve RabbitMQ bağlantılarını docker-compose altyapısına yönlendirir.
 
 .DESCRIPTION
     Şifreleri kökteki .env dosyasından okur ve her projenin user-secrets'ına yeni bağlantı dizesini yazar.
-    Değiştirmeden önce her projenin secrets.json dosyasını "secrets.json.bak-<tarih>" olarak yedekler.
+    Değiştirmeden önce her projenin secrets.json dosyasını "secrets.json.bak-<tarih>" olarak yedekler (proje başına bir kez).
     Şifreler ekrana yazılmaz. Diğer user-secrets değerlerine (client secret, SMTP, POS vb.) dokunulmaz.
 
     Sıra: 1) docker compose up -d   2) migrate-legacy-data.ps1   3) bu script
@@ -30,16 +30,28 @@ $settings += @{ Name = 'Catalog'; Project = $script:CatalogService.Project; Key 
 $settings += @{ Name = 'Message'; Project = $script:MessageService.Project; Key = $script:MessageService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:MessageService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
 $settings += @{ Name = 'Notification'; Project = $script:NotificationService.Project; Key = $script:NotificationService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:NotificationService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
 
+# RabbitMQ: kullanıcı adı ve şifre URL içinde olduğu için özel karakterleri kodlanır.
+$rabbitUser = if ($envValues['RABBITMQ_USER']) { $envValues['RABBITMQ_USER'] } else { 'multishop' }
+$rabbitUri = "amqp://$([Uri]::EscapeDataString($rabbitUser)):$([Uri]::EscapeDataString($envValues['RABBITMQ_PASSWORD']))@localhost:$($script:Ports.RabbitMq)"
+foreach ($service in $script:MessagingProjects) {
+    $settings += @{ Name = $service.Name; Project = $service.Project; Key = 'ConnectionStrings:RabbitMQ'; Value = $rabbitUri }
+}
+
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$backedUp = @{}
 Write-Step 'user-secrets güncelleniyor'
 foreach ($item in $settings) {
+    # Aynı projeye birden çok ayar yazılabilir; yedek yalnızca ilk değişiklikten önce alınır (orijinal hali).
     $secretsPath = Get-UserSecretsPath $item.Project
-    if (Test-Path $secretsPath) { Copy-Item $secretsPath "$secretsPath.bak-$stamp" -Force }
+    if (-not $backedUp.ContainsKey($secretsPath)) {
+        if (Test-Path $secretsPath) { Copy-Item $secretsPath "$secretsPath.bak-$stamp" -Force }
+        $backedUp[$secretsPath] = $true
+    }
 
     $projectPath = Join-Path $script:RepoRoot $item.Project
     & $dotnet user-secrets set $item.Key $item.Value --project $projectPath | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Fail "$($item.Name): $($item.Key) yazılamadı."; continue }
-    Write-Ok ("{0,-9} {1}" -f $item.Name, $item.Key)
+    Write-Ok ("{0,-12} {1}" -f $item.Name, $item.Key)
 }
 
 Write-Host "`nYedekler: %APPDATA%\Microsoft\UserSecrets\<id>\secrets.json.bak-$stamp" -ForegroundColor DarkGray
