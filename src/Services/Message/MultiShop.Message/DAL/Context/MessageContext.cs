@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using MultiShop.Message.DAL.Entities;
 
 namespace MultiShop.Message.DAL.Context
@@ -13,6 +14,12 @@ namespace MultiShop.Message.DAL.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // MassTransit outbox tabloları: gönderilmeyi bekleyen event'ler (OutboxMessage, OutboxState).
+            // InboxState de eklenir; MassTransit'in temizlik servisi bu tabloyu bekler.
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
+
             modelBuilder.Entity<ContactMessage>(entity =>
             {
                 entity.Property(x => x.NameSurname).HasMaxLength(ContactMessageLimits.NameSurname);
