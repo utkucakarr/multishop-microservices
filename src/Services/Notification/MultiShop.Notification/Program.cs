@@ -1,13 +1,16 @@
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Messaging;
 using MultiShop.BuildingBlocks.Swagger;
 using MultiShop.Notification.Channels;
 using MultiShop.Notification.Channels.Email;
 using MultiShop.Notification.Channels.InApp;
 using MultiShop.Notification.Channels.Sms;
+using MultiShop.Notification.Consumers;
 using MultiShop.Notification.Data;
 using MultiShop.Notification.Dispatching;
 using MultiShop.Notification.Hubs;
@@ -35,8 +38,12 @@ builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSch
     });
 
 // Kalıcı bildirimler, gönderim outbox'ı, kurallar ve alıcılar (PostgreSQL, MultiShopNotificationDb).
-builder.Services.AddDbContext<NotificationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Interceptor, Dispatcher'ın commit sonrası işlerini (SignalR push, gönderim sinyali) gerçek commit'e bağlar.
+builder.Services.AddScoped<PostCommitActions>();
+builder.Services.AddScoped<PostCommitInterceptor>();
+builder.Services.AddDbContext<NotificationDbContext>((services, options) => options
+    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .AddInterceptors(services.GetRequiredService<PostCommitInterceptor>()));
 builder.Services.AddHealthChecks().AddDbContextCheck<NotificationDbContext>("postgresql");
 
 builder.Services.AddSignalR();
@@ -62,6 +69,16 @@ builder.Services.AddSingleton<NotificationChannelRegistry>();
 builder.Services.AddSingleton<DeliverySignal>();
 builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
 builder.Services.AddHostedService<DeliveryProcessor>();
+
+// Event'ler (RabbitMQ). Inbox: consumer, kaydı ve InboxState'i tek transaction'da yazar; aynı mesaj tekrar gelirse
+// (ör. ack'ten önce çökme) InboxState'te bulunur ve atlanır (idempotent consumer).
+builder.AddMultiShopMessaging("Notification", x =>
+{
+    x.AddEntityFrameworkOutbox<NotificationDbContext>(outbox => outbox.UsePostgres());
+    x.AddConfigureEndpointsCallback((context, _, endpoint) => endpoint.UseEntityFrameworkOutbox<NotificationDbContext>(context));
+
+    x.AddConsumer<CommentCreatedConsumer>();
+});
 
 // Admin paneli REST API'si (bildirim kutusu, ayarlar).
 builder.Services.AddScoped<INotificationInboxService, NotificationInboxService>();

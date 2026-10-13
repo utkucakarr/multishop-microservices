@@ -19,13 +19,6 @@ public static class MessagingExtensions
     public static WebApplicationBuilder AddMultiShopMessaging(this WebApplicationBuilder builder, string serviceName,
         Action<IBusRegistrationConfigurator>? configure = null)
     {
-        var connectionString = builder.Configuration.GetConnectionString(ConnectionStringName);
-        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var rabbitUri))
-            throw new InvalidOperationException(
-                $"ConnectionStrings:{ConnectionStringName} (ör. amqp://kullanici:sifre@localhost:5673) user-secrets'ta tanımlı olmalı; scripts/dev-infra/set-dev-secrets.ps1 yazar.");
-
-        var (username, password) = ParseUserInfo(rabbitUri);
-
         builder.Services.AddMassTransit(x =>
         {
             x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter(serviceName, includeNamespace: false));
@@ -43,6 +36,9 @@ public static class MessagingExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
+                // Bağlantı bus başlarken okunur, kayıt sırasında değil: EF araçları (migrations add) Program.cs'i
+                // çalıştırır ama bus'ı başlatmaz, RabbitMQ ayarı olmadan da çalışabilmeli.
+                var (rabbitUri, username, password) = ReadConnection(builder.Configuration);
                 cfg.Host(rabbitUri.Host, (ushort)rabbitUri.Port, "/", host =>
                 {
                     host.Username(username);
@@ -56,13 +52,18 @@ public static class MessagingExtensions
         return builder;
     }
 
-    private static (string Username, string Password) ParseUserInfo(Uri uri)
+    private static (Uri Uri, string Username, string Password) ReadConnection(IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString(ConnectionStringName);
+        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var uri))
+            throw new InvalidOperationException(
+                $"ConnectionStrings:{ConnectionStringName} (ör. amqp://kullanici:sifre@localhost:5673) user-secrets'ta tanımlı olmalı; scripts/dev-infra/set-dev-secrets.ps1 yazar.");
+
         var parts = uri.UserInfo.Split(':', 2);
         if (parts.Length != 2 || parts[0].Length == 0)
             throw new InvalidOperationException($"ConnectionStrings:{ConnectionStringName} kullanıcı adı ve şifre içermeli (amqp://kullanici:sifre@host:port).");
 
         // Şifredeki özel karakterler (@, :, / vb.) URL'de kodlanmış gelir.
-        return (Uri.UnescapeDataString(parts[0]), Uri.UnescapeDataString(parts[1]));
+        return (uri, Uri.UnescapeDataString(parts[0]), Uri.UnescapeDataString(parts[1]));
     }
 }
