@@ -17,9 +17,6 @@ namespace MultiShop.WebUI.Services.StatisticServices
         public async Task<AdminDashboardDto> GetDashboardAsync()
             => await GetAsync<AdminDashboardDto>("admin/dashboard") ?? new AdminDashboardDto();
 
-        public async Task<CommentStatisticsDto?> GetCommentStatisticsAsync()
-            => await GetAsync<CommentStatisticsDto>("comment/statistics");
-
         public async Task<MessageStatisticsDto?> GetMessageStatisticsAsync()
             => await GetAsync<MessageStatisticsDto>("message/statistics");
 

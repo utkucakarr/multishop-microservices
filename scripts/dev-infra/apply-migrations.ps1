@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Tüm EF Core migration'larını (Identity, Order, Cargo, Comment, Discount, Payment, Message) uygular.
+    Tüm EF Core migration'larını (Identity, Order, Cargo, Comment, Discount, Payment, Message, Notification) uygular.
 
 .DESCRIPTION
     Bağlantı dizeleri projelerin user-secrets'ından okunur (önce set-dev-secrets.ps1 çalıştırılmış olmalı).
@@ -20,7 +20,8 @@ $targets = @(
     @{ Name = 'Comment';  Project = 'src\Services\Comment\MultiShop.Comment' },
     @{ Name = 'Discount'; Project = 'src\Services\Discount\MultiShop.Discount' },
     @{ Name = 'Payment';  Project = 'src\Services\Payment\MultiShop.Payment' },
-    @{ Name = 'Message';  Project = 'src\Services\Message\MultiShop.Message' }
+    @{ Name = 'Message';  Project = 'src\Services\Message\MultiShop.Message' },
+    @{ Name = 'Notification'; Project = 'src\Services\Notification\MultiShop.Notification' }
 )
 
 & dotnet ef --version | Out-Null
