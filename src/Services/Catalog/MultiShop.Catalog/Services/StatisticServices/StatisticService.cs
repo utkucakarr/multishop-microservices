@@ -1,6 +1,7 @@
 ﻿
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MultiShop.Catalog.Dtos.StatisticDtos;
 using MultiShop.Catalog.Entities;
 using MultiShop.Catalog.Settings;
 
@@ -12,32 +13,51 @@ namespace MultiShop.Catalog.Services.StatisticServices
         private readonly IMongoCollection<Category> _categoryCollection;
         private readonly IMongoCollection<Brand> _brandCollection;
 
-        public StatisticService(IDatabaseSettings _databaseSettings)
+        public StatisticService(IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _productCollection = database.GetCollection<Product>(_databaseSettings.ProductCollectionName);
             _categoryCollection = database.GetCollection<Category>(_databaseSettings.CategoryCollectionName);
             _brandCollection = database.GetCollection<Brand>(_databaseSettings.BrandCollectionName);
         }
 
-        public async Task<long> GetBrandCountAsync()
+        public async Task<CatalogStatisticsDto> GetStatisticsAsync()
+        {
+            var productCount = GetProductCountAsync();
+            var categoryCount = GetCategoryCountAsync();
+            var brandCount = GetBrandCountAsync();
+            var averagePrice = GetProductAvgPriceAsync();
+            var mostExpensive = GetMaxPriceProductNameAsync();
+            var cheapest = GetMinPriceProductNameAsync();
+            await Task.WhenAll(productCount, categoryCount, brandCount, averagePrice, mostExpensive, cheapest);
+
+            return new CatalogStatisticsDto
+            {
+                ProductCount = productCount.Result,
+                CategoryCount = categoryCount.Result,
+                BrandCount = brandCount.Result,
+                AveragePrice = averagePrice.Result,
+                MostExpensiveProduct = mostExpensive.Result,
+                CheapestProduct = cheapest.Result
+            };
+        }
+
+        private async Task<long> GetBrandCountAsync()
         {
             return await _brandCollection.CountDocumentsAsync(FilterDefinition<Brand>.Empty);
         }
 
-        public async Task<long> GetCategoryCountAsync()
+        private async Task<long> GetCategoryCountAsync()
         {
             return await _categoryCollection.CountDocumentsAsync(FilterDefinition<Category>.Empty);
         }
 
-        public async Task<string> GetMaxPriceProductNameAsync()
+        private async Task<string> GetMaxPriceProductNameAsync()
             => await GetProductNameByPriceAsync(descending: true);
 
-        public async Task<string> GetMinPriceProductNameAsync()
+        private async Task<string> GetMinPriceProductNameAsync()
             => await GetProductNameByPriceAsync(descending: false);
 
-        public async Task<decimal> GetProductAvgPriceAsync()
+        private async Task<decimal> GetProductAvgPriceAsync()
         {
             var pipeline = new[]
             {
@@ -79,7 +99,7 @@ namespace MultiShop.Catalog.Services.StatisticServices
                 { "onNull", BsonNull.Value }
             });
 
-        public async Task<long> GetProductCountAsync()
+        private async Task<long> GetProductCountAsync()
         {
             return await _productCollection.CountDocumentsAsync(FilterDefinition<Product>.Empty);
         }

@@ -12,6 +12,9 @@ namespace MultiShop.Catalog.Dtos.ProductDtos
 
         public string CategoryId { get; set; }
 
+        // İsteğe bağlı marka
+        public string? BrandId { get; set; }
+
         // Ürün sisteme ilk girildiğindeki başlangıç stoğu
         public int AvailableStock { get; set; }
 

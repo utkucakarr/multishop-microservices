@@ -17,44 +17,52 @@ namespace MultiShop.Message.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.29")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MultiShop.Message.DAL.Entities.UserMessage", b =>
+            modelBuilder.Entity("MultiShop.Message.DAL.Entities.ContactMessage", b =>
                 {
-                    b.Property<int>("UserMessageId")
+                    b.Property<int>("ContactMessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserMessageId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ContactMessageId"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("MessageDate")
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("NameSurname")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("SendDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("MessageDetail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReveiverId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Subject")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.HasKey("UserMessageId");
+                    b.HasKey("ContactMessageId");
 
-                    b.ToTable("UserMessages");
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("SendDate");
+
+                    b.ToTable("ContactMessages");
                 });
 #pragma warning restore 612, 618
         }

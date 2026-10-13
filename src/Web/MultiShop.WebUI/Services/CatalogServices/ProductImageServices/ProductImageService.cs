@@ -1,5 +1,6 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.ProductImageDtos;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace MultiShop.WebUI.Services.CatalogServices.ProductImageServices
 {
@@ -17,9 +18,34 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductImageServices
             await _httpClient.PostAsJsonAsync<CreateProductImageDto>("productimage", createProductImageDto);
         }
 
-        public async Task DeleteProductImageAsync(string id)
+        public async Task<string?> UploadProductImageAsync(string productId, IFormFile file, bool isMain)
         {
-            await _httpClient.DeleteAsync("productimage?id=" + id);
+            await using var stream = file.OpenReadStream();
+            var fileContent = new StreamContent(stream);
+            if (!string.IsNullOrEmpty(file.ContentType))
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+            using var content = new MultipartFormDataContent
+            {
+                { new StringContent(productId), "ProductId" },
+                { new StringContent(isMain.ToString()), "IsMain" },
+                { fileContent, "File", file.FileName }
+            };
+
+            var responseMessage = await _httpClient.PostAsync("productimage/upload", content);
+            return await responseMessage.GetErrorMessageAsync();
+        }
+
+        public async Task<string?> SetMainProductImageAsync(string id)
+        {
+            var responseMessage = await _httpClient.PutAsync($"productimage/{id}/main", null);
+            return await responseMessage.GetErrorMessageAsync();
+        }
+
+        public async Task<string?> DeleteProductImageAsync(string id)
+        {
+            var responseMessage = await _httpClient.DeleteAsync("productimage?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultProductImageDto>> GetAllProductImageAsync()

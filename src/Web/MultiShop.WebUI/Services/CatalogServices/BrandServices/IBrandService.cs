@@ -10,7 +10,8 @@ namespace MultiShop.WebUI.Services.CatalogServices.BrandServices
 
         Task UpdateBrandAsync(UpdateBrandDto updateBrandDto);
 
-        Task DeleteBrandAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı (ör. markaya bağlı ürün varsa).</summary>
+        Task<string?> DeleteBrandAsync(string id);
 
         Task<UpdateBrandDto> GetByIdBrandAsync(string id);
     }

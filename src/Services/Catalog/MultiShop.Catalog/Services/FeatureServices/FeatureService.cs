@@ -13,10 +13,8 @@ namespace MultiShop.Catalog.Services.FeatureServices
         private readonly IMongoCollection<Feature> _featureCollection;
         private readonly IMapper _mapper;
 
-        public FeatureService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public FeatureService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _featureCollection = database.GetCollection<Feature>(_databaseSettings.FeatureCollectionName);
             _mapper = mapper;
         }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
+using MultiShop.OcelotGateway.Aggregators;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -18,7 +19,8 @@ builder.Services.AddAuthentication().AddJwtBearer("OcelotAuthenticationSheme", o
 // ocelot.json proje klasöründen (content root) okunur; çalışma dizinine bağlı değildir.
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-builder.Services.AddOcelot(builder.Configuration);
+builder.Services.AddOcelot(builder.Configuration)
+    .AddSingletonDefinedAggregator<DashboardAggregator>();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -26,6 +28,8 @@ var app = builder.Build();
 // Ocelot tüm istekleri yakaladığı için /health ondan önce eklenmeli.
 app.UseMultiShopHealthChecks();
 app.UseMultiShopRequestLogging();
+// Notification hub'ı (/hubs/notification) için WebSocket proxy; Ocelot 24 ve öncesinde UseOcelot'tan önce elle eklenmeli.
+app.UseWebSockets();
 
 await app.UseOcelot();
 

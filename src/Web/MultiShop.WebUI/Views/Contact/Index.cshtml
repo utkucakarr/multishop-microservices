@@ -1,4 +1,4 @@
-﻿@model CreateContactDto
+﻿@model CreateContactMessageDto
 
 @{
     ViewData["Title"] = "Index";
@@ -21,28 +21,37 @@
     <div class="row px-xl-5">
         <div class="col-lg-7 mb-5">
             <div class="contact-form bg-light p-30">
-                <div id="success"></div>
+                <div id="success">
+                    @if (TempData["ContactSent"] is true)
+                    {
+                        <div class="alert alert-success">Mesajınız alındı. En kısa sürede size dönüş yapacağız.</div>
+                    }
+                </div>
                 <form method="post">
+                    @if (ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                    {
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    }
                     <div class="control-group">
                         <input type="text" class="form-control" id="name" placeholder="Adınız Soyadınız"
                                required="required" data-validation-required-message="Lütfen boş geçmeyin" asp-for="NameSurname" />
-                        <p class="help-block text-danger"></p>
+                        <span class="help-block text-danger" asp-validation-for="NameSurname"></span>
                     </div>
                     <div class="control-group">
                         <input type="email" class="form-control" id="email" placeholder="Email Adresiniz"
                                required="required" data-validation-required-message="Lütfen boş geçmeyin" asp-for="Email" />
-                        <p class="help-block text-danger"></p>
+                        <span class="help-block text-danger" asp-validation-for="Email"></span>
                     </div>
                     <div class="control-group">
                         <input type="text" class="form-control" id="subject" placeholder="Konu"
                                required="required" data-validation-required-message="Lütfen boş geçmeyin" asp-for="Subject" />
-                        <p class="help-block text-danger"></p>
+                        <span class="help-block text-danger" asp-validation-for="Subject"></span>
                     </div>
                     <div class="control-group">
                         <textarea class="form-control" rows="8" id="message" placeholder="Mesajınız"
                                   required="required"
                                   data-validation-required-message="Lütfen boş geçmeyin" asp-for="Message"></textarea>
-                        <p class="help-block text-danger"></p>
+                        <span class="help-block text-danger" asp-validation-for="Message"></span>
                     </div>
                     <div>
                         <button class="btn btn-primary py-2 px-4" type="submit" id="sendMessageButton">
