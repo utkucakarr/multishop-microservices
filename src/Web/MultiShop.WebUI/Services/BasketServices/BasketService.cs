@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using MultiShop.DtoLayer.BasketDtos;
+﻿using MultiShop.DtoLayer.BasketDtos;
 
 namespace MultiShop.WebUI.Services.BasketServices
 {
@@ -14,94 +13,43 @@ namespace MultiShop.WebUI.Services.BasketServices
             _logger = logger;
         }
 
-        public async Task AddBasketBtnItem(BasketItemDto basketItemDto)
+        public async Task<BasketDto?> GetBasketAsync()
         {
-            var currentBasket = await GetBasket();
-            if (currentBasket is null)
+            var response = await _httpClient.GetAsync("baskets");
+            if (!response.IsSuccessStatusCode)
             {
-                currentBasket = new BasketTotalDto();
-                currentBasket.BasketItems.Add(basketItemDto);
-            }
-            else
-            {
-                var searchedBasketItem = currentBasket.BasketItems.FirstOrDefault(x => x.ProductId == basketItemDto.ProductId);
-                if (searchedBasketItem is not null)
-                {
-                    searchedBasketItem.Quantity += 1;
-                }
-                else
-                {
-                    currentBasket.BasketItems.Add(basketItemDto);
-                }
-            }
-
-            await SaveBasket(currentBasket);
-        }
-
-        public async Task AddBasketItem(BasketItemDto basketItemDto)
-        {
-            var values = await GetBasket() ?? new BasketTotalDto();
-            var existingItem = values.BasketItems.FirstOrDefault(x => x.ProductId == basketItemDto.ProductId); // uyan değer var mı diye bakıyor.
-            if (existingItem is null)
-            {
-                values.BasketItems.Add(basketItemDto);
-            }
-            else
-            {
-                existingItem.Quantity += basketItemDto.Quantity;
-            }
-            await SaveBasket(values);
-        }
-
-        public async Task DeleteBasket(string userId)
-        {
-            var responseMessage = await _httpClient.DeleteAsync("baskets");
-        }
-
-        public async Task<BasketTotalDto> GetBasket()
-        {
-            var responseMessage = await _httpClient.GetAsync("baskets");
-            if (!responseMessage.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Sepet alınamadı ({StatusCode})", responseMessage.StatusCode);
+                _logger.LogWarning("Sepet alınamadı ({StatusCode}): {Error}", response.StatusCode, await response.GetErrorMessageAsync());
                 return null;
             }
-            var content = await responseMessage.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                return null;
-            }
-            return JsonSerializer.Deserialize<BasketTotalDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return await response.Content.ReadFromJsonAsync<BasketDto>();
         }
 
-        public async Task<bool> RemoveAllBasketItem(string productId)
+        public async Task<int> GetItemCountAsync()
         {
-            var values = await GetBasket();
-            var deletedItem = values.BasketItems.FirstOrDefault(x=>x.ProductId == productId);
-            var result = values.BasketItems.Remove(deletedItem);
-            await SaveBasket(values);
-            return true;
+            var response = await _httpClient.GetAsync("baskets/count");
+            return response.IsSuccessStatusCode ? await response.Content.ReadFromJsonAsync<int>() : 0;
         }
 
-        public async Task RemoveBasketItem (string productId)
-        {
-            var currentBasket = await GetBasket();
-            var deletedItem = currentBasket.BasketItems.FirstOrDefault(x => x.ProductId == productId);
-            if (deletedItem != null && deletedItem.Quantity > 1)
-            {
-                deletedItem.Quantity--;
-                await SaveBasket(currentBasket);
-            }
-        }
+        public async Task<string?> AddItemAsync(string productId, int quantity = 1)
+            => await (await _httpClient.PostAsJsonAsync("baskets/items", new { productId, quantity })).GetErrorMessageAsync();
 
-        public async Task SaveBasket(BasketTotalDto basketTotalDto)
+        public async Task<string?> SetQuantityAsync(string productId, int quantity)
+            => await (await _httpClient.PutAsJsonAsync("baskets/items/" + Uri.EscapeDataString(productId), new { quantity })).GetErrorMessageAsync();
+
+        public async Task<string?> RemoveItemAsync(string productId)
+            => await (await _httpClient.DeleteAsync("baskets/items/" + Uri.EscapeDataString(productId))).GetErrorMessageAsync();
+
+        public async Task<string?> ApplyCouponAsync(string code)
+            => await (await _httpClient.PutAsJsonAsync("baskets/coupon", new { code })).GetErrorMessageAsync();
+
+        public async Task<string?> RemoveCouponAsync()
+            => await (await _httpClient.DeleteAsync("baskets/coupon")).GetErrorMessageAsync();
+
+        public async Task DeleteBasketAsync()
         {
-            var responseMessage = await _httpClient.PostAsJsonAsync<BasketTotalDto>("baskets", basketTotalDto);
-            if (!responseMessage.IsSuccessStatusCode)
-            {
-                var error = await responseMessage.Content.ReadAsStringAsync();
-                _logger.LogWarning("Sepet kaydedilemedi ({StatusCode}): {Error}", responseMessage.StatusCode, error);
-            }
+            var response = await _httpClient.DeleteAsync("baskets");
+            if (!response.IsSuccessStatusCode)
+                _logger.LogWarning("Sepet silinemedi ({StatusCode})", response.StatusCode);
         }
     }
 }

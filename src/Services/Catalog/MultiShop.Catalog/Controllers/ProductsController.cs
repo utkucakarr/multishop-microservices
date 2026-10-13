@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.Catalog.Dtos.ProductDtos;
 using MultiShop.Catalog.Services.ProductServices;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Catalog.Controllers
 {
@@ -25,6 +26,20 @@ namespace MultiShop.Catalog.Controllers
         {
             var products = await _productService.GetAllProductAsync();
             return Ok(products);
+        }
+
+        // Bir sepette bulunabilecek farklı ürün sayısının üst sınırı; tek istekte sınırsız id sorgulanmasın.
+        private const int MaxIdsPerRequest = 100;
+
+        /// <summary>Basket servisi sepeti fiyatlarken çağırır: <c>?ids=a&amp;ids=b</c>. Olmayan ürünler yanıtta yer almaz.</summary>
+        [HttpGet("by-ids")]
+        public async Task<IActionResult> GetProductPricesByIds([FromQuery] string[] ids)
+        {
+            if (ids.Length > MaxIdsPerRequest)
+                throw new BadRequestException($"Tek istekte en fazla {MaxIdsPerRequest} ürün sorgulanabilir.");
+
+            var values = await _productService.GetPricesByIdsAsync(ids);
+            return Ok(values);
         }
 
         [HttpGet("{id}")]
