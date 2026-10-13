@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Notification.Data.Entities;
 
@@ -16,6 +17,12 @@ public class NotificationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // MassTransit inbox: işlenen event'lerin kaydı (InboxState). Outbox tabloları da gerekir; consumer'ın
+        // yayınlayacağı event'ler (ileride) aynı transaction'da OutboxMessage'a yazılır.
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         modelBuilder.Entity<NotificationRecord>(entity =>
         {
             entity.ToTable("Notifications");

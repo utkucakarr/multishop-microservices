@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.Comment.Context;
 using MultiShop.Comment.Entities;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Contracts.Comments;
 
 namespace MultiShop.Comment.Controllers
 {
@@ -14,10 +16,12 @@ namespace MultiShop.Comment.Controllers
     public class CommentsController : ControllerBase
     {
         private readonly CommentContext _commentContext;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public CommentsController(CommentContext commentContext)
+        public CommentsController(CommentContext commentContext, IPublishEndpoint publishEndpoint)
         {
             _commentContext = commentContext;
+            _publishEndpoint = publishEndpoint;
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -30,10 +34,20 @@ namespace MultiShop.Comment.Controllers
 
         [Authorize(Policy = MultiShopPolicies.Authenticated)]
         [HttpPost]
-        public IActionResult CreateComment(UserComment userComment)
+        public async Task<IActionResult> CreateComment(UserComment userComment)
         {
+            // Yorum ve CommentCreated tek transaction'da yazılır (transactional outbox): ya ikisi birden kaydedilir ya hiçbiri.
+            // Publish RabbitMQ'ya değil OutboxMessage tablosuna yazar; event'te yorum id'si olduğu için önce yorum kaydedilir.
+            await using var transaction = await _commentContext.Database.BeginTransactionAsync();
+
             _commentContext.UserComments.Add(userComment);
-            _commentContext.SaveChanges();
+            await _commentContext.SaveChangesAsync();
+
+            await _publishEndpoint.Publish(new CommentCreated(
+                userComment.UserCommentId, userComment.ProductId, userComment.NameSurname, userComment.Rating, DateTime.UtcNow));
+            await _commentContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
             return Ok("Yorum başarıyla eklendi");
         }
 
