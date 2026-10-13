@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Storage;
 using MultiShop.BuildingBlocks.Swagger;
 using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
-using MultiShop.Catalog.Security;
 using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Services.AboutServices;
 using MultiShop.Catalog.Services.BrandServices;
 using MultiShop.Catalog.Services.CategoryServices;
-using MultiShop.Catalog.Services.ContactServices;
 using MultiShop.Catalog.Services.FeatureServices;
 using MultiShop.Catalog.Services.FeatureSliderServices;
 using MultiShop.Catalog.Services.OfferDiscountServices;
@@ -34,10 +34,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMultiShopServiceDefaults("Catalog");
 builder.AddMultiShopJwtAuthentication("ResourceCatalog");
-builder.Services.AddMultiShopAuthorization(fullScope: "CatalogFullPermission", readScope: "CatalogReadPermission")
-    .AddPolicy(CatalogPolicies.ContactWrite, policy => policy
-        .RequireAuthenticatedUser()
-        .RequireAssertion(context => AuthorizationExtensions.HasAnyScope(context.User, "ContactWritePermission", "CatalogFullPermission")));
+builder.Services.AddMultiShopAuthorization(fullScope: "CatalogFullPermission", readScope: "CatalogReadPermission");
 
 // Entity'lerdeki [BsonRepresentation(BsonType.ObjectId)] alanları, geçersiz bir id ile sorgulanınca
 // FormatException fırlatır; bu bir istemci hatasıdır (500 değil 400).
@@ -58,8 +55,10 @@ builder.Services.AddScoped<IFeatureService, FeatureService>();
 builder.Services.AddScoped<IOfferDiscountService, OfferDiscountService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IAboutService, AboutService>();
-builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
+
+// Ürün görselleri: FileStorage:Provider ayarına göre yerel disk (uploads/) ya da Google Cloud Storage.
+builder.Services.AddMultiShopFileStorage(builder.Configuration);
 
 //Otomapper i�in konfig�rasyon i�lemi
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
@@ -70,6 +69,13 @@ builder.Services.AddScoped<IDatabaseSettings>(sp =>
     return sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 });
 
+// MongoClient thread-safe'tir ve bağlantı havuzunu kendisi yönetir; uygulama boyunca tek örnek kullanılır
+// (MongoDB'nin önerisi). Servisler ve repository'ler hazır IMongoDatabase'i alır.
+builder.Services.AddSingleton<IMongoClient>(sp =>
+    new MongoClient(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.ConnectionString));
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.DatabaseName));
+
 // Mongo erişilemezken sunucu seçimi 30 sn bekler; health check daha erken yanıt versin.
 builder.Services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", timeout: TimeSpan.FromSeconds(5));
 
@@ -79,6 +85,9 @@ builder.Services.AddMultiShopSwagger("MultiShop Catalog API");
 var app = builder.Build();
 
 app.UseMultiShopServiceDefaults();
+
+// Yerel depolamada görseller /uploads altında token'sız sunulur (tarayıcı <img> isteğine token ekleyemez).
+app.UseMultiShopFileStorage();
 
 app.UseAuthentication();
 

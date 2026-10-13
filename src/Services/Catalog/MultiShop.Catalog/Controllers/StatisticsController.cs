@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MultiShop.Catalog.Services.StatisticServices;
-using System.Threading.Tasks;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Catalog.Services.StatisticServices;
 
 namespace MultiShop.Catalog.Controllers
 {
-    // Admin dashboard istatistikleri.
+    // Admin dashboard istatistikleri: tek uç, Ocelot /services/admin/dashboard bunu diğer servislerle birleştirir.
     [Authorize(Policy = MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
@@ -20,45 +18,10 @@ namespace MultiShop.Catalog.Controllers
             _statisticService = statisticService;
         }
 
-        [HttpGet("GetBrandCount")]
-        public async Task<IActionResult> GetBrandCount()
+        [HttpGet]
+        public async Task<IActionResult> GetStatistics()
         {
-            var value = await _statisticService.GetBrandCountAsync();
-            return Ok(value);
-        }
-
-        [HttpGet("GetCategoryCount")]
-        public async Task<IActionResult> GetCategoryCount()
-        {
-            var value = await _statisticService.GetCategoryCountAsync();
-            return Ok(value);
-        }
-
-        [HttpGet("GetProductCount")]
-        public async Task<IActionResult> GetProductCount()
-        {
-            var value = await _statisticService.GetProductCountAsync();
-            return Ok(value);
-        }
-
-        [HttpGet("GetProductAvgPrice")]
-        public async Task<IActionResult> GetProductAvgPrice()
-        {
-            var value = await _statisticService.GetProductAvgPriceAsync();
-            return Ok(value);
-        }
-
-        [HttpGet("GetMaxPriceProductName")]
-        public async Task<IActionResult> GetMaxPriceProductName()
-        {
-            var value = await _statisticService.GetMaxPriceProductNameAsync();
-            return Ok(value);
-        }
-
-        [HttpGet("GetMinPriceProductName")]
-        public async Task<IActionResult> GetMinPriceProductName()
-        {
-            var value = await _statisticService.GetMinPriceProductNameAsync();
+            var value = await _statisticService.GetStatisticsAsync();
             return Ok(value);
         }
     }

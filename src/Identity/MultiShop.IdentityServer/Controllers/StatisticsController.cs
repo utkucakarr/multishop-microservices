@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 
 namespace MultiShop.IdentityServer.Controllers
 {
+    /// <summary>Admin dashboard'unun Identity kısmı.</summary>
+    public record IdentityStatisticsDto(int UserCount);
+
     // Önceden token'sız erişilebiliyordu; kullanıcı sayısı yalnızca admin paneli içindir.
+    // Ocelot /services/admin/dashboard bunu diğer servislerin istatistikleriyle birleştirir.
     [Authorize(MultiShopPolicies.Admin)]
     [Route("api/[controller]")]
     [ApiController]
@@ -23,10 +27,10 @@ namespace MultiShop.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetUserCount()
+        public IActionResult GetStatistics()
         {
             int userCount = _userManager.Users.Count();
-            return Ok(userCount);
+            return Ok(new IdentityStatisticsDto(userCount));
         }
     }
 }

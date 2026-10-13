@@ -21,6 +21,9 @@ namespace MultiShop.Catalog.Entities
 
         public string CategoryId { get; private set; }
 
+        /// <summary>İsteğe bağlı; markası olmayan ürünlerde null.</summary>
+        public string? BrandId { get; private set; }
+
         // --- STOK YÖNETİMİ ALANLARI ---
         // Set işlemi dışarıya kapatıldı (private set)
         public int AvailableStock { get; private set; }
@@ -34,6 +37,9 @@ namespace MultiShop.Catalog.Entities
         [BsonIgnore]
         public Category Category { get; set; }
 
+        [BsonIgnore]
+        public Brand? Brand { get; set; }
+
         // MongoDB için parametresiz constructor (private — dışarıdan erişilemesin)
         private Product() { }
 
@@ -45,6 +51,7 @@ namespace MultiShop.Catalog.Entities
                 ProductName = parameters.ProductName,
                 ProductPrice = parameters.ProductPrice,
                 CategoryId = parameters.CategoryId,
+                BrandId = parameters.BrandId,
                 AvailableStock = parameters.InitialStock,
                 RestockThreshold = parameters.RestockThreshold,
                 MaxStockThreshold = parameters.MaxStockThreshold,
@@ -99,7 +106,7 @@ namespace MultiShop.Catalog.Entities
             ProductImageUrl = imageUrl;
         }
 
-        public void UpdateCoreDetails(string productName, decimal productPrice, string categoryId)
+        public void UpdateCoreDetails(string productName, decimal productPrice, string categoryId, string? brandId)
         {
             if (string.IsNullOrWhiteSpace(productName))
                 throw new CatalogDomainException("Product name cannot be empty.");
@@ -111,6 +118,7 @@ namespace MultiShop.Catalog.Entities
             ProductName = productName;
             ProductPrice = productPrice;
             CategoryId = categoryId;
+            BrandId = string.IsNullOrWhiteSpace(brandId) ? null : brandId;
         }
     }
 }

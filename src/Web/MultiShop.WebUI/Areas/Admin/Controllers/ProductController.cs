@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.CategoryDtos;
 using MultiShop.DtoLayer.CatalogDtos.ProductDtos;
+using MultiShop.WebUI.Services.CatalogServices.BrandServices;
 using MultiShop.WebUI.Services.CatalogServices.CategoryServices;
 using MultiShop.WebUI.Services.CatalogServices.ProductServices;
 using Newtonsoft.Json;
@@ -18,11 +19,13 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
     {
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
+        private readonly IBrandService _brandService;
 
-        public ProductController(IProductService productService, ICategoryService categoryService)
+        public ProductController(IProductService productService, ICategoryService categoryService, IBrandService brandService)
         {
             _productService = productService;
             _categoryService = categoryService;
+            _brandService = brandService;
         }
         void ProductViewBagList()
         {
@@ -37,6 +40,9 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         {
             ProductViewBagList();
             var values = await _productService.GetAllProductAsync();
+            // Liste ürün başına marka adı göstersin diye: markalar tek istekte alınıp id → ad eşlenir.
+            var brands = await _brandService.GetAllBrandAsync();
+            ViewBag.BrandNames = brands.ToDictionary(x => x.BrandId, x => x.BrandName);
             return View(values);
         }
 
@@ -60,24 +66,23 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> CreateProduct()
         {
             ProductViewBagList();
-
-            var values = await _categoryService.GetAllCategoryAsync();
-            List<SelectListItem> categoryValues = (from x in values
-                                                   select new SelectListItem
-                                                   {
-                                                       Text = x.CategoryName,
-                                                       Value = x.CategoryId
-                                                   }).ToList();
-            ViewBag.CategoryValues = categoryValues;
-            return View();
+            await LoadSelectListsAsync();
+            return View(new CreateProductDto());
         }
 
         [HttpPost]
         [Route("CreateProduct")]
         public async Task<IActionResult> CreateProduct(CreateProductDto createProductDto)
         {
-            await _productService.CreateProductAsync(createProductDto);
-            return RedirectToAction("Index", "Product", new { area = "Admin" });
+            var error = await _productService.CreateProductAsync(createProductDto);
+            if (error is null)
+                return RedirectToAction("Index", "Product", new { area = "Admin" });
+
+            // Catalog reddettiyse (ör. stok sınırları, olmayan kategori/marka) form girilen değerlerle ve mesajla geri gelir.
+            ViewBag.ErrorMessage = error;
+            ProductViewBagList();
+            await LoadSelectListsAsync();
+            return View(createProductDto);
         }
 
         [Route("DeleteProduct/{id}")]
@@ -92,26 +97,48 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> UpdateProduct(string id)
         {
             ProductViewBagList();
+            await LoadSelectListsAsync();
 
-            var values = await _categoryService.GetAllCategoryAsync();
-            List<SelectListItem> categoryValues1 = (from x in values
-                                                   select new SelectListItem
-                                                   {
-                                                       Text = x.CategoryName,
-                                                       Value = x.CategoryId
-                                                   }).ToList();
-            ViewBag.CategoryValues = categoryValues1;
-
-            var productValues = await _productService.GetByIdProductAsync(id);
-            return View(productValues);
+            var product = await _productService.GetByIdProductAsync(id);
+            return View(new UpdateProductDto
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                ProductPrice = product.ProductPrice,
+                // ProductImageUrl bilerek boş: görseller "Görseller" sayfasından yönetilir; Catalog boş gelen değerde mevcut değeri korur.
+                ProductDescription = product.ProductDescription,
+                CategoryId = product.CategoryId,
+                BrandId = product.BrandId
+            });
         }
 
         [Route("UpdateProduct/{id}")]
         [HttpPost]
         public async Task<IActionResult> UpdateProduct(UpdateProductDto updateProductDto)
         {
-            await _productService.UpdateProductAsync(updateProductDto);
-            return RedirectToAction("Index", "Product", new { area = "Admin" });
+            var error = await _productService.UpdateProductAsync(updateProductDto);
+            if (error is null)
+                return RedirectToAction("Index", "Product", new { area = "Admin" });
+
+            ViewBag.ErrorMessage = error;
+            ProductViewBagList();
+            await LoadSelectListsAsync();
+            return View(updateProductDto);
+        }
+
+        // Kategori (zorunlu) ve marka (isteğe bağlı, "Marka yok" seçeneğiyle) açılır listeleri.
+        private async Task LoadSelectListsAsync()
+        {
+            var categories = await _categoryService.GetAllCategoryAsync();
+            ViewBag.CategoryValues = categories
+                .Select(x => new SelectListItem { Text = x.CategoryName, Value = x.CategoryId })
+                .ToList();
+
+            var brands = await _brandService.GetAllBrandAsync();
+            ViewBag.BrandValues = brands
+                .OrderBy(x => x.BrandName)
+                .Select(x => new SelectListItem { Text = x.BrandName, Value = x.BrandId })
+                .ToList();
         }
     }
 }

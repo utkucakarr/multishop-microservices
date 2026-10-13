@@ -1,35 +1,73 @@
-﻿@model UpdateProductImageDto
+﻿@model List<GetByIdProductImageDto>
 
 @{
-    ViewData["Title"] = "ProductImageDetail";
+    ViewData["Title"] = "Ürün Görselleri";
     Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+    string productId = ViewBag.ProductId;
 }
 
 <section class="content container-fluid">
     <div class="row">
         <div class="col-md-12">
             <div class="chart-box">
-                <h4>Ürün Görselleri Güncelleme Sayfası</h4>
+                <h4>Ürün Görselleri – @(ViewBag.ProductName ?? "Ürün bulunamadı")</h4>
                 <br />
-                <div class="bs-example" data-example-id="bordered-table">
-                    <form method="post">
-                        <input type="hidden" asp-for="ProductImageId" />
-                        <input type="hidden" asp-for="ProductId" />
-                        <label>Görsel 1</label>
-                        <input type="text" class="form-control" asp-for="Image1" />
-                        <br />
-                        <label>Görsel 2</label>
-                        <input type="text" class="form-control" asp-for="Image2" />
-                        <br />
-                        <label>Görsel 3</label>
-                        <input type="text" class="form-control" asp-for="Image3" />
-                        <br />
-                        <label>Görsel 4</label>
-                        <input type="text" class="form-control" asp-for="Image4" />
-                        <br />
-                        <button class="btn btn-warning">Ürün Görsellerini Güncelle</button>
-                    </form>
-                </div>
+                @if (TempData["ProductImageError"] is string imageError)
+                {
+                    <div class="alert alert-danger">@imageError</div>
+                }
+
+                @if (Model.Count == 0)
+                {
+                    <p class="text-muted">Bu ürünün henüz görseli yok. İlk yüklenen görsel ana görsel olur.</p>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var image in Model)
+                        {
+                            <div class="col-md-3" style="margin-bottom: 20px;">
+                                <div class="thumbnail" style="padding: 8px; border: 1px solid @(image.IsMain ? "#28a745" : "#ddd"); border-radius: 4px;">
+                                    <img src="@image.ImageUrl" alt="Ürün görseli" style="width: 100%; height: 180px; object-fit: contain; background: #f8f9fa;" />
+                                    <div style="margin-top: 8px;">
+                                        <span class="text-muted">Sıra: @image.DisplayOrder</span>
+                                        @if (image.IsMain)
+                                        {
+                                            <span class="label label-success" style="float: right;">Ana görsel</span>
+                                        }
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        @if (!image.IsMain)
+                                        {
+                                            <form method="post" asp-area="Admin" asp-controller="ProductImage" asp-action="SetMain" asp-route-id="@image.ProductImageId" style="display: inline;">
+                                                <input type="hidden" name="productId" value="@productId" />
+                                                <button class="btn btn-success btn-sm">Ana görsel yap</button>
+                                            </form>
+                                        }
+                                        <form method="post" asp-area="Admin" asp-controller="ProductImage" asp-action="Delete" asp-route-id="@image.ProductImageId" style="display: inline;"
+                                              onsubmit="return confirm('Görsel silinsin mi?');">
+                                            <input type="hidden" name="productId" value="@productId" />
+                                            <button class="btn btn-danger btn-sm">Sil</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr />
+                <h5>Yeni görsel yükle</h5>
+                <form method="post" enctype="multipart/form-data" asp-area="Admin" asp-controller="ProductImage" asp-action="Upload">
+                    <input type="hidden" name="productId" value="@productId" />
+                    <input type="file" name="file" class="form-control" accept="image/jpeg,image/png,image/webp" required />
+                    <small class="text-muted">JPG, PNG ya da WebP; en fazla 5 MB.</small>
+                    <div class="checkbox">
+                        <label><input type="checkbox" name="isMain" value="true" /> Ana görsel olsun</label>
+                    </div>
+                    <button class="btn btn-primary">Yükle</button>
+                    <a href="/Admin/Product/Index" class="btn btn-default">Ürün listesine dön</a>
+                </form>
             </div>
         </div>
     </div>

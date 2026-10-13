@@ -12,10 +12,8 @@ namespace MultiShop.Catalog.Services.AboutServices
         private readonly IMongoCollection<About> _aboutCollection;
         private readonly IMapper _mapper;
 
-        public AboutService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public AboutService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _aboutCollection = database.GetCollection<About>(_databaseSettings.AboutCollectionName);
             _mapper = mapper;
         }

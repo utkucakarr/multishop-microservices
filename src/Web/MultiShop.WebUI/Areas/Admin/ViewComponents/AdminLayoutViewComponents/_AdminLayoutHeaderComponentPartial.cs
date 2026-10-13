@@ -1,31 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MultiShop.WebUI.Services.CommentServices;
 using MultiShop.WebUI.Services.Interfaces;
-using MultiShop.WebUI.Services.MessageServices;
-using MultiShop.WebUI.Services.StatisticServices.CommentStatisticServices;
+using MultiShop.WebUI.Services.MessageServices.ContactMessageServices;
+using MultiShop.WebUI.Services.StatisticServices;
 
 namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
 {
     public class _AdminLayoutHeaderComponentPartial : ViewComponent
     {
-        private readonly IMessageService _messageService;
+        private readonly IContactMessageService _contactMessageService;
         private readonly IUserService _userService;
-        private readonly ICommentStatisticService _commentStatisticService;
+        private readonly IDashboardService _dashboardService;
 
-        public _AdminLayoutHeaderComponentPartial(IMessageService messageService, IUserService userService, ICommentStatisticService commentStatisticService)
+        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, IDashboardService dashboardService)
         {
-            _messageService = messageService;
+            _contactMessageService = contactMessageService;
             _userService = userService;
-            _commentStatisticService = commentStatisticService;
+            _dashboardService = dashboardService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var user = await _userService.GetUserInfo();
-            int messageCount = await _messageService.GetInboxMessageCountAsync();
-            ViewBag.messageCount = messageCount;
-            int commentCount = await _commentStatisticService.GetTotalCommentCountAsync();
-            ViewBag.commentCount = commentCount;
+            // Zarf simgesi: okunmamış iletişim mesajı sayısı ve en yeni 5 mesaj.
+            // Servis yanıt vermezse rozet boş kalır (sayfa çökmez).
+            var messageStatistics = await _dashboardService.GetMessageStatisticsAsync();
+            ViewBag.messageCount = messageStatistics?.Unread;
+            ViewBag.latestContactMessages = await _contactMessageService.GetAllAsync(take: 5);
+            var commentStatistics = await _dashboardService.GetCommentStatisticsAsync();
+            ViewBag.commentCount = commentStatistics?.Total;
             ViewBag.userName = user.UserName + " " + user.Surname;
             ViewBag.userMail = user.Email;
             return View();

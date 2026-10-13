@@ -2,6 +2,8 @@
 using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.BrandDtos;
 using MultiShop.Catalog.Entities;
+using MultiShop.Catalog.Exceptions;
+using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Settings;
 using MultiShop.BuildingBlocks.Exceptions;
 
@@ -11,11 +13,11 @@ namespace MultiShop.Catalog.Services.BrandServices
     {
         private readonly IMongoCollection<Brand> _brandCollection;
         private readonly IMapper _mapper;
+        private readonly IProductRepository _productRepository;
 
-        public BrandService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public BrandService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings, IProductRepository productRepository)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
+            _productRepository = productRepository;
             _brandCollection = database.GetCollection<Brand>(_databaseSettings.BrandCollectionName);
             _mapper = mapper;
         }
@@ -28,6 +30,11 @@ namespace MultiShop.Catalog.Services.BrandServices
 
         public async Task DeleteBrandAsync(string id)
         {
+            // Kullanılan marka silinirse ürünler var olmayan bir markayı gösterirdi.
+            var productCount = await _productRepository.CountByBrandIdAsync(id);
+            if (productCount > 0)
+                throw new CatalogDomainException($"Bu markaya bağlı {productCount} ürün var; önce bu ürünlerin markasını değiştirin.");
+
             await _brandCollection.DeleteOneAsync(x => x.BrandId == id);
         }
 
