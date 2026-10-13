@@ -8,7 +8,7 @@ namespace MultiShop.Notification.Dispatching;
 
 /// <summary>
 /// 1) Kuralı oku  2) şablonu uygula  3) TEK TRANSACTION: bildirim + Outbox kanallarının gönderim satırları
-/// 4) commit'ten sonra: Immediate kanalları (InApp, best effort) çalıştır, DeliveryProcessor'a sinyal ver.
+/// 4) commit'ten sonra (<see cref="PostCommitActions"/>): Immediate kanalları (InApp, best effort) çalıştır, DeliveryProcessor'a sinyal ver.
 /// Dispatcher hiçbir Outbox kanalını kendisi çağırmaz; gönderimi DeliveryProcessor yapar.
 /// </summary>
 public class NotificationDispatcher : INotificationDispatcher
@@ -17,6 +17,7 @@ public class NotificationDispatcher : INotificationDispatcher
     private readonly NotificationTemplateRegistry _templates;
     private readonly NotificationChannelRegistry _channels;
     private readonly DeliverySignal _deliverySignal;
+    private readonly PostCommitActions _postCommitActions;
     private readonly ILogger<NotificationDispatcher> _logger;
 
     public NotificationDispatcher(
@@ -24,12 +25,14 @@ public class NotificationDispatcher : INotificationDispatcher
         NotificationTemplateRegistry templates,
         NotificationChannelRegistry channels,
         DeliverySignal deliverySignal,
+        PostCommitActions postCommitActions,
         ILogger<NotificationDispatcher> logger)
     {
         _db = db;
         _templates = templates;
         _channels = channels;
         _deliverySignal = deliverySignal;
+        _postCommitActions = postCommitActions;
         _logger = logger;
     }
 
@@ -88,11 +91,22 @@ public class NotificationDispatcher : INotificationDispatcher
             }
         }
 
+        // Commit'ten SONRA çalışır: önce gönderilirse ve transaction geri alınırsa "hayalet bildirim" olurdu.
+        // SaveChanges'ten önce eklenir: transaction yoksa (test ucu) SaveChanges'in kendisi commit'tir.
+        _postCommitActions.Add(token => AfterCommitAsync(notification, enabledChannels, token));
+
         // Transactional outbox: bildirim ve gönderim satırları tek SaveChanges = tek transaction.
+        // Event consumer'da bu SaveChanges MassTransit inbox'ının transaction'ı içinde kalır; commit consumer bitince olur.
         _db.Notifications.Add(notification);
         await _db.SaveChangesAsync(cancellationToken);
 
-        // Buradan sonrası commit'ten SONRA: önce gönderilirse ve transaction geri alınırsa "hayalet bildirim" olurdu.
+        _logger.LogInformation("Bildirim oluşturuldu: {NotificationType} {NotificationId}, {DeliveryCount} gönderim kuyrukta.",
+            request.Type, notification.Id, notification.Deliveries.Count);
+        return notification.Id;
+    }
+
+    private async Task AfterCommitAsync(NotificationRecord notification, List<NotificationChannel> enabledChannels, CancellationToken cancellationToken)
+    {
         if (notification.Deliveries.Count > 0)
             _deliverySignal.Notify();
 
@@ -105,13 +119,9 @@ public class NotificationDispatcher : INotificationDispatcher
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // Ephemeral event: kayıt zaten kalıcı, istemci yeniden bağlanınca durumu okur.
-                _logger.LogWarning(ex, "{NotificationType}: {Channel} anlık gönderimi başarısız (kayıt kalıcı).", request.Type, channel);
+                _logger.LogWarning(ex, "{NotificationType}: {Channel} anlık gönderimi başarısız (kayıt kalıcı).", notification.Type, channel);
             }
         }
-
-        _logger.LogInformation("Bildirim oluşturuldu: {NotificationType} {NotificationId}, {DeliveryCount} gönderim kuyrukta.",
-            request.Type, notification.Id, notification.Deliveries.Count);
-        return notification.Id;
     }
 
     private async Task<List<NotificationChannel>> GetChannelsFromRuleAsync(string type, CancellationToken cancellationToken)
