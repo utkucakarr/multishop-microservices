@@ -1,12 +1,19 @@
 ﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.Discount.Context;
 using MultiShop.Discount.Dtos;
-using System.Reflection.Metadata;
 
 namespace MultiShop.Discount.Services
 {
     public class DiscountService : IDiscountService
     {
+        // SQL Server unique index ihlali hata numaraları.
+        private static readonly int[] UniqueViolationErrors = [2601, 2627];
+
+        // Kupon geçerliliği tek yerde: aktif ve son gün dahil süresi dolmamış (ValidDate gün bazında karşılaştırılır).
+        private const string ValidCouponCondition = "IsActive = 1 And ValidDate >= CAST(GETDATE() AS date)";
+
         private readonly DapperContext _context;
 
         public DiscountService(DapperContext context)
@@ -23,10 +30,7 @@ namespace MultiShop.Discount.Services
             parameters.Add("@rate", createCouponDto.Rate);
             parameters.Add("@isActive", createCouponDto.IsActive);
             parameters.Add("@validDate", createCouponDto.ValidDate);
-            using (var connection = _context.CreateConnection())
-            {
-                await connection.ExecuteAsync(query, parameters);
-            }
+            await ExecuteWithUniqueCodeAsync(query, parameters, createCouponDto.Code);
         }
 
         public async Task DeleteDiscountCouponAsync(int id)
@@ -93,7 +97,7 @@ namespace MultiShop.Discount.Services
         // ValidDate gün bazında karşılaştırılır: son gün, gün sonuna kadar geçerlidir.
         public async Task<int> GetDiscountCouponCountRate(string code)
         {
-            string query = "Select Rate From Coupons Where Code = @code And IsActive = 1 And ValidDate >= CAST(GETDATE() AS date)";
+            string query = $"Select Rate From Coupons Where Code = @code And {ValidCouponCondition}";
             var parameters = new DynamicParameters();
             parameters.Add("@code", code);
             using (var connection = _context.CreateConnection())
@@ -113,9 +117,32 @@ namespace MultiShop.Discount.Services
             parameters.Add("@isActive", updateCouponDto.IsActive);
             parameters.Add("@validDate", updateCouponDto.ValidDate);
             parameters.Add("@couponId", updateCouponDto.CouponId);
+            await ExecuteWithUniqueCodeAsync(query, parameters, updateCouponDto.Code);
+        }
+
+        public async Task<CouponValidationDto> ValidateCouponAsync(string code)
+        {
+            string query = $"Select Code, Rate From Coupons Where Code = @code And {ValidCouponCondition}";
+            var parameters = new DynamicParameters();
+            parameters.Add("@code", code);
             using (var connection = _context.CreateConnection())
             {
+                return await connection.QueryFirstOrDefaultAsync<CouponValidationDto>(query, parameters)
+                    ?? throw new NotFoundException("Kupon geçersiz veya süresi dolmuş.");
+            }
+        }
+
+        // Aynı kod ikinci kez eklenirse veritabanındaki unique index reddeder; kontrol + ekleme arasında yarış olmaz.
+        private async Task ExecuteWithUniqueCodeAsync(string query, DynamicParameters parameters, string code)
+        {
+            try
+            {
+                using var connection = _context.CreateConnection();
                 await connection.ExecuteAsync(query, parameters);
+            }
+            catch (SqlException ex) when (UniqueViolationErrors.Contains(ex.Number))
+            {
+                throw new ConflictException($"'{code}' kodlu bir kupon zaten var.", ex);
             }
         }
     }

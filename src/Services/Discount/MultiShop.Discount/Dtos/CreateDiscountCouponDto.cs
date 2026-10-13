@@ -1,9 +1,14 @@
-﻿namespace MultiShop.Discount.Dtos
+﻿using System.ComponentModel.DataAnnotations;
+using MultiShop.Discount.Entities;
+
+namespace MultiShop.Discount.Dtos
 {
     public class CreateDiscountCouponDto
     {
+        [Required, StringLength(CouponLimits.CodeMaxLength)]
         public string Code { get; set; }
 
+        [Range(CouponLimits.MinRate, CouponLimits.MaxRate)]
         public int Rate { get; set; }
 
         public bool IsActive { get; set; }
