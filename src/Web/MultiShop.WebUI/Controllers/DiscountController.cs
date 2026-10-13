@@ -1,90 +1,44 @@
-﻿using AspNetCoreGeneratedDocument;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MultiShop.DtoLayer.BasketDtos;
-using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;
-using MultiShop.DtoLayer.OrderDtos.OrderDetailDtos;
-using MultiShop.DtoLayer.OrderDtos.OrderOrderingDtos;
 using MultiShop.WebUI.Services.BasketServices;
-using MultiShop.WebUI.Services.DiscountServices;
-using MultiShop.WebUI.Services.Interfaces;
-using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
-using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
-using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.Controllers
 {
+    // Kupon sepete Basket servisi üzerinden uygulanır: kodu Discount'ta Basket doğrular, oran ve indirimli tutar
+    // artık URL'de taşınmaz (A-02).
     [Authorize]
     public class DiscountController : Controller
     {
-        private readonly IDiscountService _discountService;
         private readonly IBasketService _basketService;
-        private readonly IUserService _userService;
-        private readonly IOrderOrderingService _orderOrderingService;
-        private readonly IOrderDetailService _orderDetailService;
-        public DiscountController(IDiscountService discountService, IBasketService basketService, IUserService userService, IOrderOrderingService orderOrderingService, IOrderDetailService orderDetailService)
-        {
-            _discountService = discountService;
-            _basketService = basketService;
-            _userService = userService;
-            _orderOrderingService = orderOrderingService;
-            _orderDetailService = orderDetailService;
-        }
 
-        [HttpGet]
-        public PartialViewResult ConfirmDiscountCoupon()
+        public DiscountController(IBasketService basketService)
         {
-            return PartialView();
+            _basketService = basketService;
         }
 
         [HttpPost]
         public async Task<IActionResult> ConfirmDiscountCoupon(string code)
         {
-            var values = await _discountService.GetDiscountCouponCountRate(code);
-            if (values != 0)
-            {
-                var basketValues = await _basketService.GetBasket();
-                var tax = Math.Round(basketValues.TotalPrice * 10 / 100, 2, MidpointRounding.AwayFromZero);
-                var totalPriceWithTax = basketValues.TotalPrice + tax;
-
-                var totalNewPriceWithDiscount = Math.Round(totalPriceWithTax - (totalPriceWithTax * values / 100), 2, MidpointRounding.AwayFromZero);
-
-                return RedirectToAction("Index", "ShoppingCard", new { code = code, discountRate = values, totalNewPriceWithDiscount = totalNewPriceWithDiscount });
-            }
-
-            else
-            {
-                TempData["ErrorMessage"] = "Hatalı kupon kodu girdiniz";
-                return RedirectToAction("Index", "ShoppingCard");
-            }
+            var error = string.IsNullOrWhiteSpace(code)
+                ? "Kupon kodu girin."
+                : await _basketService.ApplyCouponAsync(code);
+            if (error is not null)
+                TempData["ErrorMessage"] = error;
+            return RedirectToAction("Index", "ShoppingCard");
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConfirmOder(CreateOrderingDto createOrderingDto)
+        public async Task<IActionResult> RemoveDiscountCoupon()
         {
-            //var user = await _userService.GetUserInfo();
-            //createOrderingDto.UserId = user.Id;
+            var error = await _basketService.RemoveCouponAsync();
+            if (error is not null)
+                TempData["ErrorMessage"] = error;
+            return RedirectToAction("Index", "ShoppingCard");
+        }
 
-            //var basket = await _basketService.GetBasket();
-            //createOrderingDto.OrderDate = DateTime.Now;
-            //createOrderingDto.TotalPrice = basket.TotalPrice;
-
-            //var orderingId = await _orderOrderingService.CreateOrderingAsync(createOrderingDto);
-
-            //foreach (var item in basket.BasketItems)
-            //{
-            //    var createOrderDetailDto = new CreateOrderDetailDto
-            //    {
-            //        OrderingId = orderingId,
-            //        ProductId = item.ProductId,
-            //        ProductName = item.ProductName,
-            //        ProductPrice = item.Price,
-            //        ProductAmount = item.Quantity,
-            //        ProductTotalPrice = createOrderingDto.TotalPrice
-            //    };
-            //    await _orderDetailService.CreateOrderDetailAsync(createOrderDetailDto);
-            //}
-
+        [HttpPost]
+        public IActionResult ConfirmOder()
+        {
             return RedirectToAction("Index", "Order");
         }
     }
