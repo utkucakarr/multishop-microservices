@@ -13,6 +13,7 @@ public class ExceptionMappingOptions
     [
         (typeof(NotFoundException), StatusCodes.Status404NotFound),
         (typeof(ConflictException), StatusCodes.Status409Conflict),
+        (typeof(ServiceUnavailableException), StatusCodes.Status503ServiceUnavailable),
         (typeof(DomainException), StatusCodes.Status400BadRequest),
         (typeof(BadRequestException), StatusCodes.Status400BadRequest),
         (typeof(UnauthorizedAccessException), StatusCodes.Status401Unauthorized),
