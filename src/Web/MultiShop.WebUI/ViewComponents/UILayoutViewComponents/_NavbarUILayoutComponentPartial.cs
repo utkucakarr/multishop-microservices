@@ -29,8 +29,8 @@ namespace MultiShop.WebUI.ViewComponents.UILayoutViewComponents
             ViewBag.basketCount = 0;
             if (isLogin)
             {
-                var basket = await _basketService.GetBasket();
-                ViewBag.basketCount = basket?.BasketItems.Count ?? 0;
+                // Yalnızca sayı: fiyatlama yapılmaz, her sayfada Catalog'a gidilmez.
+                ViewBag.basketCount = await _basketService.GetItemCountAsync();
             }
             ViewBag.isLogin = isLogin;
 

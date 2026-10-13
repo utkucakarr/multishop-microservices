@@ -6,6 +6,8 @@ namespace MultiShop.Catalog.Repositories.Interfaces
     {
         /// <summary>Ürünü markası (<see cref="Product.Brand"/>) doldurulmuş olarak döner; yoksa null.</summary>
         Task<Product?> GetByIdWithBrandAsync(string id);
+        /// <summary>Verilen id'lerdeki ürünler tek sorguda; geçersiz biçimdeki ya da olmayan id'ler sonuçta yer almaz.</summary>
+        Task<List<Product>> GetByIdsAsync(IEnumerable<string> ids);
         Task<IEnumerable<Product>> GetProductsWithCategoryAsync();
         Task<IEnumerable<Product>> GetProductsWithCategoryByCategoryIdAsync(string categoryId);
         /// <summary>Id geçerli biçimdeyse ve bu id'de marka varsa true.</summary>

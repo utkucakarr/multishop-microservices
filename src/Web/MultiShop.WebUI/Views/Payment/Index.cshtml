@@ -54,6 +54,7 @@
             </div>
         </div>
         <form asp-controller="Payment" asp-action="Payment" method="post">
+            <h4 class="mb-3">Ödenecek Tutar: @(((decimal)ViewBag.grandTotal).ToString("N2")) ₺</h4>
             <div class="inputBox">
                 <span>Kart Numarası</span>
                 <input name="CardNumber" type="text" id="CardNumber" maxlength="19" class="card-number-input">
