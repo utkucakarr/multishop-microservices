@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <!-- Bildirim servisi: admin paneline SignalR push, mail ve SMS. Kendi domain verisi yok. -->
+  <!-- Bildirim servisi: event'leri dinler; admin paneline SignalR push, mail ve SMS. -->
 
   <PropertyGroup>
     <UserSecretsId>7ec65220-d513-4768-ba95-5368fd307986</UserSecretsId>
@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="MailKit" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.Contracts\MultiShop.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
