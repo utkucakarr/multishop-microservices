@@ -2,85 +2,69 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.BasketDtos;
 using MultiShop.WebUI.Services.BasketServices;
-using MultiShop.WebUI.Services.CatalogServices.ProductServices;
-using MultiShop.WebUI.Services.Interfaces;
 
 namespace MultiShop.WebUI.Controllers
 {
+    // Sepet ekranı yalnızca gösterir: fiyat, indirim, KDV, kargo ve genel toplam Basket servisinden gelir (A-02).
+    // Ürün kartlarındaki linkler (/ShoppingCard/AddBasketItem/{id}, /shoppingCard/add|remove|removeAll/{id}) aynı kaldı.
     [Authorize]
     public class ShoppingCardController : Controller
     {
-        private readonly IProductService _productService;
         private readonly IBasketService _basketService;
-        private readonly IIdentityService _identityService;
 
-        public ShoppingCardController(IProductService productService, IBasketService basketService, IIdentityService identityService)
+        public ShoppingCardController(IBasketService basketService)
         {
-            _productService = productService;
             _basketService = basketService;
-            _identityService = identityService;
         }
 
-        public async Task<IActionResult> Index(string code, int discountRate, decimal totalNewPriceWithDiscount)
+        public async Task<IActionResult> Index()
         {
-            //if (!_identityService.IsAuthenticated())
-            //{
-            //    return RedirectToAction("Index", "Login");
-            //}
-            ViewBag.code = code;
-            ViewBag.discountRate = discountRate;
-            ViewBag.totalNewPriceWithDiscount = totalNewPriceWithDiscount;
             ViewBag.directory1 = "Ana Sayfa";
             ViewBag.directory2 = "Ürünler";
             ViewBag.directory3 = "Sepetim";
-            var values = await _basketService.GetBasket();
-            ViewBag.total = values.TotalPrice;
-            // Para değerleri kuruşa yuvarlanır (ör. %10 KDV: 19,99 -> 2,00)
-            var tax = Math.Round(values.TotalPrice * 10 / 100, 2, MidpointRounding.AwayFromZero);
-            ViewBag.tax = tax;
-            var totalPriceWithTax = values.TotalPrice + tax;
-            ViewBag.totalPriceWithTax = totalPriceWithTax;
-            return View();
+
+            var basket = await _basketService.GetBasketAsync();
+            if (basket is null)
+            {
+                TempData["ErrorMessage"] ??= "Sepet şu anda yüklenemiyor, lütfen biraz sonra tekrar deneyin.";
+                basket = new BasketDto();
+            }
+            return View(basket);
         }
 
         public async Task<IActionResult> AddBasketItem(string id)
         {
-            var values = await _productService.GetByIdProductAsync(id);
-            var items = new BasketItemDto
-            {
-                ProductId = values.ProductId,
-                ProductName = values.ProductName,
-                Price = values.ProductPrice,
-                Quantity = 1,
-                ProductImageUrl = values.ProductImageUrl
-            };
-            await _basketService.AddBasketItem(items);
-            return RedirectToAction("Index");
+            ShowError(await _basketService.AddItemAsync(id));
+            return RedirectToAction(nameof(Index));
         }
-
 
         [Route("shoppingCard/removeAll/{productId}")]
         public async Task<IActionResult> RemoveAllBasketItem(string productId)
         {
-            await _basketService.RemoveAllBasketItem(productId);
+            ShowError(await _basketService.RemoveItemAsync(productId));
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Adedi bir azaltır; son adet "eksi" ile silinmez (çarpı butonu siler).</summary>
         [Route("shoppingCard/remove/{productId}")]
-        public async Task<IActionResult> RemoveBasketItem(string productId)
+        public async Task<IActionResult> RemoveBasketItem(string productId, int quantity)
         {
-            await _basketService.RemoveBasketItem(productId);
+            if (quantity > 1)
+                ShowError(await _basketService.SetQuantityAsync(productId, quantity - 1));
             return RedirectToAction(nameof(Index));
         }
-
 
         [Route("shoppingCard/add/{productId}")]
-        public async Task<IActionResult> AddBasketBtnItem(BasketItemDto basketItemDto)
+        public async Task<IActionResult> AddBasketBtnItem(string productId)
         {
-            await _basketService.AddBasketBtnItem(basketItemDto);
+            ShowError(await _basketService.AddItemAsync(productId));
             return RedirectToAction(nameof(Index));
         }
 
-
+        private void ShowError(string? error)
+        {
+            if (error is not null)
+                TempData["ErrorMessage"] = error;
+        }
     }
 }

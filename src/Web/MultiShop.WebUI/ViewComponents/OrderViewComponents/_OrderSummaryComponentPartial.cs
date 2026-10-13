@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MultiShop.DtoLayer.BasketDtos;
 using MultiShop.WebUI.Services.BasketServices;
-using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.ViewComponents.OrderViewComponents
 {
+    // Sipariş sayfasındaki özet: tutarlar Basket'ten (sepet sayfasıyla ve tahsil edilen tutarla aynı formül).
     public class _OrderSummaryComponentPartial : ViewComponent
     {
         private readonly IBasketService _basketService;
@@ -15,9 +16,8 @@ namespace MultiShop.WebUI.ViewComponents.OrderViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var basketTotal = await _basketService.GetBasket();
-            var basketItems = basketTotal.BasketItems;
-            return View(basketItems);
+            var basket = await _basketService.GetBasketAsync() ?? new BasketDto();
+            return View(basket);
         }
     }
 }

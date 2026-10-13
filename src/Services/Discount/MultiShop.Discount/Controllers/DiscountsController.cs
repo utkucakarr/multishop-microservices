@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace MultiShop.Discount.Controllers
 {
-    // Müşteri sepette kupon kodunu kontrol eder; kupon listesi, ekleme, güncelleme, silme ve sayaç Admin.
+    // Kuponu sepete uygularken Basket doğrular (validate, kullanıcının token'ıyla); kupon listesi, ekleme, güncelleme, silme Admin.
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -34,14 +34,6 @@ namespace MultiShop.Discount.Controllers
         public async Task<IActionResult> GetDiscountCouponById(int id)
         {
             var values = await _discountService.GetByIdDiscountCouponAsync(id);
-            return Ok(values);
-        }
-
-        [Authorize(Policy = MultiShopPolicies.Authenticated)]
-        [HttpGet("GetCodeDetailByCodeAsync")]
-        public async Task<IActionResult> GetCodeDetailByCodeAsync(string code)
-        {
-            var values = await _discountService.GetCodeDetailByCodeAsync(code);
             return Ok(values);
         }
 
@@ -76,14 +68,6 @@ namespace MultiShop.Discount.Controllers
         {
             var value = await _discountService.ValidateCouponAsync(code);
             return Ok(value);
-        }
-
-        [Authorize(Policy = MultiShopPolicies.Authenticated)]
-        [HttpGet("GetDiscountCouponCountRate")]
-        public async Task<IActionResult> GetDiscountCouponCountRate(string code)
-        {
-            var values = await _discountService.GetDiscountCouponCountRate(code);
-            return Ok(values);
         }
     }
 }

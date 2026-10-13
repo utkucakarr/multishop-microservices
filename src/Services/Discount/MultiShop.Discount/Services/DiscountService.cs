@@ -69,41 +69,15 @@ namespace MultiShop.Discount.Services
             }
         }
 
-        public async Task<ResultDiscountCouponDto> GetCodeDetailByCodeAsync(string code)
-        {
-            string query = "Select * From Coupons Where Code = @code";
-            var parameters = new DynamicParameters();
-            parameters.Add("@code", code);
-            using (var connection = _context.CreateConnection())
-            {
-                var values = await connection.QueryFirstOrDefaultAsync<ResultDiscountCouponDto>(query, parameters);
-                return values;
-            }
-        }
-
         public async Task<DiscountStatisticsDto> GetStatisticsAsync()
         {
             // Tek sorgu; tablo boşken SUM null döndüğü için ISNULL.
             string query = "Select Count(*) As CouponCount, " +
-                "ISNULL(Sum(Case When IsActive = 1 And ValidDate >= CAST(GETDATE() AS date) Then 1 Else 0 End), 0) As ActiveCouponCount " +
+                $"ISNULL(Sum(Case When {ValidCouponCondition} Then 1 Else 0 End), 0) As ActiveCouponCount " +
                 "From Coupons";
             using (var connection = _context.CreateConnection())
             {
                 return await connection.QuerySingleAsync<DiscountStatisticsDto>(query);
-            }
-        }
-
-        // Sadece aktif ve süresi dolmamış kuponun oranını döner; geçersiz kuponda 0 döner.
-        // ValidDate gün bazında karşılaştırılır: son gün, gün sonuna kadar geçerlidir.
-        public async Task<int> GetDiscountCouponCountRate(string code)
-        {
-            string query = $"Select Rate From Coupons Where Code = @code And {ValidCouponCondition}";
-            var parameters = new DynamicParameters();
-            parameters.Add("@code", code);
-            using (var connection = _context.CreateConnection())
-            {
-                var values = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
-                return values;
             }
         }
 
