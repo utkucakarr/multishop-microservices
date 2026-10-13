@@ -22,6 +22,16 @@ namespace MultiShop.Discount.Context
 
         public DbSet<Coupon> Coupons { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Coupon>(entity =>
+            {
+                // Kod müşterinin yazdığı anahtar: iki kupon aynı kodu taşırsa hangisinin uygulanacağı belirsiz olurdu (DIS-02).
+                entity.Property(x => x.Code).HasMaxLength(CouponLimits.CodeMaxLength);
+                entity.HasIndex(x => x.Code).IsUnique();
+            });
+        }
+
         public IDbConnection CreateConnection() => new SqlConnection(_connectionString);
     }
 }

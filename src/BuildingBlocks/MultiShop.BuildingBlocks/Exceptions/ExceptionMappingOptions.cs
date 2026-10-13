@@ -12,6 +12,7 @@ public class ExceptionMappingOptions
     private readonly List<(Type Type, int StatusCode)> _mappings =
     [
         (typeof(NotFoundException), StatusCodes.Status404NotFound),
+        (typeof(ConflictException), StatusCodes.Status409Conflict),
         (typeof(DomainException), StatusCodes.Status400BadRequest),
         (typeof(BadRequestException), StatusCodes.Status400BadRequest),
         (typeof(UnauthorizedAccessException), StatusCodes.Status401Unauthorized),

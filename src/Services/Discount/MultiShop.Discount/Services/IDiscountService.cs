@@ -18,6 +18,9 @@ namespace MultiShop.Discount.Services
 
         Task<int> GetDiscountCouponCountRate(string code);
 
+        /// <summary>Aktif ve süresi dolmamış kuponu döner; yoksa <see cref="BuildingBlocks.Exceptions.NotFoundException"/>.</summary>
+        Task<CouponValidationDto> ValidateCouponAsync(string code);
+
         Task<DiscountStatisticsDto> GetStatisticsAsync();
     }
 }

@@ -69,6 +69,15 @@ namespace MultiShop.Discount.Controllers
             return Ok("İndirim kuponu başarıyla güncellendi");
         }
 
+        /// <summary>Sepette kupon uygulanırken Basket servisi çağırır: geçerliyse kod ve oran, değilse 404.</summary>
+        [Authorize(Policy = MultiShopPolicies.Authenticated)]
+        [HttpGet("validate/{code}")]
+        public async Task<IActionResult> ValidateCoupon(string code)
+        {
+            var value = await _discountService.ValidateCouponAsync(code);
+            return Ok(value);
+        }
+
         [Authorize(Policy = MultiShopPolicies.Authenticated)]
         [HttpGet("GetDiscountCouponCountRate")]
         public async Task<IActionResult> GetDiscountCouponCountRate(string code)
