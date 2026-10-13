@@ -28,6 +28,7 @@ namespace MultiShop.Basket.Settings
             _connectionMultiplexer = ConnectionMultiplexer.Connect(configurationOptions);
         }
 
-        public IDatabase GetDb(int db = 1) => _connectionMultiplexer.GetDatabase(0);
+        // Sepet varsayılan veritabanında (0) durur; eskiden parametre alıp yok sayıyordu (BAS-03).
+        public IDatabase GetDb() => _connectionMultiplexer.GetDatabase();
     }
 }

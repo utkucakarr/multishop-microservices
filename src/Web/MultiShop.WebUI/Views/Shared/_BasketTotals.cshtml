@@ -1,0 +1,29 @@
+﻿@model BasketDto
+@* Sepet sayfası ve sipariş özeti aynı tutarları gösterir; hepsi Basket servisinin hesabı (WebUI hesap yapmaz). *@
+<div class="border-bottom pb-2">
+    <div class="d-flex justify-content-between mb-1">
+        <h6>Ara Toplam</h6>
+        <h6>@Model.Subtotal.ToString("N2") ₺</h6>
+    </div>
+    @if (Model.DiscountAmount > 0)
+    {
+        <div class="d-flex justify-content-between mb-1">
+            <h6 class="font-weight-medium">İndirim (%@Model.DiscountRate)</h6>
+            <h6 class="font-weight-medium">-@Model.DiscountAmount.ToString("N2") ₺</h6>
+        </div>
+    }
+    <div class="d-flex justify-content-between mb-1">
+        <h6 class="font-weight-medium">KDV (%@Model.TaxRatePercent.ToString("0.##"))</h6>
+        <h6 class="font-weight-medium">@Model.TaxAmount.ToString("N2") ₺</h6>
+    </div>
+    <div class="d-flex justify-content-between mb-1">
+        <h6 class="font-weight-medium">Kargo</h6>
+        <h6 class="font-weight-medium">@Model.ShippingFee.ToString("N2") ₺</h6>
+    </div>
+</div>
+<div class="pt-2">
+    <div class="d-flex justify-content-between mt-2">
+        <h5>Genel Toplam</h5>
+        <h5>@Model.GrandTotal.ToString("N2") ₺</h5>
+    </div>
+</div>
