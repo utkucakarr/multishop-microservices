@@ -28,6 +28,8 @@ var app = builder.Build();
 // Ocelot tüm istekleri yakaladığı için /health ondan önce eklenmeli.
 app.UseMultiShopHealthChecks();
 app.UseMultiShopRequestLogging();
+// Notification hub'ı (/hubs/notification) için WebSocket proxy; Ocelot 24 ve öncesinde UseOcelot'tan önce elle eklenmeli.
+app.UseWebSockets();
 
 await app.UseOcelot();
 

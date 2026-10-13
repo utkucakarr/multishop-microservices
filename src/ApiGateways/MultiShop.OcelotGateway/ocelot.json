@@ -226,6 +226,20 @@
         "AllowedScopes": [ "MessageFullPermission" ]
       }
     },
+    //Notification – admin paneli SignalR hub'ı (WebSocket). Ocelot WebSocket rotalarında kimlik doğrulama yapamaz;
+    //token (?access_token=) hub'da doğrulanır (Admin rolü + NotificationFullPermission). İstemci negotiate'i atlar (skipNegotiation).
+    {
+      "DownstreamPathTemplate": "/hubs/notification",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7079
+        }
+      ],
+      "UpstreamPathTemplate": "/hubs/notification",
+      "UpstreamHttpMethod": [ "Get" ]
+    },
     //Admin dashboard – Catalog istatistikleri (aggregate: /services/admin/dashboard). Servis ayrıca Admin rolü ister.
     {
       "Key": "catalog",
