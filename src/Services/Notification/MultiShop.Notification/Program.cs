@@ -78,6 +78,7 @@ builder.AddMultiShopMessaging("Notification", x =>
     x.AddConfigureEndpointsCallback((context, _, endpoint) => endpoint.UseEntityFrameworkOutbox<NotificationDbContext>(context));
 
     x.AddConsumer<CommentCreatedConsumer>();
+    x.AddConsumer<ContactMessageReceivedConsumer>();
 });
 
 // Admin paneli REST API'si (bildirim kutusu, ayarlar).
