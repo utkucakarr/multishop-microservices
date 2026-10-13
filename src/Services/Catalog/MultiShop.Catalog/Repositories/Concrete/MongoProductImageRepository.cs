@@ -7,7 +7,7 @@ namespace MultiShop.Catalog.Repositories.Concrete
 {
     public class MongoProductImageRepository : MongoGenericRepository<ProductImage>, IProductImageRepository
     {
-        public MongoProductImageRepository(IDatabaseSettings settings) : base(settings, settings.ProductImageCollectionName)
+        public MongoProductImageRepository(IMongoDatabase database, IDatabaseSettings settings) : base(database, settings.ProductImageCollectionName)
         {
         }
 
@@ -32,9 +32,21 @@ namespace MultiShop.Catalog.Repositories.Concrete
                 .ToDictionary(g => g.Key, g => g.First().ImageUrl);
         }
 
-        //public async Task<ProductImage?> GetMainImageByProductIdAsync(string productId)
-        //    => await _collection
-        //        .Find(x => x.ProductId == productId && x.IsMain)
-        //        .FirstOrDefaultAsync();
+        public async Task<int> GetMaxDisplayOrderAsync(string productId)
+        {
+            var last = await _collection
+                .Find(x => x.ProductId == productId)
+                .SortByDescending(x => x.DisplayOrder)
+                .FirstOrDefaultAsync();
+            return last?.DisplayOrder ?? 0;
+        }
+
+        public async Task ClearMainAsync(string productId)
+            => await _collection.UpdateManyAsync(
+                x => x.ProductId == productId && x.IsMain,
+                Builders<ProductImage>.Update.Set(x => x.IsMain, false));
+
+        public async Task DeleteByProductIdAsync(string productId)
+            => await _collection.DeleteManyAsync(x => x.ProductId == productId);
     }
 }

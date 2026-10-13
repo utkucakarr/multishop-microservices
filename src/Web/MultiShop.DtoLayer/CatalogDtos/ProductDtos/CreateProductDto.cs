@@ -17,5 +17,13 @@ namespace MultiShop.DtoLayer.CatalogDtos.ProductDtos
         public string ProductDescription { get; set; }
 
         public string CategoryId { get; set; }
+        // İsteğe bağlı marka; "Marka yok" seçilirse null
+        public string? BrandId { get; set; }
+        // Ürün sisteme ilk girildiğindeki başlangıç stoğu
+        public int AvailableStock { get; set; }
+        // Stok bu seviyenin altına inince yeniden sipariş uyarısı
+        public int RestockThreshold { get; set; } = 5;
+        // Deponun alabileceği maksimum stok (minimum stoktan büyük olmalı)
+        public int MaxStockThreshold { get; set; } = 100;
     }
 }

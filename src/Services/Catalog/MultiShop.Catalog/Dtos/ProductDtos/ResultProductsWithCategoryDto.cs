@@ -14,5 +14,9 @@ namespace MultiShop.Catalog.Dtos.ProductDtos
 
         // Nested DTO
         public ResultCategoryDto Category { get; set; }
+
+        public string? BrandId { get; set; }
+
+        public string? BrandName { get; set; }
     }
 }

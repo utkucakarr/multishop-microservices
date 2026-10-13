@@ -6,13 +6,15 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
     {
         Task<List<ResultProductDto>> GetAllProductAsync();
 
-        Task CreateProductAsync(CreateProductDto createProductDto);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> CreateProductAsync(CreateProductDto createProductDto);
 
-        Task UpdateProductAsync(UpdateProductDto updateProductDto);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> UpdateProductAsync(UpdateProductDto updateProductDto);
 
         Task DeleteProductAsync(string id);
 
-        Task<UpdateProductDto> GetByIdProductAsync(string id);
+        Task<GetByIdProductDto> GetByIdProductAsync(string id);
 
         Task<List<ResultProductWithCategoryDto>> GetProductsWithCategoryAsync();
 

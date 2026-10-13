@@ -20,9 +20,9 @@
 
         public ServiceApi Payment { get; set; }
 
-        public ServiceApi Image { get; set; }
-
         public ServiceApi Message { get; set; }
+
+        public ServiceApi Notification { get; set; }
     }
 
     public class ServiceApi

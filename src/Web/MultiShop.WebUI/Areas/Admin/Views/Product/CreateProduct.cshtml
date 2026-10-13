@@ -11,6 +11,10 @@
             <div class="chart-box">
                 <h4>Ürün Ekleme Sayfası</h4>
                 <br />
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+                }
                 <div class="bs-example" data-example-id="bordered-table">
                     <form method="post">
                         <label>Ürün Adı</label>
@@ -19,11 +23,20 @@
                         <label>Ürün Fiyatı</label>
                         <input type="text" class="form-control" asp-for="ProductPrice" />
                         <br />
-                        <label>Ürün Görseli</label>
-                        <input type="text" class="form-control" asp-for="ProductImageUrl" />
-                        <br />
                         <label>Ürün Kategorisi</label>
                         @Html.DropDownListFor(x => x.CategoryId, (List<SelectListItem>)ViewBag.CategoryValues, new { @style = "padding:0;", @class = "form-control" })
+                        <br />
+                        <label>Ürün Markası</label>
+                        @Html.DropDownListFor(x => x.BrandId, (List<SelectListItem>)ViewBag.BrandValues, "— Marka yok —", new { @style = "padding:0;", @class = "form-control" })
+                        <br />
+                        <label>Başlangıç Stoğu</label>
+                        <input type="number" min="0" class="form-control" asp-for="AvailableStock" />
+                        <br />
+                        <label>Minimum Stok (bu seviyenin altında yeniden sipariş uyarısı)</label>
+                        <input type="number" min="0" class="form-control" asp-for="RestockThreshold" />
+                        <br />
+                        <label>Maksimum Stok (minimum stoktan büyük olmalı)</label>
+                        <input type="number" min="1" class="form-control" asp-for="MaxStockThreshold" />
                         <br />
                         <label>Ürün Açıklaması</label>
                         <textarea class="form-control" asp-for="ProductDescription" rows="5"></textarea>

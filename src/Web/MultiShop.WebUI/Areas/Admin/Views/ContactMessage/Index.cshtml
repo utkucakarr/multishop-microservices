@@ -1,0 +1,55 @@
+﻿@model List<ResultContactMessageDto>
+
+@{
+    ViewData["Title"] = "İletişim Mesajları";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+    int count = 0;
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>İletişim Mesajları <small>(@Model.Count(x => !x.IsRead) okunmamış / @Model.Count toplam)</small></h4>
+                <br />
+                @if (Model.Count == 0)
+                {
+                    <p>Henüz iletişim formundan gelen bir mesaj yok.</p>
+                }
+                else
+                {
+                    <div class="bs-example" data-example-id="bordered-table">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Gönderen</th>
+                                    <th>E-posta</th>
+                                    <th>Konu</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                    <th>Aç</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    count++;
+                                    <tr style="@(item.IsRead ? "" : "font-weight:bold")">
+                                        <th scope="row">@count</th>
+                                        <td>@item.NameSurname</td>
+                                        <td>@item.Email</td>
+                                        <td>@item.Subject</td>
+                                        <td>@item.SendDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@(item.IsRead ? "Okundu" : "Yeni")</td>
+                                        <td><a href="/Admin/ContactMessage/Detail/@item.ContactMessageId" class="btn btn-primary">Aç</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

@@ -10,7 +10,12 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductImageServices
 
         Task UpdateProductImageAsync(UpdateProductImageDto updateProductImageDto);
 
-        Task DeleteProductImageAsync(string id);
+        /// <summary>Dosyayı Catalog'a yükler; hata varsa kullanıcıya gösterilecek mesajı, yoksa null döner.</summary>
+        Task<string?> UploadProductImageAsync(string productId, IFormFile file, bool isMain);
+
+        Task<string?> SetMainProductImageAsync(string id);
+
+        Task<string?> DeleteProductImageAsync(string id);
 
         Task<GetByIdProductImageDto> GetByIdProductImageAsync(string id);
 

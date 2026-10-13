@@ -19,5 +19,6 @@ namespace MultiShop.DtoLayer.CatalogDtos.ProductDtos
         public string ProductDescription { get; set; }
 
         public string CategoryId { get; set; }
+        public string? BrandId { get; set; }
     }
 }

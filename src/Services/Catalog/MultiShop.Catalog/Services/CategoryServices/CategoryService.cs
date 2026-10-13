@@ -12,10 +12,8 @@ namespace MultiShop.Catalog.Services.CategoryServices
         private readonly IMongoCollection<Category> _categoryCollection;
         private readonly IMapper _mapper;
 
-        public CategoryService(IMapper mapper, IDatabaseSettings _databaseSettings)
+        public CategoryService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings)
         {
-            var client = new MongoClient(_databaseSettings.ConnectionString);
-            var database = client.GetDatabase(_databaseSettings.DatabaseName);
             _categoryCollection = database.GetCollection<Category>(_databaseSettings.CategoryCollectionName);
             _mapper = mapper;
         }

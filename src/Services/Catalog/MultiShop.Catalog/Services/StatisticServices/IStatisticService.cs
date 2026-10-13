@@ -1,17 +1,10 @@
-﻿namespace MultiShop.Catalog.Services.StatisticServices
+﻿using MultiShop.Catalog.Dtos.StatisticDtos;
+
+namespace MultiShop.Catalog.Services.StatisticServices
 {
     public interface IStatisticService
     {
-        Task<long> GetCategoryCountAsync();
-
-        Task<long> GetProductCountAsync();
-
-        Task<long> GetBrandCountAsync();
-
-        Task<decimal> GetProductAvgPriceAsync();
-
-        Task<string> GetMaxPriceProductNameAsync();
-
-        Task<string> GetMinPriceProductNameAsync();
+        /// <summary>Dashboard rakamlarının hepsi tek seferde (sorgular paralel çalışır).</summary>
+        Task<CatalogStatisticsDto> GetStatisticsAsync();
     }
 }
