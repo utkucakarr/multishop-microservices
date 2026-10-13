@@ -1,22 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MultiShop.WebUI.Services.BasketServices;
+using MultiShop.DtoLayer.BasketDtos;
 
 namespace MultiShop.WebUI.ViewComponents.ShoppingCardViewComponents
 {
+    // Sepeti sayfa (ShoppingCardController.Index) bir kez okur ve buraya verir; bileşen ikinci kez istemez.
     public class _ShoppingCartProductListComponentPartial : ViewComponent
     {
-        private readonly IBasketService _basketService;
-
-        public _ShoppingCartProductListComponentPartial(IBasketService basketService)
+        public IViewComponentResult Invoke(BasketDto basket)
         {
-            _basketService = basketService;
-        }
-
-        public async Task<IViewComponentResult> InvokeAsync ()
-        {
-            var basketTotal = await _basketService.GetBasket();
-            var basketItems = basketTotal.BasketItems;
-            return View(basketItems);
+            return View(basket);
         }
     }
 }

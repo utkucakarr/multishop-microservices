@@ -31,8 +31,16 @@ namespace MultiShop.WebUI.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(string errorMessage)
+        public async Task<IActionResult> Index(string errorMessage)
         {
+            var basket = await _basketService.GetBasketAsync();
+            if (basket is null || basket.Items.Count == 0)
+            {
+                TempData["ErrorMessage"] = basket is null ? "Sepet şu anda yüklenemiyor." : "Sepetiniz boş.";
+                return RedirectToAction("Index", "ShoppingCard");
+            }
+
+            ViewBag.grandTotal = basket.GrandTotal;
             ViewBag.errorMessage = errorMessage;
             ViewBag.directory1 = "MultiShop";
             ViewBag.directory2 = "Ödeme Ekranı";
@@ -46,30 +54,35 @@ namespace MultiShop.WebUI.Controllers
             var user = await _userService.GetUserInfo();
             createPaymentDto.UserID = user.Id;
 
-            var basket = await _basketService.GetBasket();
-            createPaymentDto.PaymentAmounth = basket.TotalPrice.ToString("0.00", CultureInfo.InvariantCulture);
-
+            // Tutar Basket'in hesapladığı genel toplam (ara toplam − indirim + KDV + kargo); formdan ya da URL'den alınmaz.
+            var basket = await _basketService.GetBasketAsync();
+            if (basket is null || basket.Items.Count == 0)
+            {
+                TempData["ErrorMessage"] = basket is null ? "Sepet şu anda yüklenemiyor." : "Sepetiniz boş.";
+                return RedirectToAction("Index", "ShoppingCard");
+            }
+            createPaymentDto.PaymentAmounth = basket.GrandTotal.ToString("0.00", CultureInfo.InvariantCulture);
 
             var orderRequest = new CreateOrderingDto
             {
                 UserId = user.Id,
                 OrderDate = DateTime.Now,
-                TotalPrice = basket.TotalPrice
+                TotalPrice = basket.GrandTotal
             };
 
 
             var orderingId = await _orderOrderingService.CreateOrderingAsync(orderRequest);
 
-            foreach (var item in basket.BasketItems)
+            foreach (var item in basket.Items)
             {
                 var createOrderDetailDto = new CreateOrderDetailDto
                 {
                     OrderingId = orderingId,
                     ProductId = item.ProductId,
                     ProductName = item.ProductName,
-                    ProductPrice = item.Price,
+                    ProductPrice = item.UnitPrice,
                     ProductAmount = item.Quantity,
-                    ProductTotalPrice = item.Price * item.Quantity
+                    ProductTotalPrice = item.LineTotal
                 };
                 await _orderDetailService.CreateOrderDetailAsync(createOrderDetailDto);
             }
@@ -79,7 +92,7 @@ namespace MultiShop.WebUI.Controllers
 
             if (response.IsSuccess == true)
             {
-                await _basketService.DeleteBasket(user.Id);
+                await _basketService.DeleteBasketAsync();
                 //return RedirectToAction("Index", "Default");
                 return RedirectToAction("MyOrderList", "MyOrder", new { area = "User" });
             }

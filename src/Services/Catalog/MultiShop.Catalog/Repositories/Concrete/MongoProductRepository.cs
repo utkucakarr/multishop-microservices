@@ -27,6 +27,16 @@ namespace MultiShop.Catalog.Repositories.Concrete
             return product;
         }
 
+        public async Task<List<Product>> GetByIdsAsync(IEnumerable<string> ids)
+        {
+            // Geçersiz ObjectId sorguda FormatException fırlatırdı; sepetteki eski/bozuk bir id tüm isteği düşürmesin.
+            var validIds = ids.Where(id => ObjectId.TryParse(id, out _)).Distinct().ToList();
+            if (validIds.Count == 0)
+                return new List<Product>();
+
+            return await _collection.Find(p => validIds.Contains(p.ProductId)).ToListAsync();
+        }
+
         public async Task<IEnumerable<Product>> GetProductsWithCategoryAsync()
         {
             var products = await _collection.Find(_ => true).ToListAsync();

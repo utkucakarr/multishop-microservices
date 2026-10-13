@@ -1,22 +1,24 @@
-﻿
+﻿@model BasketDto
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/UILayout/_UILayout.cshtml";
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger" role="alert" style="height:50px">
+    <div class="alert alert-danger" role="alert">
         @TempData["ErrorMessage"]
     </div>
+}
+@foreach (var warning in Model.Warnings)
+{
+    <div class="alert alert-warning" role="alert">@warning</div>
 }
 <div class="container-fluid">
     <div class="row px-xl-5">
 
-        @await Component.InvokeAsync("_ShoppingCartProductListComponentPartial")
+        @await Component.InvokeAsync("_ShoppingCartProductListComponentPartial", new { basket = Model })
 
-        @* @await Component.InvokeAsync("_ShoppingCartDiscountCouponComponentPartial") *@
-
-        @await Html.PartialAsync("~/Views/Discount/ConfirmDiscountCoupon.cshtml");
+        @await Html.PartialAsync("~/Views/Discount/ConfirmDiscountCoupon.cshtml", Model)
 
     </div>
 </div>

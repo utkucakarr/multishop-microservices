@@ -2,20 +2,28 @@
 
 namespace MultiShop.WebUI.Services.BasketServices
 {
+    /// <summary>
+    /// Basket servisinin istemcisi. Yalnızca ürün id'si, adet ve kupon kodu gönderilir; fiyat ve toplamlar Basket'ten okunur.
+    /// Değiştiren metotlar başarıda null, hatada Basket'in mesajını (ör. "Kupon geçersiz veya süresi dolmuş.") döner.
+    /// </summary>
     public interface IBasketService
     {
-        Task<BasketTotalDto> GetBasket();
+        /// <summary>Fiyatlanmış sepet; Basket'e ulaşılamazsa null.</summary>
+        Task<BasketDto?> GetBasketAsync();
 
-        Task SaveBasket(BasketTotalDto basketTotalDto);
+        /// <summary>Üst menüdeki rozet; hata olursa 0.</summary>
+        Task<int> GetItemCountAsync();
 
-        Task DeleteBasket(string userId);
+        Task<string?> AddItemAsync(string productId, int quantity = 1);
 
-        Task AddBasketItem(BasketItemDto basketItemDto);
+        Task<string?> SetQuantityAsync(string productId, int quantity);
 
-        Task<bool> RemoveAllBasketItem(string productId);
+        Task<string?> RemoveItemAsync(string productId);
 
-        Task RemoveBasketItem(string productId);
+        Task<string?> ApplyCouponAsync(string code);
 
-        Task AddBasketBtnItem(BasketItemDto basketItemDto);
+        Task<string?> RemoveCouponAsync();
+
+        Task DeleteBasketAsync();
     }
 }

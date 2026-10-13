@@ -14,6 +14,9 @@ namespace MultiShop.Catalog.Services.ProductServices
 
         Task<GetByIdProductDto> GetByIdProductAsync(string id);
 
+        /// <summary>Sepet fiyatlaması: bulunan ürünlerin güncel fiyatı; olmayan id'ler sonuçta yer almaz.</summary>
+        Task<List<ProductPriceDto>> GetPricesByIdsAsync(IReadOnlyCollection<string> ids);
+
         Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync();
 
         Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId);

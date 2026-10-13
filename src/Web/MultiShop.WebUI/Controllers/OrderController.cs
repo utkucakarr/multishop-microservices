@@ -27,11 +27,12 @@ namespace MultiShop.WebUI.Controllers
             ViewBag.directory1 = "MultiShop";
             ViewBag.directory2 = "Siparişler";
             ViewBag.directory3 = "Sipariş İşlemleri";
-            var values = await _basketService.GetBasket();
-            ViewBag.total = values.TotalPrice;
-            int cargoPrice = 20;
-            ViewBag.cargoPrice = cargoPrice;
-            ViewBag.totalPriceWithCargo = cargoPrice + values.TotalPrice;
+            // Tutarlar sipariş özetinde Basket'ten okunur (_OrderSummaryComponentPartial); burada hesap yok.
+            if (await _basketService.GetItemCountAsync() == 0)
+            {
+                TempData["ErrorMessage"] = "Sepetiniz boş.";
+                return RedirectToAction("Index", "ShoppingCard");
+            }
 
             return View();
         }
