@@ -43,22 +43,36 @@
                         <li class="footer"><a href="/Admin/ContactMessage/Index">Tüm mesajlar</a></li>
                     </ul>
                 </li>
-                @* Bildirimler *@
+                @* Bildirimler (Notification servisi): sayı ve liste admin-notifications.js ile canlı güncellenir *@
+                @{
+                    int? notificationCount = ViewBag.notificationCount;
+                    var latestNotifications = (List<NotificationListItemDto>)ViewBag.latestNotifications;
+                }
                 <li class="dropdown notifications-menu">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-comment"><span class="badge" style="position:relative;top:-10px"><strong>@ViewBag.commentCount</strong></span></i>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Bildirimler">
+                        <i class="fa fa-bell"><span class="badge" id="notification-badge" style="position:relative;top:-10px;@(notificationCount > 0 ? "" : "display:none")">@notificationCount</span></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="header">Son Yorumlar</li>
+                        <li class="header"><span id="notification-count-text">@(notificationCount?.ToString() ?? "—")</span> okunmamış bildirim</li>
                         <li>
-                            <ul class="menu">
-                                <li><a href="#"><i class="icon-lightbulb"></i> Lorem ipsum dolor sit amet </a> </li>
-                                <li><a href="#"><i class="icon-map-pin blue"></i> Lorem ipsum dolor sit amet </a> </li>
-                                <li><a href="#"><i class="icon-refresh orange"></i> Lorem ipsum dolor sit amet </a> </li>
-                                <li><a href="#"><i class="icon-map-pin blue"></i> Lorem ipsum dolor sit amet </a> </li>
+                            <ul class="menu" id="notification-list">
+                                @foreach (var item in latestNotifications)
+                                {
+                                    <li>
+                                        <a href="/Admin/Notification/Detail/@item.Id">
+                                            <h4 style="@(item.ReadAt is null ? "font-weight:bold" : "")">@item.Title</h4>
+                                            <p>@item.Message</p>
+                                            <p><small><i class="fa fa-clock-o"></i> @item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small></p>
+                                        </a>
+                                    </li>
+                                }
+                                @if (latestNotifications.Count == 0)
+                                {
+                                    <li id="notification-empty" style="padding:10px" class="text-muted">Bildirim yok</li>
+                                }
                             </ul>
                         </li>
-                        <li class="footer"><a href="#">View all</a></li>
+                        <li class="footer"><a href="/Admin/Notification/Index">Tüm bildirimler</a></li>
                     </ul>
                 </li>
                 <li class="dropdown user user-menu">

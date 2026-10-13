@@ -1,5 +1,3 @@
-using MultiShop.Notification.Notifications;
-
 namespace MultiShop.Notification.Hubs;
 
 /// <summary>
@@ -8,5 +6,5 @@ namespace MultiShop.Notification.Hubs;
 /// </summary>
 public interface INotificationClient
 {
-    Task ReceiveNotification(NotificationMessage notification);
+    Task ReceiveNotification(NotificationPush notification);
 }
