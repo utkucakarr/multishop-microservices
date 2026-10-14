@@ -28,6 +28,11 @@ namespace MultiShop.Order.Application.Sagas
         /// <summary>İptal sebebi ya da son başarısız ödeme denemesinin sebebi.</summary>
         public string? FailReason { get; set; }
 
+        /// <summary>Kargo takip numarası ve firması (gönderi kargoya verilince).</summary>
+        public string? TrackingNumber { get; set; }
+
+        public string? CargoCompanyName { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
