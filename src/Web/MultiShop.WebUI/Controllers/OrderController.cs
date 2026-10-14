@@ -1,50 +1,79 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;
+using MultiShop.WebUI.Models;
 using MultiShop.WebUI.Services.BasketServices;
-using MultiShop.WebUI.Services.Interfaces;
 using MultiShop.WebUI.Services.OrderServices.OrderAddressServices;
-using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.Controllers
 {
+    // Sipariş onayı: teslimat adresi seçilir (ya da yeni adres kaydedilir), sepet Basket'te onaylanır. Siparişi Order'daki
+    // saga oluşturur (stok ayırır); kullanıcı ödeme sayfasında siparişin ödeme beklemesini görür.
     [Authorize]
     public class OrderController : Controller
     {
         private readonly IOrderAddressService _orderAddressService;
-        private readonly IUserService _userService;
         private readonly IBasketService _basketService;
 
-        public OrderController(IOrderAddressService orderAddressService, IUserService userService, IBasketService basketService)
+        public OrderController(IOrderAddressService orderAddressService, IBasketService basketService)
         {
             _orderAddressService = orderAddressService;
-            _userService = userService;
             _basketService = basketService;
         }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewBag.directory1 = "MultiShop";
-            ViewBag.directory2 = "Siparişler";
-            ViewBag.directory3 = "Sipariş İşlemleri";
-            // Tutarlar sipariş özetinde Basket'ten okunur (_OrderSummaryComponentPartial); burada hesap yok.
-            if (await _basketService.GetItemCountAsync() == 0)
+            var basket = await _basketService.GetBasketAsync();
+            if (basket is null || basket.Items.Count == 0)
             {
-                TempData["ErrorMessage"] = "Sepetiniz boş.";
+                TempData["ErrorMessage"] = basket is null ? "Sepet şu anda yüklenemiyor." : "Sepetiniz boş.";
                 return RedirectToAction("Index", "ShoppingCard");
             }
 
-            return View();
+            var addresses = await _orderAddressService.GetMyAddressesAsync();
+            SetBreadcrumb();
+            return View(new OrderCheckoutViewModel
+            {
+                Addresses = addresses,
+                SelectedAddressId = addresses.FirstOrDefault()?.AddressId ?? 0,
+                ExpectedTotal = OrderCheckoutViewModel.FormatTotal(basket.GrandTotal)
+            });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(CreateOrderAddressDto createOrderAddressDto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(OrderCheckoutViewModel model)
         {
-            var values = await _userService.GetUserInfo();
-            createOrderAddressDto.UserId = values.Id;
-            createOrderAddressDto.Description = "aa";
-            await _orderAddressService.CreateOrderAddressAsync(createOrderAddressDto);
-            return RedirectToAction("Index", "Payment");
+            var addressId = model.SelectedAddressId;
+            if (addressId == 0)
+            {
+                var (createdId, error) = await _orderAddressService.CreateOrderAddressAsync(model.NewAddress);
+                if (createdId is null)
+                {
+                    ViewBag.errorMessage = error;
+                    model.Addresses = await _orderAddressService.GetMyAddressesAsync();
+                    SetBreadcrumb();
+                    return View(model);
+                }
+                addressId = createdId.Value;
+            }
+
+            var (orderNumber, checkoutError, basketChanged) = await _basketService.CheckoutAsync(addressId, model.ExpectedTotalAmount);
+            if (orderNumber is null)
+            {
+                TempData["ErrorMessage"] = checkoutError;
+                // Sepet ya da tutar değişti: kullanıcı güncel sepeti görüp yeniden onaylasın.
+                return basketChanged ? RedirectToAction("Index", "ShoppingCard") : RedirectToAction(nameof(Index));
+            }
+
+            return RedirectToAction("Index", "Payment", new { orderNumber });
+        }
+
+        private void SetBreadcrumb()
+        {
+            ViewBag.directory1 = "MultiShop";
+            ViewBag.directory2 = "Siparişler";
+            ViewBag.directory3 = "Sipariş Onayı";
         }
     }
 }

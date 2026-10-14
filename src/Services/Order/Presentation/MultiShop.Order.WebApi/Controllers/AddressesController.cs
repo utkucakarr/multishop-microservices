@@ -42,7 +42,18 @@ namespace MultiShop.Order.WebApi.Controllers
             return Ok(values);
         }
 
-        [HttpGet("{id}")]
+        /// <summary>
+        /// Giriş yapmış kullanıcının kendi adresleri; Admin için de yalnızca kendisininki. Sipariş verirken seçilen adres
+        /// bunlardan biri olmalı (Basket sepet onayında buna bakar), Admin başkasının adresine sipariş açamaz.
+        /// </summary>
+        [HttpGet("mine")]
+        public async Task<IActionResult> MyAddresses()
+        {
+            var values = await _getAddressQueryHandler.Handle(_currentUser.GetRequiredUserId());
+            return Ok(values);
+        }
+
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> AddressListById(int id)
         {
             await _accessGuard.EnsureAddressAccessAsync(id);

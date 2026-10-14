@@ -10,7 +10,8 @@ namespace MultiShop.Order.Application.Features.CQRS.Commands.AddressCommands
     {
         public int AddressId { get; set; }
 
-        public string UserId { get; set; }
+        // İstekte gönderilmez; controller token'daki kullanıcıyı yazar.
+        public string? UserId { get; set; }
 
         public string Name { get; set; }
 
@@ -28,10 +29,12 @@ namespace MultiShop.Order.Application.Features.CQRS.Commands.AddressCommands
 
         public string Detail1 { get; set; }
 
-        public string Detail2 { get; set; }
+        // İsteğe bağlı alanlar: boş gelirse "" yazılır (sütunlar NOT NULL). Nullable olmayan string, ASP.NET'te
+        // otomatik zorunlu sayıldığı için boş bırakılan adres satırı 2 isteği 400 ile reddettiriyordu.
+        public string? Detail2 { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        public string ZipCode { get; set; }
+        public string? ZipCode { get; set; }
     }
 }
