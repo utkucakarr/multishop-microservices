@@ -26,7 +26,7 @@ $settings = @()
 foreach ($service in $script:SqlServices) {
     $settings += @{ Name = $service.Name; Project = $service.Project; Key = $service.Key; Value = "$sqlBase;Database=$($service.TargetDb)" }
 }
-$settings += @{ Name = 'Catalog'; Project = $script:CatalogService.Project; Key = $script:CatalogService.Key; Value = "mongodb://localhost:$($script:Ports.Mongo)" }
+$settings += @{ Name = 'Catalog'; Project = $script:CatalogService.Project; Key = $script:CatalogService.Key; Value = "mongodb://localhost:$($script:Ports.Mongo)/?directConnection=true" }
 $settings += @{ Name = 'Message'; Project = $script:MessageService.Project; Key = $script:MessageService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:MessageService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
 $settings += @{ Name = 'Notification'; Project = $script:NotificationService.Project; Key = $script:NotificationService.Key; Value = "Host=localhost;Port=$($script:Ports.Postgres);Database=$($script:NotificationService.TargetDb);Username=$($envValues['POSTGRES_USER']);Password=$($envValues['POSTGRES_PASSWORD'])" }
 

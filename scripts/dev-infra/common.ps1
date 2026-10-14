@@ -18,6 +18,10 @@ $script:NotificationService = @{ Name = 'Notification'; Project = 'src\Services\
 
 # RabbitMQ üzerinden event yayınlayan/dinleyen servisler (KT-10); hepsine ConnectionStrings:RabbitMQ yazılır.
 $script:MessagingProjects = @(
+    @{ Name = 'Catalog';      Project = $script:CatalogService.Project },
+    @{ Name = 'Basket';       Project = 'src\Services\Basket\MultiShop.Basket\MultiShop.Basket.csproj' },
+    @{ Name = 'Order';        Project = 'src\Services\Order\Presentation\MultiShop.Order.WebApi\MultiShop.Order.WebApi.csproj' },
+    @{ Name = 'Payment';      Project = 'src\Services\Payment\MultiShop.Payment\MultiShop.Payment.csproj' },
     @{ Name = 'Comment';      Project = 'src\Services\Comment\MultiShop.Comment\MultiShop.Comment.csproj' },
     @{ Name = 'Message';      Project = $script:MessageService.Project },
     @{ Name = 'Notification'; Project = $script:NotificationService.Project }
