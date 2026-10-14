@@ -17,10 +17,180 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.26")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("Consumed")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ConsumerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReceiveCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Received")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delivered");
+
+                    b.ToTable("InboxState");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.Property<long>("SequenceNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SequenceNumber"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DestinationAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("EnqueueTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FaultAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Headers")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("InboxConsumerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InboxMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InitiatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("OutboxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResponseAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("SentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SourceAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("SequenceNumber");
+
+                    b.HasIndex("EnqueueTime");
+
+                    b.HasIndex("ExpirationTime");
+
+                    b.HasIndex("OutboxId", "SequenceNumber")
+                        .IsUnique()
+                        .HasFilter("[OutboxId] IS NOT NULL");
+
+                    b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
+                        .IsUnique()
+                        .HasFilter("[InboxMessageId] IS NOT NULL AND [InboxConsumerId] IS NOT NULL");
+
+                    b.ToTable("OutboxMessage");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
+                {
+                    b.Property<Guid>("OutboxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("OutboxId");
+
+                    b.HasIndex("Created");
+
+                    b.ToTable("OutboxState");
+                });
 
             modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoCompany", b =>
                 {
@@ -28,11 +198,14 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoCompanyId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoCompanyId"));
 
                     b.Property<string>("CargoCompanyName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.HasKey("CargoCompanyId");
 
@@ -45,7 +218,7 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoCustomerId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoCustomerId"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -89,25 +262,85 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoDetailId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoDetailId"));
 
-                    b.Property<int>("Barcode")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CargoCompanyId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReceiverCustomer")
+                    b.Property<string>("AddressLine1")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SenderCustomer")
+                    b.Property<string>("AddressLine2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Barcode")
                         .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int?>("CargoCompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OrderNumber")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("OrderingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiverEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ZipCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CargoDetailId");
 
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
                     b.HasIndex("CargoCompanyId");
+
+                    b.HasIndex("OrderNumber")
+                        .IsUnique();
 
                     b.ToTable("CargoDetails");
                 });
@@ -118,11 +351,15 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoOperationId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoOperationId"));
 
                     b.Property<string>("Barcode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int?>("CargoDetailId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -133,7 +370,21 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
 
                     b.HasKey("CargoOperationId");
 
+                    b.HasIndex("CargoDetailId");
+
                     b.ToTable("CargoOperations");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
+                        .WithMany()
+                        .HasForeignKey("OutboxId");
+
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.InboxState", null)
+                        .WithMany()
+                        .HasForeignKey("InboxMessageId", "InboxConsumerId")
+                        .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 
             modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoDetail", b =>
@@ -141,10 +392,24 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                     b.HasOne("MultiShop.Cargo.EntityLayer.Concrete.CargoCompany", "CargoCompany")
                         .WithMany()
                         .HasForeignKey("CargoCompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CargoCompany");
+                });
+
+            modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoOperation", b =>
+                {
+                    b.HasOne("MultiShop.Cargo.EntityLayer.Concrete.CargoDetail", "CargoDetail")
+                        .WithMany("Operations")
+                        .HasForeignKey("CargoDetailId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CargoDetail");
+                });
+
+            modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoDetail", b =>
+                {
+                    b.Navigation("Operations");
                 });
 #pragma warning restore 612, 618
         }
