@@ -13,6 +13,8 @@
         public string? ProductImageUrl { get; set; }
         public string? ProductDescription { get; set; }
         public int AvailableStock { get; set; }
+        /// <summary>Ödemesi beklenen siparişlere ayrılmış; satılabilir = AvailableStock − ReservedStock.</summary>
+        public int ReservedStock { get; set; }
         public int RestockThreshold { get; set; }
         public int MaxStockThreshold { get; set; }
         public bool OnReorder { get; set; }

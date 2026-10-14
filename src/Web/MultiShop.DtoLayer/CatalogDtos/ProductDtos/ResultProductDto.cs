@@ -20,5 +20,11 @@ namespace MultiShop.DtoLayer.CatalogDtos.ProductDtos
 
         public string CategoryId { get; set; }
         public string? BrandId { get; set; }
+
+        /// <summary>Eldeki stok.</summary>
+        public int AvailableStock { get; set; }
+
+        /// <summary>Ödemesi beklenen siparişlere ayrılmış; satılabilir = eldeki − ayrılmış.</summary>
+        public int ReservedStock { get; set; }
     }
 }

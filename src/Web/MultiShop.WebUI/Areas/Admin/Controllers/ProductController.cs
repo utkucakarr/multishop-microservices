@@ -46,6 +46,16 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return View(values);
         }
 
+        [HttpPost]
+        [Route("UpdateStock/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStock(string id, int availableStock)
+        {
+            var error = await _productService.UpdateStockAsync(id, availableStock);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Stok güncellendi.";
+            return RedirectToAction(nameof(Index));
+        }
+
         [Route("ProductListWithCategory")]
         public async Task<IActionResult> ProductListWithCategory()
         {
