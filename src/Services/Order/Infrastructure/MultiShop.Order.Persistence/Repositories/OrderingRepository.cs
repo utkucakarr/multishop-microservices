@@ -20,7 +20,7 @@ namespace MultiShop.Order.Persistence.Repositories
 
         public List<Ordering> GetOrderingsByUserId(string id)
         {
-            var values = _orderContext.Orderings.Where(x => x.UserId == id).ToList();
+            var values = _orderContext.Orderings.Where(x => x.UserId == id).OrderByDescending(x => x.OrderDate).ToList();
             return values;
         }
     }

@@ -54,8 +54,9 @@ namespace MultiShop.Order.WebApi.Controllers
         public async Task<IActionResult> CreateAddress(CreateAddressCommand command)
         {
             command.UserId = _currentUser.GetRequiredUserId();
-            await _createAddressCommandHandler.Handle(command);
-            return Ok("Adres bilgisi başarıyla eklendi");
+            // Id, sepet onayında teslimat adresi olarak Basket'e gönderilir.
+            var addressId = await _createAddressCommandHandler.Handle(command);
+            return CreatedAtAction(nameof(AddressListById), new { id = addressId }, new { addressId });
         }
 
         [HttpPut]

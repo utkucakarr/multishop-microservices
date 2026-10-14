@@ -9,6 +9,7 @@ using MultiShop.Order.WebApi.Security;
 namespace MultiShop.Order.WebApi.Controllers
 {
     // Sipariş detayına erişim, bağlı olduğu siparişin sahipliğine göre kontrol edilir.
+    // Satırlar API'den eklenmez: siparişle birlikte saga yazar (ORD-02).
     [Authorize(Policy = MultiShopPolicies.Authenticated)]
     [Route("api/[controller]")]
     [ApiController]
@@ -16,17 +17,15 @@ namespace MultiShop.Order.WebApi.Controllers
     {
         private readonly GetOrderDetailQueryHandler _getOrderDetailQueryHandler;
         private readonly GetOrderDetailByIdQueryHandler _getOrderDetailByIdQueryHandler;
-        private readonly CreateOrderDetailCommandHandler _createOrderDetailCommandHandler;
         private readonly UpdateOrderDetailQueryHandler _updateOrderDetailQueryHandler;
         private readonly RemoveOrderDetailQueryHandler _removeOrderDetailQueryHandler;
         private readonly GetOrderDetailByOrderingIdQueryHandler _getOrderDetailByOrderingIdQueryHandler;
         private readonly OrderAccessGuard _accessGuard;
 
-        public OrderDetailsController(OrderAccessGuard accessGuard, GetOrderDetailQueryHandler getOrderDetailQueryHandler, GetOrderDetailByIdQueryHandler getOrderDetailByIdQueryHandler, CreateOrderDetailCommandHandler createOrderDetailCommandHandler, UpdateOrderDetailQueryHandler updateOrderDetailQueryHandler, RemoveOrderDetailQueryHandler removeOrderDetailQueryHandler, GetOrderDetailByOrderingIdQueryHandler getOrderDetailByOrderingIdQueryHandler)
+        public OrderDetailsController(OrderAccessGuard accessGuard, GetOrderDetailQueryHandler getOrderDetailQueryHandler, GetOrderDetailByIdQueryHandler getOrderDetailByIdQueryHandler, UpdateOrderDetailQueryHandler updateOrderDetailQueryHandler, RemoveOrderDetailQueryHandler removeOrderDetailQueryHandler, GetOrderDetailByOrderingIdQueryHandler getOrderDetailByOrderingIdQueryHandler)
         {
             _getOrderDetailQueryHandler = getOrderDetailQueryHandler;
             _getOrderDetailByIdQueryHandler = getOrderDetailByIdQueryHandler;
-            _createOrderDetailCommandHandler = createOrderDetailCommandHandler;
             _updateOrderDetailQueryHandler = updateOrderDetailQueryHandler;
             _removeOrderDetailQueryHandler = removeOrderDetailQueryHandler;
             _getOrderDetailByOrderingIdQueryHandler = getOrderDetailByOrderingIdQueryHandler;
@@ -56,15 +55,6 @@ namespace MultiShop.Order.WebApi.Controllers
         //    var value = await _getOrderDetailByOrderingIdQueryHandler.Handle(new GetOrderDetailByOrderingIdQuery(id));
         //    return Ok(value);
         //}
-
-        [HttpPost]
-        public async Task<IActionResult> CreateOrderDetail(CreateOrderDetailCommand command)
-        {
-            // Satır yalnızca kullanıcının kendi siparişine eklenebilir.
-            await _accessGuard.EnsureOrderingAccessAsync(command.OrderingId);
-            await _createOrderDetailCommandHandler.Handle(command);
-            return Ok("Sipariş detayı başarıyla eklendi");
-        }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
