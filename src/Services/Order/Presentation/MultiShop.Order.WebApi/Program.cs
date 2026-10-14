@@ -9,6 +9,7 @@ using MultiShop.Order.Application.Sagas.Activities;
 using MultiShop.Order.Application.Services;
 using MultiShop.Order.Persistence.Context;
 using MultiShop.Order.Persistence.Repositories;
+using MultiShop.Order.WebApi.BackgroundServices;
 using MultiShop.Order.WebApi.Security;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
@@ -69,6 +70,10 @@ builder.AddMultiShopMessaging("Order", x =>
             repository.UseSqlServer();
         });
 });
+
+// Ödenmeyen siparişler süre dolunca iptal edilir, ayrılan stok bırakılır (OrderSettings:PaymentTimeoutMinutes).
+builder.Services.Configure<OrderSettings>(builder.Configuration.GetSection(OrderSettings.SectionName));
+builder.Services.AddHostedService<OrderPaymentTimeoutService>();
 
 // Enum'lar JSON'da metin ("AwaitingPayment"): yanıtlar okunabilir, WebUI sayılara bağımlı olmaz.
 builder.Services.AddControllers()

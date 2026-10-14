@@ -21,5 +21,11 @@ namespace MultiShop.Basket.Services
         Task RemoveCouponAsync(string userId);
 
         Task DeleteBasketAsync(string userId);
+
+        /// <summary>
+        /// Sepeti onaylar: güncel fiyatlarla yeniden hesaplar, kontrol eder ve <c>BasketCheckedOut</c> yayınlar (sipariş saga'sı başlar).
+        /// Sepet silinmez; ödeme başarısız olursa ya da sipariş iptal edilirse kullanıcı sepetini kaybetmez.
+        /// </summary>
+        Task<CheckoutResultDto> CheckoutAsync(string userId, CheckoutDto request);
     }
 }
