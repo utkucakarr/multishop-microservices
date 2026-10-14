@@ -12,6 +12,14 @@
         <div class="col-md-12">
             <div class="chart-box">
                 <div class="bs-example" data-example-id="bordered-table">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -19,6 +27,9 @@
                                 <th>Ürün Adı</th>
                                 <th>Ürün Fiyatı</th>
                                 <th>Marka</th>
+                                <th title="Eldeki stok; kaydetmek için Enter">Stok</th>
+                                <th title="Ödemesi beklenen siparişlere ayrılmış">Ayrılmış</th>
+                                <th title="Stok − Ayrılmış">Satılabilir</th>
                                 <th>Sil</th>
                                 <th>Güncelle</th>
                                 <th>Görseller</th>
@@ -33,6 +44,14 @@
                                     <td>@item.ProductName</td>
                                     <td>@item.ProductPrice</td>
                                     <td>@(item.BrandId != null && brandNames.TryGetValue(item.BrandId, out var brandName) ? brandName : "Markasız")</td>
+                                    <td>
+                                        <form asp-action="UpdateStock" asp-route-id="@item.ProductId" method="post" style="display:flex; gap:4px;">
+                                            <input type="number" name="availableStock" value="@item.AvailableStock" min="@item.ReservedStock" max="1000000" class="form-control input-sm" style="width:90px;" required />
+                                            <button type="submit" class="btn btn-default btn-sm">Kaydet</button>
+                                        </form>
+                                    </td>
+                                    <td>@item.ReservedStock</td>
+                                    <td>@(item.AvailableStock - item.ReservedStock)</td>
                                     <td><a href="/Admin/Product/DeleteProduct/@item.ProductId" class="btn btn-danger">Sil</a></td>
                                     <td><a href="/Admin/Product/UpdateProduct/@item.ProductId" class="btn btn-success">Güncelle</a></td>
                                     <td><a href="/Admin/ProductImage/ProductImageDetail/@item.ProductId" class="btn btn-warning">Görseller</a></td>
