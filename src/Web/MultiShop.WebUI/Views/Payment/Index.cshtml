@@ -1,10 +1,13 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿@model PaymentPageViewModel
+
+@{
+    ViewData["Title"] = "Ödeme";
     Layout = "~/Views/UILayout/_UILayout.cshtml";
+    var shortNumber = Model.OrderNumber.ToString()[..8].ToUpperInvariant();
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -15,135 +18,184 @@
 
 </head>
 <body>
-    @if(!String.IsNullOrEmpty(ViewBag.errorMessage))
+    @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger" role="alert">
-            @ViewBag.errorMessage
-        </div>
+        <div class="alert alert-danger" role="alert">@TempData["ErrorMessage"]</div>
     }
 
-    <div class="container">
-        <div class="card-container">
-            <div class="front">
-                <div class="image">
-                    <img src="~/image/chip.png" alt="">
-                    <img src="~/image/visa.png" alt="">
-                </div>
-                <div class="card-number-box">################</div>
-                <div class="flexbox">
-                    <div class="box">
-                        <span>Kart Sahibi</span>
-                        <div class="card-holder-name">Ad soyad</div>
+    @if (Model.IsWaiting)
+    {
+        @* Sipariş hazırlanıyor (saga stok ayırıyor) ya da iptal ediliyor: durum değişince sayfa yenilenir. *@
+        <div class="container text-center py-5" id="waitingBox">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h4>@(Model.Cancelling ? "Siparişiniz iptal ediliyor..." : "Siparişiniz hazırlanıyor, stok kontrol ediliyor...")</h4>
+            <p class="text-muted">Sipariş No: @shortNumber</p>
+            <p class="text-muted d-none" id="waitingSlow">Beklenenden uzun sürdü. Sayfayı yenileyebilir ya da durumu "Siparişlerim" sayfasından takip edebilirsiniz.</p>
+        </div>
+        <script>
+            (function () {
+                var current = '@(Model.Cancelling ? Model.Status : OrderStatusDisplay.Pending)';
+                var startedAt = Date.now();
+                var timer = setInterval(function () {
+                    fetch('/Payment/Status?orderNumber=@Model.OrderNumber', { cache: 'no-store' })
+                        .then(function (response) { return response.ok ? response.json() : null; })
+                        .then(function (data) {
+                            if (data && data.status !== current) {
+                                clearInterval(timer);
+                                window.location.href = '/Payment/Index?orderNumber=@Model.OrderNumber';
+                            }
+                        })
+                        .catch(function () { /* bir sonraki turda tekrar denenir */ });
+                    if (Date.now() - startedAt > 60000) {
+                        clearInterval(timer);
+                        document.getElementById('waitingSlow').classList.remove('d-none');
+                    }
+                }, 2000);
+            })();
+        </script>
+    }
+    else if (Model.Status == OrderStatusDisplay.Cancelled)
+    {
+        <div class="container py-5">
+            <div class="alert alert-warning" role="alert">
+                <h5>Siparişiniz iptal edildi (Sipariş No: @shortNumber)</h5>
+                <p class="mb-0">@(Model.Order?.FailMessage ?? "Sipariş iptal edildi.")</p>
+            </div>
+            <a href="/ShoppingCard/Index" class="btn btn-primary">Sepetinize dönün</a>
+            <a href="/User/MyOrder/MyOrderList" class="btn btn-secondary">Siparişlerim</a>
+        </div>
+    }
+    else
+    {
+        @* AwaitingPayment: stok ayrıldı, kart bekleniyor. Tutar siparişten (Basket'in onay anındaki hesabı). *@
+        @if (TempData["ErrorMessage"] == null && !string.IsNullOrEmpty(Model.Order?.FailMessage))
+        {
+            <div class="alert alert-warning" role="alert">Son ödeme denemesi başarısız: @Model.Order.FailMessage</div>
+        }
+
+        <div class="container">
+            <div class="card-container">
+                <div class="front">
+                    <div class="image">
+                        <img src="~/image/chip.png" alt="">
+                        <img src="~/image/visa.png" alt="">
                     </div>
-                    <div class="box">
-                        <span>Son Geçerlilik Tarihi</span>
-                        <div class="expiration">
-                            <span class="exp-month">mm</span>
-                            <span class="exp-year">yy</span>
+                    <div class="card-number-box">################</div>
+                    <div class="flexbox">
+                        <div class="box">
+                            <span>Kart Sahibi</span>
+                            <div class="card-holder-name">Ad soyad</div>
+                        </div>
+                        <div class="box">
+                            <span>Son Geçerlilik Tarihi</span>
+                            <div class="expiration">
+                                <span class="exp-month">mm</span>
+                                <span class="exp-year">yy</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="back">
-                <div class="stripe"></div>
-                <div class="box">
-                    <span>Cvv</span>
-                    <div class="cvv-box"></div>
-                    <img src="image/visa.png" alt="">
+                <div class="back">
+                    <div class="stripe"></div>
+                    <div class="box">
+                        <span>Cvv</span>
+                        <div class="cvv-box"></div>
+                        <img src="~/image/visa.png" alt="">
+                    </div>
                 </div>
             </div>
+            <form asp-controller="Payment" asp-action="Payment" method="post" id="paymentForm">
+                <input type="hidden" name="OrderNumber" value="@Model.OrderNumber" />
+                <h4 class="mb-1">Ödenecek Tutar: @Model.Order!.TotalPrice.ToString("N2") ₺</h4>
+                <p class="text-muted">Sipariş No: @shortNumber · Ürünleriniz sizin için ayrıldı.</p>
+                <div class="inputBox">
+                    <span>Kart Numarası</span>
+                    <input name="CardNumber" type="text" id="CardNumber" maxlength="19" class="card-number-input" required>
+                </div>
+                <div class="inputBox">
+                    <span>Kart Sahibi</span>
+                    <input name="CardOwnerName" id="CardOwnerName" type="text" class="card-holder-input" required>
+                </div>
+                <div class="flexbox">
+                    <div class="inputBox">
+                        <span>Ay Bilgisi</span>
+                        <select name="Month" id="Month" class="month-input" required>
+                            <option value="" selected disabled>Ay Seçiniz</option>
+                            @for (var month = 1; month <= 12; month++)
+                            {
+                                <option value="@month.ToString("00")">@month.ToString("00")</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="inputBox">
+                        <span>Yıl Bilgisi</span>
+                        <select name="Year" id="Year" class="year-input" required>
+                            <option value="" selected disabled>Yıl Seçiniz</option>
+                            @for (var year = DateTime.Today.Year; year <= DateTime.Today.Year + 10; year++)
+                            {
+                                <option value="@year">@year</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="inputBox">
+                        <span>Cvv</span>
+                        <input name="Cvv" id="Cvv" type="text" maxlength="4" class="cvv-input" required>
+                    </div>
+                </div>
+                <input type="submit" value="Ödemeyi Tamamla" class="submit-btn" id="paymentButton">
+            </form>
+            <form asp-controller="Payment" asp-action="Cancel" method="post" class="text-center mt-3"
+                  onsubmit="return confirm('Siparişi iptal etmek istediğinize emin misiniz? Ayrılan ürünler serbest bırakılır.');">
+                <input type="hidden" name="orderNumber" value="@Model.OrderNumber" />
+                <button type="submit" class="btn btn-link text-danger">Siparişi iptal et</button>
+            </form>
         </div>
-        <form asp-controller="Payment" asp-action="Payment" method="post">
-            <h4 class="mb-3">Ödenecek Tutar: @(((decimal)ViewBag.grandTotal).ToString("N2")) ₺</h4>
-            <div class="inputBox">
-                <span>Kart Numarası</span>
-                <input name="CardNumber" type="text" id="CardNumber" maxlength="19" class="card-number-input">
-            </div>
-            <div class="inputBox">
-                <span>Kart Sahibi</span>
-                <input name="CardOwnerName" id="CardOwnerName" type="text" class="card-holder-input">
-            </div>
-            <div class="flexbox">
-                <div class="inputBox">
-                    <span>Ay Bilgisi</span>
-                    <select name="Month" id="Month" class="month-input">
-                        <option value="month" selected disabled>Ay Seçiniz</option>
-                        <option value="01">01</option>
-                        <option value="02">02</option>
-                        <option value="03">03</option>
-                        <option value="04">04</option>
-                        <option value="05">05</option>
-                        <option value="06">06</option>
-                        <option value="07">07</option>
-                        <option value="08">08</option>
-                        <option value="09">09</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                    </select>
-                </div>
-                <div class="inputBox">
-                    <span>Yıl Bilgisi</span>
-                    <select name="Year" id="Year" class="year-input">
-                        <option value="year" selected disabled>Yıl Seçiniz</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                        <option value="2030">2030</option>
-                    </select>
-                </div>
-                <div class="inputBox">
-                    <span>Cvv</span>
-                    <input name="Cvv" id="Cvv" type="text" maxlength="4" class="cvv-input">
-                </div>
-            </div>
-            <input type="submit" value="Ödemeyi Tamamla" class="submit-btn">
-        </form>
-    </div>
 
-    <script>
-        const creditCardInput = document.getElementById('CardNumber');
+        <script>
+            const creditCardInput = document.getElementById('CardNumber');
 
-        creditCardInput.addEventListener('input', function (e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-        });
+            creditCardInput.addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
 
-        document.querySelector('.card-number-input').oninput = () =>{
-            document.querySelector('.card-number-box').innerText = document.querySelector('.card-number-input').value;
-        }
+            document.querySelector('.card-number-input').oninput = () =>{
+                document.querySelector('.card-number-box').innerText = document.querySelector('.card-number-input').value;
+            }
 
-        document.querySelector('.card-holder-input').oninput = () =>{
-            document.querySelector('.card-holder-name').innerText = document.querySelector('.card-holder-input').value;
-        }
+            document.querySelector('.card-holder-input').oninput = () =>{
+                document.querySelector('.card-holder-name').innerText = document.querySelector('.card-holder-input').value;
+            }
 
-        document.querySelector('.month-input').oninput = () =>{
-            document.querySelector('.exp-month').innerText = document.querySelector('.month-input').value;
-        }
+            document.querySelector('.month-input').oninput = () =>{
+                document.querySelector('.exp-month').innerText = document.querySelector('.month-input').value;
+            }
 
-        document.querySelector('.year-input').oninput = () =>{
-            document.querySelector('.exp-year').innerText = document.querySelector('.year-input').value;
-        }
+            document.querySelector('.year-input').oninput = () =>{
+                document.querySelector('.exp-year').innerText = document.querySelector('.year-input').value;
+            }
 
-        document.querySelector('.cvv-input').onmouseenter = () =>{
-            document.querySelector('.front').style.transform = 'perspective(1000px) rotateY(-180deg)';
-            document.querySelector('.back').style.transform = 'perspective(1000px) rotateY(0deg)';
-        }
+            document.querySelector('.cvv-input').onmouseenter = () =>{
+                document.querySelector('.front').style.transform = 'perspective(1000px) rotateY(-180deg)';
+                document.querySelector('.back').style.transform = 'perspective(1000px) rotateY(0deg)';
+            }
 
-        document.querySelector('.cvv-input').onmouseleave = () =>{
-            document.querySelector('.front').style.transform = 'perspective(1000px) rotateY(0deg)';
-            document.querySelector('.back').style.transform = 'perspective(1000px) rotateY(180deg)';
-        }
+            document.querySelector('.cvv-input').onmouseleave = () =>{
+                document.querySelector('.front').style.transform = 'perspective(1000px) rotateY(0deg)';
+                document.querySelector('.back').style.transform = 'perspective(1000px) rotateY(180deg)';
+            }
 
-        document.querySelector('.cvv-input').oninput = () =>{
-            document.querySelector('.cvv-box').innerText = document.querySelector('.cvv-input').value;
-        }
-    </script>
+            document.querySelector('.cvv-input').oninput = () =>{
+                document.querySelector('.cvv-box').innerText = document.querySelector('.cvv-input').value;
+            }
+
+            // Çift tıklamada ikinci ödeme isteği gitmesin (Payment ayrıca tek denemeye izin verir).
+            document.getElementById('paymentForm').addEventListener('submit', function () {
+                var button = document.getElementById('paymentButton');
+                button.disabled = true;
+                button.value = 'Ödeme işleniyor...';
+            });
+        </script>
+    }
 
 </body>
 </html>

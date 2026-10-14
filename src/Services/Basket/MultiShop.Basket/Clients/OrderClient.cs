@@ -1,8 +1,10 @@
-﻿using System.Net;
-using MultiShop.BuildingBlocks.Exceptions;
+﻿using MultiShop.BuildingBlocks.Exceptions;
 
 namespace MultiShop.Basket.Clients
 {
+    /// <summary>Order'daki adres (<c>GET api/addresses/mine</c> yanıtından yalnızca id).</summary>
+    public record AddressSummary(int AddressId);
+
     public class OrderClient
     {
         private readonly HttpClient _httpClient;
@@ -15,19 +17,16 @@ namespace MultiShop.Basket.Clients
         }
 
         /// <summary>
-        /// Adres token'daki kullanıcıya mı ait? Order başkasının adresine de "yok" (404) der (IDOR, G-14),
-        /// bu yüzden 200 = kullanıcının adresi, 404 = yok ya da başkasının.
+        /// Adres token'daki kullanıcının kendi adreslerinden biri mi? <c>api/addresses/{id}</c> yerine <c>mine</c> listesine
+        /// bakılır: Admin her adrese erişebildiği için tekil uç nokta Admin'e başkasının adresini de "senin" der.
         /// </summary>
         public async Task<bool> IsOwnAddressAsync(int addressId, CancellationToken cancellationToken = default)
         {
             try
             {
-                using var response = await _httpClient.GetAsync("api/addresses/" + addressId, cancellationToken);
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return false;
-
-                response.EnsureSuccessStatusCode();
-                return true;
+                var addresses = await _httpClient.GetFromJsonAsync<List<AddressSummary>>("api/addresses/mine", cancellationToken)
+                    ?? new List<AddressSummary>();
+                return addresses.Any(x => x.AddressId == addressId);
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
             {

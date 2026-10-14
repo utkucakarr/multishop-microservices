@@ -1,7 +1,5 @@
-﻿using Humanizer;
-using MultiShop.DtoLayer.OrderDtos.OrderAddressDtos;
+﻿using System.Net;
 using MultiShop.DtoLayer.OrderDtos.OrderOrderingDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.OrderServices.OrderOrderingServices
 {
@@ -14,19 +12,27 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderOrderingServices
             _httpClient = httpClient;
         }
 
-        public async Task<int> CreateOrderingAsync(CreateOrderingDto createOrderingDto)
+        public async Task<List<ResultOrderingByUserIdDto>> GetMyOrderingsAsync()
+            => await _httpClient.GetFromJsonAsync<List<ResultOrderingByUserIdDto>>("ordering/mine") ?? new();
+
+        public async Task<ResultOrderingByUserIdDto?> GetByNumberAsync(Guid orderNumber)
         {
-            var response = await _httpClient.PostAsJsonAsync("ordering", createOrderingDto);
+            var response = await _httpClient.GetAsync($"ordering/by-number/{orderNumber}");
+            // Saga sepet onayını henüz işlemediyse sipariş yoktur; başkasının siparişi de 404 döner.
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<int>();
+            return await response.Content.ReadFromJsonAsync<ResultOrderingByUserIdDto>();
         }
 
-        public async Task<List<ResultOrderingByUserIdDto>> GetMyOrderingsAsync()
+        public async Task<string?> CancelAsync(Guid orderNumber)
+            => await (await _httpClient.PostAsync($"ordering/{orderNumber}/cancel", null)).GetErrorMessageAsync();
+
+        public async Task<List<ResultOrderingByUserIdDto>> GetAllAsync(string? status)
         {
-            var responseMessage = await _httpClient.GetAsync("ordering/mine");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultOrderingByUserIdDto>>(jsonData);
-            return values;
+            var url = string.IsNullOrEmpty(status) ? "ordering" : "ordering?status=" + Uri.EscapeDataString(status);
+            return await _httpClient.GetFromJsonAsync<List<ResultOrderingByUserIdDto>>(url) ?? new();
         }
     }
 }

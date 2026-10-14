@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MultiShop.DtoLayer.PaymentDto
+﻿namespace MultiShop.DtoLayer.PaymentDto
 {
+    /// <summary>Ödeme isteği: sipariş numarası ve kart. Tutar ve kullanıcı gönderilmez (Payment siparişten ve token'dan alır).</summary>
     public class CreatePaymentDto
     {
-        public string UserID { get; set; }
+        public Guid OrderNumber { get; set; }
 
         public string CardNumber { get; set; }
 
@@ -19,9 +14,5 @@ namespace MultiShop.DtoLayer.PaymentDto
         public string Month { get; set; }
 
         public string Cvv { get; set; }
-
-        public string PaymentAmounth { get; set; }
-
-        public int OrderingId { get; set; }
     }
 }

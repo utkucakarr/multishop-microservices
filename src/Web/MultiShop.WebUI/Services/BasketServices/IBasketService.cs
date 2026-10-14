@@ -25,5 +25,11 @@ namespace MultiShop.WebUI.Services.BasketServices
         Task<string?> RemoveCouponAsync();
 
         Task DeleteBasketAsync();
+
+        /// <summary>
+        /// Sepeti onaylar; Basket siparişi başlatır (sepet silinmez). Başarıda sipariş numarası.
+        /// <c>BasketChanged</c>: sepet ya da tutar onaydan önce değişti (409), kullanıcı sepeti yeniden görmeli.
+        /// </summary>
+        Task<(Guid? OrderNumber, string? Error, bool BasketChanged)> CheckoutAsync(int addressId, decimal expectedTotal);
     }
 }

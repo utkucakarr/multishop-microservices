@@ -45,6 +45,17 @@ namespace MultiShop.WebUI.Services.BasketServices
         public async Task<string?> RemoveCouponAsync()
             => await (await _httpClient.DeleteAsync("baskets/coupon")).GetErrorMessageAsync();
 
+        public async Task<(Guid? OrderNumber, string? Error, bool BasketChanged)> CheckoutAsync(int addressId, decimal expectedTotal)
+        {
+            var response = await _httpClient.PostAsJsonAsync("baskets/checkout", new CheckoutDto { AddressId = addressId, ExpectedTotal = expectedTotal });
+            var error = await response.GetErrorMessageAsync();
+            if (error is not null)
+                return (null, error, response.StatusCode == System.Net.HttpStatusCode.Conflict);
+
+            var result = await response.Content.ReadFromJsonAsync<CheckoutResultDto>();
+            return (result?.OrderNumber, result is null ? "Sipariş oluşturulamadı." : null, false);
+        }
+
         public async Task DeleteBasketAsync()
         {
             var response = await _httpClient.DeleteAsync("baskets");
