@@ -6,6 +6,7 @@ Mimari kararlar: `docs/02-mikroservis-bolumleme.md` → "Mesajlaşma mimarisi ka
 ## Kurallar
 
 1. **Hassas veri yok.** Kart numarası, CVV, son kullanma tarihi, şifre, token asla bir event'e eklenmez. Kuyruklar diske ve loglara yazılır, her dinleyen servis içeriği görür.
+   Kişisel veri (ad, e-posta, adres) yalnızca alıcının işini yapması için gerektiğinde taşınır (event-carried state transfer: alıcı başka servise sormaz) ve aşağıdaki tabloda belirtilir.
 2. **Event = olmuş bir şey, komut = istenen bir iş.**
    - Event'in adı geçmiş zamanlı, "Event" eki yok: `StockReserved`, `PaymentSucceeded`. `Publish` ile yayınlanır; kim ilgileniyorsa dinler.
    - Komutun adı emir kipinde: `ReserveStock`, `ReleaseStock`. Tek alıcısı vardır, `Send` ile doğrudan onun kuyruğuna gider (orkestrasyon: sipariş saga'sı Catalog'a komut verir).
@@ -24,6 +25,9 @@ Mimari kararlar: `docs/02-mikroservis-bolumleme.md` → "Mesajlaşma mimarisi ka
 | `Catalog/StockReserved`, `StockReservationFailed` | Event | Catalog | Order (saga) | KT-12 |
 | `Orders/OrderAwaitingPayment`, `OrderCancelled` | Event | Order (saga) | Payment | KT-12 |
 | `Payments/PaymentSucceeded`, `PaymentFailed` | Event | Payment | Order (saga) | KT-12 |
+| `Orders/OrderPaid` | Event | Order (saga) | Notification | KT-13 (müşteri adı ve e-postası: onay maili için) |
+| `Cargo/CreateShipment` | Komut | Order (saga) | Cargo | KT-13 (teslimat adresi ve iletişim: kargo için) |
+| `Cargo/ShipmentDispatched`, `ShipmentDelivered` | Event | Cargo | Order (saga), Notification | KT-13 (`ShipmentDispatched` müşteri adı ve e-postası: kargo maili için) |
 | `Comments/CommentCreated` | Event | Comment | Notification | KT-10 |
 | `Messages/ContactMessageReceived` | Event | Message | Notification | KT-10 (gönderenin e-postasını taşır, kural 1'e bilinçli istisna: admin mailinde gösteriliyor; mesaj metni yok) |
 

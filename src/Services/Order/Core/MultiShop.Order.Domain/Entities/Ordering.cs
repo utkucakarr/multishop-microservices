@@ -24,6 +24,11 @@ namespace MultiShop.Order.Domain.Entities
         // İptal sebebi ya da son başarısız ödeme denemesinin sebebi
         public string? FailMessage { get; set; }
 
+        // Kargo takip numarası ve firması; sipariş kargoya verilince saga yazar (KT-13)
+        public string? TrackingNumber { get; set; }
+
+        public string? CargoCompanyName { get; set; }
+
         public List<OrderDetail> OrderDetails { get; set; }
     }
 }

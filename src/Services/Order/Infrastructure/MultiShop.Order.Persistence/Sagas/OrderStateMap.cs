@@ -16,6 +16,8 @@ namespace MultiShop.Order.Persistence.Sagas
             entity.Property(x => x.UserId).HasMaxLength(450);
             entity.Property(x => x.TotalPrice).HasColumnType("decimal(18,2)");
             entity.Property(x => x.FailReason).HasMaxLength(500);
+            entity.Property(x => x.TrackingNumber).HasMaxLength(50);
+            entity.Property(x => x.CargoCompanyName).HasMaxLength(100);
             entity.Property(x => x.RowVersion).IsRowVersion();
 
             entity.HasIndex(x => x.OrderingId).IsUnique();

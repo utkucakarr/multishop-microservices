@@ -22,6 +22,8 @@ namespace MultiShop.Order.Persistence.Context
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Ordering>().HasIndex(x => x.OrderNumber).IsUnique();
+            modelBuilder.Entity<Ordering>().Property(x => x.TrackingNumber).HasMaxLength(50);
+            modelBuilder.Entity<Ordering>().Property(x => x.CargoCompanyName).HasMaxLength(100);
 
             // Sipariş saga'sının kaydı (OrderStates). Saga, sipariş ve outbox aynı DbContext'i kullanır:
             // bir mesajın tüm etkisi (sipariş satırı, saga durumu, gönderilecek mesajlar) tek transaction'da yazılır.
