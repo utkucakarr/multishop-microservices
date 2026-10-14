@@ -26,3 +26,9 @@ Mimari kararlar: `docs/02-mikroservis-bolumleme.md` → "Mesajlaşma mimarisi ka
 | `Payments/PaymentSucceeded`, `PaymentFailed` | Event | Payment | Order (saga) | KT-12 |
 | `Comments/CommentCreated` | Event | Comment | Notification | KT-10 |
 | `Messages/ContactMessageReceived` | Event | Message | Notification | KT-10 (gönderenin e-postasını taşır, kural 1'e bilinçli istisna: admin mailinde gösteriliyor; mesaj metni yok) |
+
+## Ortak kurallar (mesaj değil)
+
+| Sabit | Sahibi | Kullanan | Ne zaman eklendi |
+|-------|--------|----------|------------------|
+| `Payments/PaymentPolicy.MaxAttempts` | Payment (deneme sınırı) | Order saga'sı (sınıra ulaşınca iptal) | KT-12 |

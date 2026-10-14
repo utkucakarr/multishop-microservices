@@ -20,8 +20,8 @@ namespace MultiShop.Order.Application.Sagas
     /// </summary>
     public class OrderStateMachine : MassTransitStateMachine<OrderState>
     {
-        /// <summary>Bu kadar başarısız ödeme denemesinden sonra sipariş iptal edilir ve stok bırakılır.</summary>
-        public const int MaxPaymentAttempts = 3;
+        /// <summary>Bu kadar başarısız ödeme denemesinden sonra sipariş iptal edilir ve stok bırakılır (Payment da yeni deneme kabul etmez).</summary>
+        public const int MaxPaymentAttempts = PaymentPolicy.MaxAttempts;
 
         private static readonly Uri ReserveStockQueue = new($"queue:{CatalogQueues.ReserveStock}");
         private static readonly Uri CommitStockQueue = new($"queue:{CatalogQueues.CommitStock}");
