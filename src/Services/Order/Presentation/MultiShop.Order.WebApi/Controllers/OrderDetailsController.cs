@@ -1,75 +1,40 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MultiShop.Order.Application.Features.CQRS.Commands.OrderDetailCommands;
-using MultiShop.Order.Application.Features.CQRS.Handlers.OrderDetailHandlers;
-using MultiShop.Order.Application.Features.CQRS.Queries.OrderDetailQueries;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Order.Application.Features.Mediator.Queries.OrderDetailQueries;
 using MultiShop.Order.WebApi.Security;
 
 namespace MultiShop.Order.WebApi.Controllers
 {
-    // Sipariş detayına erişim, bağlı olduğu siparişin sahipliğine göre kontrol edilir.
-    // Satırlar API'den eklenmez: siparişle birlikte saga yazar (ORD-02).
+    // Sipariş satırları yalnızca okunur: siparişle birlikte saga yazar (ORD-02). Admin'in satır düzenleme/silme uçları
+    // kaldırıldı; satır tutarlarını sipariş toplamından (ve ödenen tutardan) koparabiliyordu.
+    // Satırlara erişim, bağlı oldukları siparişin sahipliğine göre kontrol edilir.
     [Authorize(Policy = MultiShopPolicies.Authenticated)]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderDetailsController : ControllerBase
     {
-        private readonly GetOrderDetailQueryHandler _getOrderDetailQueryHandler;
-        private readonly GetOrderDetailByIdQueryHandler _getOrderDetailByIdQueryHandler;
-        private readonly UpdateOrderDetailQueryHandler _updateOrderDetailQueryHandler;
-        private readonly RemoveOrderDetailQueryHandler _removeOrderDetailQueryHandler;
-        private readonly GetOrderDetailByOrderingIdQueryHandler _getOrderDetailByOrderingIdQueryHandler;
+        private readonly IMediator _mediator;
         private readonly OrderAccessGuard _accessGuard;
 
-        public OrderDetailsController(OrderAccessGuard accessGuard, GetOrderDetailQueryHandler getOrderDetailQueryHandler, GetOrderDetailByIdQueryHandler getOrderDetailByIdQueryHandler, UpdateOrderDetailQueryHandler updateOrderDetailQueryHandler, RemoveOrderDetailQueryHandler removeOrderDetailQueryHandler, GetOrderDetailByOrderingIdQueryHandler getOrderDetailByOrderingIdQueryHandler)
+        public OrderDetailsController(IMediator mediator, OrderAccessGuard accessGuard)
         {
-            _getOrderDetailQueryHandler = getOrderDetailQueryHandler;
-            _getOrderDetailByIdQueryHandler = getOrderDetailByIdQueryHandler;
-            _updateOrderDetailQueryHandler = updateOrderDetailQueryHandler;
-            _removeOrderDetailQueryHandler = removeOrderDetailQueryHandler;
-            _getOrderDetailByOrderingIdQueryHandler = getOrderDetailByOrderingIdQueryHandler;
+            _mediator = mediator;
             _accessGuard = accessGuard;
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpGet]
         public async Task<IActionResult> OrderDetailList()
-        {
-            var values = await _getOrderDetailQueryHandler.Handle();
-            return Ok(values);
-        }
+            => Ok(await _mediator.Send(new GetOrderDetailQuery()));
 
-        // Not: adına rağmen parametre sipariş numarasıdır (OrderingId); o siparişin satırlarını döner.
-        [HttpGet("GetOrderDetailById")]
-        public async Task<IActionResult> GetOrderDetailById(int id)
+        /// <summary>Bir siparişin satırları (önceden adı yanıltıcı <c>GetOrderDetailById?id=</c> idi, ORD-03).</summary>
+        [HttpGet("by-ordering/{orderingId:int}")]
+        public async Task<IActionResult> OrderDetailsByOrderingId(int orderingId)
         {
-            await _accessGuard.EnsureOrderingAccessAsync(id);
-            var value = await _getOrderDetailByIdQueryHandler.Handle(new GetOrderDetailByQuery(id));
-            return Ok(value);
-        }
-
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetOrderDetailByOrderingId(int id)
-        //{
-        //    var value = await _getOrderDetailByOrderingIdQueryHandler.Handle(new GetOrderDetailByOrderingIdQuery(id));
-        //    return Ok(value);
-        //}
-
-        [Authorize(Policy = MultiShopPolicies.Admin)]
-        [HttpPut]
-        public async Task<IActionResult> UpdateOrderDetail(UpdateOrderDetailCommand command)
-        {
-            await _updateOrderDetailQueryHandler.Handle(command);
-            return Ok("Sipariş detayı başarıyla güncellendi");
-        }
-
-        [Authorize(Policy = MultiShopPolicies.Admin)]
-        [HttpDelete]
-        public async Task<IActionResult> RemoveOrderDetail(int id)
-        {
-            await _removeOrderDetailQueryHandler.Handle(new RemoveOrderDetailCommand(id));
-            return Ok("Sipariş detayı başarıyla silindi");
+            await _accessGuard.EnsureOrderingAccessAsync(orderingId);
+            return Ok(await _mediator.Send(new GetOrderDetailByOrderingIdQuery(orderingId)));
         }
     }
 }
