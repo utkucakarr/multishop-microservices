@@ -4,10 +4,12 @@
     {
         public string ProductDetailId { get; set; }
 
-        public string ProductDescription { get; set; }
-
-        public string ProductInfo { get; set; }
-
         public string ProductId { get; set; }
+
+        public string ShortDescription { get; set; }
+
+        public string? LongDescription { get; set; }
+
+        public string? ProductInfo { get; set; }
     }
 }
