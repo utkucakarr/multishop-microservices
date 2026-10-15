@@ -8,17 +8,19 @@
         public const string Pending = "Pending";
         public const string AwaitingPayment = "AwaitingPayment";
         public const string Paid = "Paid";
+        public const string Shipped = "Shipped";
         public const string Completed = "Completed";
         public const string Cancelled = "Cancelled";
 
         /// <summary>Admin filtresindeki sıra.</summary>
-        public static readonly IReadOnlyList<string> All = new[] { Pending, AwaitingPayment, Paid, Completed, Cancelled };
+        public static readonly IReadOnlyList<string> All = new[] { Pending, AwaitingPayment, Paid, Shipped, Completed, Cancelled };
 
         public static string Text(string? status) => status switch
         {
             Pending => "Hazırlanıyor",
             AwaitingPayment => "Ödeme bekleniyor",
             Paid => "Ödendi",
+            Shipped => "Kargoda",
             Completed => "Tamamlandı",
             Cancelled => "İptal edildi",
             _ => status ?? "-"
@@ -30,6 +32,7 @@
             Pending => "badge-secondary",
             AwaitingPayment => "badge-warning",
             Paid => "badge-success",
+            Shipped => "badge-info",
             Completed => "badge-primary",
             Cancelled => "badge-danger",
             _ => "badge-light"
@@ -41,6 +44,7 @@
             Pending => "label-default",
             AwaitingPayment => "label-warning",
             Paid => "label-success",
+            Shipped => "label-info",
             Completed => "label-primary",
             Cancelled => "label-danger",
             _ => "label-default"
@@ -48,5 +52,8 @@
 
         /// <summary>Ödemesi alınmamış sipariş: ödenebilir ya da iptal edilebilir.</summary>
         public static bool IsOpen(string? status) => status is Pending or AwaitingPayment;
+
+        /// <summary>Ödemesi alınmış sipariş (hazırlanıyor, kargoda ya da tamamlandı): tekrar ödenemez.</summary>
+        public static bool IsPaid(string? status) => status is Paid or Shipped or Completed;
     }
 }

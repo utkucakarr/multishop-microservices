@@ -42,5 +42,8 @@ namespace MultiShop.WebUI.Services.CargoServices.CargoCompanyServices
         {
             await _httpClient.PutAsJsonAsync<UpdateCargoCompanyDto>("CargoCompanies", updateCargoCompanyDto);
         }
+
+        public async Task<string?> SetDefaultCargoCompanyAsync(int id)
+            => await (await _httpClient.PostAsync($"CargoCompanies/{id}/default", null)).GetErrorMessageAsync();
     }
 }

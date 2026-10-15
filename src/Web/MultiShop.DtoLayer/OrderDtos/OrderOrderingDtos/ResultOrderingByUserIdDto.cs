@@ -15,10 +15,15 @@
 
         public DateTime OrderDate { get; set; }
 
-        /// <summary>Pending, AwaitingPayment, Paid, Completed, Cancelled (Order API metin olarak döner).</summary>
+        /// <summary>Pending, AwaitingPayment, Paid, Shipped, Completed, Cancelled (Order API metin olarak döner).</summary>
         public string Status { get; set; } = string.Empty;
 
         /// <summary>İptal sebebi ya da son başarısız ödeme denemesinin sebebi.</summary>
         public string? FailMessage { get; set; }
+
+        /// <summary>Kargo takip numarası ve firması (sipariş kargoya verildiyse).</summary>
+        public string? TrackingNumber { get; set; }
+
+        public string? CargoCompanyName { get; set; }
     }
 }
