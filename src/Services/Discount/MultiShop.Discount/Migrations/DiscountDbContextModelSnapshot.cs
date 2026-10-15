@@ -10,8 +10,8 @@ using MultiShop.Discount.Context;
 
 namespace MultiShop.Discount.Migrations
 {
-    [DbContext(typeof(DapperContext))]
-    partial class DapperContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(DiscountDbContext))]
+    partial class DiscountDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

@@ -11,7 +11,7 @@ using MultiShop.Discount.Context;
 
 namespace MultiShop.Discount.Migrations
 {
-    [DbContext(typeof(DapperContext))]
+    [DbContext(typeof(DiscountDbContext))]
     [Migration("20261013205727_UniqueCouponCode")]
     partial class UniqueCouponCode
     {

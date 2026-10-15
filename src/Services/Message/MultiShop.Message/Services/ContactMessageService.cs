@@ -25,7 +25,7 @@ namespace MultiShop.Message.Services
             _publishEndpoint = publishEndpoint;
         }
 
-        public async Task CreateAsync(CreateContactMessageDto createContactMessageDto)
+        public async Task<int> CreateAsync(CreateContactMessageDto createContactMessageDto)
         {
             var value = _mapper.Map<ContactMessage>(createContactMessageDto);
             value.IsRead = false;
@@ -43,6 +43,7 @@ namespace MultiShop.Message.Services
             await _messageContext.SaveChangesAsync();
 
             await transaction.CommitAsync();
+            return value.ContactMessageId;
         }
 
         public async Task<List<ResultContactMessageDto>> GetAllAsync(int? take = null)
