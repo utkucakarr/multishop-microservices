@@ -81,6 +81,12 @@ builder.Services.AddHttpClient<IUserIdentityService, UserIdentityService>(opt =>
     opt.BaseAddress = new Uri(values.IdentityServerUrl);
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
 
+// Üye kaydı: IdentityServer'ın herkese açık ucu, token gerekmez.
+builder.Services.AddHttpClient<IRegisterService, RegisterService>(opt =>
+{
+    opt.BaseAddress = new Uri(values.IdentityServerUrl);
+});
+
 // Admin istatistikleri: dashboard tek istekte (Ocelot aggregate /services/admin/dashboard) + üst menü için tekil uçlar.
 builder.Services.AddHttpClient<IDashboardService, DashboardService>(opt =>
 {

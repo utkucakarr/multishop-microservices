@@ -13,9 +13,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto)
+        public async Task<string?> CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateProductDetailDto>("productdetails", createProductDetailDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("productdetails", createProductDetailDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task DeleteProductDetailAsync(string id)
@@ -48,9 +49,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
             return values;
         }
 
-        public async Task UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto)
+        public async Task<string?> UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateProductDetailDto>("productdetails", updateProductDetailDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("productdetails", updateProductDetailDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

@@ -13,13 +13,11 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
     [Route("Admin/Category")]
     public class CategoryController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICategoryService _categoryService;
 
-        public CategoryController(ICategoryService categoryService, IHttpClientFactory httpClientFactory)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _httpClientFactory = httpClientFactory;
         }
         void CategoryViewBagList()
         {

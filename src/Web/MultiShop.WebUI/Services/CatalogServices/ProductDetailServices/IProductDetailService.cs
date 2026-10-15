@@ -6,9 +6,11 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
     {
         Task<List<ResultProductDetailDto>> GetAllProductDetailAsync();
 
-        Task CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto);
+        /// <summary>Başarılıysa null, değilse servisin hata mesajı.</summary>
+        Task<string?> CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto);
 
-        Task UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto);
+        /// <summary>Başarılıysa null, değilse servisin hata mesajı (ör. kısa açıklama boş).</summary>
+        Task<string?> UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto);
 
         Task DeleteProductDetailAsync(string id);
 
