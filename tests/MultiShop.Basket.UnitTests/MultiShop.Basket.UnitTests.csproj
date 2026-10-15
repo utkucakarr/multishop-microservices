@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Basket: sepet toplamı (PricingCalculator). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Basket\MultiShop.Basket\MultiShop.Basket.csproj" />
+  </ItemGroup>
+
+</Project>
