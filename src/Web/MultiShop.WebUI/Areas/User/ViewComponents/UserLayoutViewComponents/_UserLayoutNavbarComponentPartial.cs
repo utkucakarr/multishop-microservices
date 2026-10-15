@@ -5,17 +5,16 @@ namespace MultiShop.WebUI.Areas.User.ViewComponents.UserLayoutViewComponents
 {
     public class _UserLayoutNavbarComponentPartial : ViewComponent
     {
-        private readonly IUserService _userService;
+        private readonly ICurrentUser _currentUser;
 
-        public _UserLayoutNavbarComponentPartial(IUserService userService)
+        public _UserLayoutNavbarComponentPartial(ICurrentUser currentUser)
         {
-            _userService = userService;
+            _currentUser = currentUser;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
-            var user = await _userService.GetUserInfo();
-            ViewBag.userName = user.UserName + " " + user.Surname;
+            ViewBag.userName = _currentUser.DisplayName;
             return View();
         }
     }

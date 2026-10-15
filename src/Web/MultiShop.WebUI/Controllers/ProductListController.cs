@@ -9,11 +9,13 @@ namespace MultiShop.WebUI.Controllers
     {
         private readonly ICommentService _commentService;
         private readonly IUserService _userService;
+        private readonly ICurrentUser _currentUser;
 
-        public ProductListController(ICommentService commentService, IUserService userService)
+        public ProductListController(ICommentService commentService, IUserService userService, ICurrentUser currentUser)
         {
             _commentService = commentService;
             _userService = userService;
+            _currentUser = currentUser;
         }
 
         public IActionResult Index(string id)
@@ -52,10 +54,17 @@ namespace MultiShop.WebUI.Controllers
             if (User.Identity?.IsAuthenticated != true)
                 return Unauthorized();
 
-            var user = await _userService.GetUserInfo();
-            var fullName = $"{user.Name} {user.Surname}".Trim();
-            createCommentDto.NameSurname = string.IsNullOrEmpty(fullName) ? user.UserName : fullName;
-            createCommentDto.Email = user.Email;
+            createCommentDto.NameSurname = _currentUser.DisplayName;
+            createCommentDto.Email = _currentUser.Email ?? string.Empty;
+
+            // Yeni claim'lerden (ad, e-posta) önce açılmış oturumlarda e-posta cookie'de yok; profil Identity'den okunur.
+            if (string.IsNullOrEmpty(createCommentDto.Email))
+            {
+                var user = await _userService.GetUserInfo();
+                var fullName = $"{user.Name} {user.Surname}".Trim();
+                createCommentDto.NameSurname = string.IsNullOrEmpty(fullName) ? user.UserName : fullName;
+                createCommentDto.Email = user.Email;
+            }
 
             var error = await _commentService.CreateCommentAsync(createCommentDto);
             return error is null

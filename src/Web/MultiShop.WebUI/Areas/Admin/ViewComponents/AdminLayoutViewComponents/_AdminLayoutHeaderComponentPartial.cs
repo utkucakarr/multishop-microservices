@@ -10,21 +10,20 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
     public class _AdminLayoutHeaderComponentPartial : ViewComponent
     {
         private readonly IContactMessageService _contactMessageService;
-        private readonly IUserService _userService;
+        private readonly ICurrentUser _currentUser;
         private readonly IDashboardService _dashboardService;
         private readonly INotificationService _notificationService;
 
-        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, IUserService userService, IDashboardService dashboardService, INotificationService notificationService)
+        public _AdminLayoutHeaderComponentPartial(IContactMessageService contactMessageService, ICurrentUser currentUser, IDashboardService dashboardService, INotificationService notificationService)
         {
             _notificationService = notificationService;
             _contactMessageService = contactMessageService;
-            _userService = userService;
+            _currentUser = currentUser;
             _dashboardService = dashboardService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var user = await _userService.GetUserInfo();
             // Zarf simgesi: okunmamış iletişim mesajı sayısı ve en yeni 5 mesaj.
             // Servis yanıt vermezse rozet boş kalır (sayfa çökmez).
             var messageStatistics = await _dashboardService.GetMessageStatisticsAsync();
@@ -33,8 +32,9 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
             // Zil: okunmamış bildirim sayısı ve en yeni 5 bildirim; admin-notifications.js canlı günceller.
             ViewBag.notificationCount = await _notificationService.GetUnreadCountAsync();
             ViewBag.latestNotifications = (await _notificationService.GetListAsync(1, 5, false))?.Items ?? new List<MultiShop.DtoLayer.NotificationDtos.NotificationListItemDto>();
-            ViewBag.userName = user.UserName + " " + user.Surname;
-            ViewBag.userMail = user.Email;
+            // Ad ve e-posta cookie claim'lerinden (Identity'ye istek atılmaz).
+            ViewBag.userName = _currentUser.DisplayName;
+            ViewBag.userMail = _currentUser.Email;
             return View();
         }
     }

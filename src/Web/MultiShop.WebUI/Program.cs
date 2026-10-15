@@ -55,7 +55,8 @@ builder.Services.AddControllersWithViews()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization();
 
-builder.Services.AddScoped<ILoginService, LoginService>();
+// Giriş yapan kullanıcının cookie claim'leri (ad, e-posta, rol); Identity'ye istek atmaz.
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddHttpClient<IIdentityService, IdentityService>();
 
 builder.Services.Configure<ClientSettings>(builder.Configuration.GetSection("ClientSettings"));
