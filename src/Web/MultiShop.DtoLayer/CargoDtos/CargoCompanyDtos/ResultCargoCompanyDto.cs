@@ -11,5 +11,8 @@ namespace MultiShop.DtoLayer.CargoDtos.CargoCompanyDtos
         public int CargoCompanyId { get; set; }
 
         public string CargoCompanyName { get; set; }
+
+        /// <summary>Yeni gönderilere otomatik atanan firma (aynı anda yalnızca biri).</summary>
+        public bool IsDefault { get; set; }
     }
 }

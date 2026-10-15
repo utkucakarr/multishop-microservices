@@ -6,7 +6,7 @@ using MultiShop.Order.Domain.Enums;
 namespace MultiShop.Order.Application.Sagas.Activities
 {
     /// <summary>
-    /// Saga'nın durumunu ve sebebini siparişe (Ordering.Status, FailMessage) yazar; her geçişten sonra çağrılır.
+    /// Saga'nın durumunu, sebebini ve kargo bilgisini siparişe (Ordering.Status, FailMessage, TrackingNumber) yazar; her geçişten sonra çağrılır.
     /// Saga durumlarının adları OrderStatus değerleriyle aynıdır. API ve WebUI durumu Orderings tablosundan okur.
     /// </summary>
     public class SyncOrderingStatusActivity : IStateMachineActivity<OrderState>
@@ -39,6 +39,8 @@ namespace MultiShop.Order.Application.Sagas.Activities
 
             ordering.Status = Enum.Parse<OrderStatus>(saga.CurrentState);
             ordering.FailMessage = saga.FailReason;
+            ordering.TrackingNumber = saga.TrackingNumber;
+            ordering.CargoCompanyName = saga.CargoCompanyName;
             await _orderingRepository.UpdateAsync(ordering);
         }
 

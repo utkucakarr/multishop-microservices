@@ -1,0 +1,110 @@
+﻿@model GetShipmentByIdDto
+
+@{
+    ViewData["Title"] = "Gönderi Detayı";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>
+                    Gönderi @Model.Barcode
+                    <span class="label @ShipmentStatusDisplay.LabelClass(Model.Status)">@ShipmentStatusDisplay.Text(Model.Status)</span>
+                </h4>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr><th>Sipariş No</th><td>@Model.OrderNumber</td></tr>
+                                <tr><th>Kargo Firması</th><td>@(Model.CargoCompanyName ?? "-")</td></tr>
+                                <tr><th>Oluşturulma</th><td>@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td></tr>
+                                <tr><th>Kargoya Verilme</th><td>@(Model.DispatchedAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")</td></tr>
+                                <tr><th>Teslim</th><td>@(Model.DeliveredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr><th>Alıcı</th><td>@Model.ReceiverName</td></tr>
+                                <tr><th>E-posta</th><td>@Model.ReceiverEmail</td></tr>
+                                <tr><th>Telefon</th><td>@Model.ReceiverPhone</td></tr>
+                                <tr>
+                                    <th>Adres</th>
+                                    <td>
+                                        @Model.AddressLine1
+                                        @if (!string.IsNullOrWhiteSpace(Model.AddressLine2))
+                                        {
+                                            <br />@Model.AddressLine2
+                                        }
+                                        <br />@Model.District / @Model.City @Model.ZipCode
+                                        <br />@Model.Country
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h4>Hareket Geçmişi</h4>
+                @if (Model.Operations.Count == 0)
+                {
+                    <p>Henüz hareket yok.</p>
+                }
+                else
+                {
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Açıklama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var operation in Model.Operations)
+                            {
+                                <tr>
+                                    <td>@operation.OperationDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@operation.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <a href="/Admin/Cargo/ShipmentList" class="btn btn-default">Gönderilere dön</a>
+                @if (Model.Status == ShipmentStatuses.Preparing)
+                {
+                    <form method="post" action="/Admin/Cargo/DispatchShipment" style="display:inline"
+                          onsubmit="return confirm('Gönderi kargoya verilsin mi? Müşteriye takip numarası gönderilir.');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.CargoDetailId" />
+                        <input type="hidden" name="fromDetail" value="true" />
+                        <button type="submit" class="btn btn-info">Kargoya ver</button>
+                    </form>
+                }
+                else if (Model.Status == ShipmentStatuses.Shipped)
+                {
+                    <form method="post" action="/Admin/Cargo/DeliverShipment" style="display:inline"
+                          onsubmit="return confirm('Gönderi teslim edildi olarak işaretlensin mi? Sipariş tamamlanır.');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.CargoDetailId" />
+                        <input type="hidden" name="fromDetail" value="true" />
+                        <button type="submit" class="btn btn-success">Teslim edildi</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using MultiShop.Contracts.Baskets;
+using MultiShop.Contracts.Cargo;
 using MultiShop.Contracts.Catalog;
 using MultiShop.Contracts.Orders;
 using MultiShop.Contracts.Payments;
@@ -9,12 +10,14 @@ using MultiShop.Order.Application.Sagas.Activities;
 namespace MultiShop.Order.Application.Sagas
 {
     /// <summary>
-    /// Sipariş saga'sı (orkestrasyon): sepet onayından ödemeye kadar siparişi yönetir, Catalog'a stok komutlarını
-    /// gönderir, Payment'a sipariş durumunu yayınlar.
+    /// Sipariş saga'sı (orkestrasyon): sepet onayından teslimata kadar siparişi yönetir, Catalog'a stok, Cargo'ya gönderi
+    /// komutlarını gönderir, Payment'a sipariş durumunu yayınlar. Yan işler (bildirim) event'leri kendisi dinler (koreografi).
     /// <code>
-    /// BasketCheckedOut ──► Pending ──StockReserved──► AwaitingPayment ──PaymentSucceeded──► Paid
-    ///                         │                          │  PaymentFailed: deneme +1, 3. hatada iptal
-    ///                         └─StockReservationFailed / CancelOrder─┴──► Cancelled (ayrılmış stok bırakılır)
+    /// BasketCheckedOut ──► Pending ──StockReserved──► AwaitingPayment ──PaymentSucceeded──► Paid ──ShipmentDispatched──► Shipped
+    ///                         │                          │  PaymentFailed: deneme +1          (CreateShipment,              │
+    ///                         │                          │  3. hatada iptal                     OrderPaid)        ShipmentDelivered
+    ///                         └─StockReservationFailed / CancelOrder─┴──► Cancelled (ayrılmış stok bırakılır)          ▼
+    ///                                                                                                                Completed
     /// </code>
     /// Her mesajın etkisi (sipariş, saga durumu, gönderilecek mesajlar) tek transaction'da yazılır (EF outbox).
     /// </summary>
@@ -31,6 +34,8 @@ namespace MultiShop.Order.Application.Sagas
         public State AwaitingPayment { get; private set; } = null!;
         public State Paid { get; private set; } = null!;
         public State Cancelled { get; private set; } = null!;
+        public State Shipped { get; private set; } = null!;
+        public State Completed { get; private set; } = null!;
 
         public Event<BasketCheckedOut> BasketCheckedOut { get; private set; } = null!;
         public Event<StockReserved> StockReserved { get; private set; } = null!;
@@ -38,6 +43,8 @@ namespace MultiShop.Order.Application.Sagas
         public Event<PaymentSucceeded> PaymentSucceeded { get; private set; } = null!;
         public Event<PaymentFailed> PaymentFailed { get; private set; } = null!;
         public Event<CancelOrder> CancelOrder { get; private set; } = null!;
+        public Event<ShipmentDispatched> ShipmentDispatched { get; private set; } = null!;
+        public Event<ShipmentDelivered> ShipmentDelivered { get; private set; } = null!;
 
         public OrderStateMachine(ILogger<OrderStateMachine> logger)
         {
@@ -49,6 +56,8 @@ namespace MultiShop.Order.Application.Sagas
             Event(() => PaymentSucceeded, e => e.CorrelateById(context => context.Message.OrderNumber));
             Event(() => PaymentFailed, e => e.CorrelateById(context => context.Message.OrderNumber));
             Event(() => CancelOrder, e => e.CorrelateById(context => context.Message.OrderNumber));
+            Event(() => ShipmentDispatched, e => e.CorrelateById(context => context.Message.OrderNumber));
+            Event(() => ShipmentDelivered, e => e.CorrelateById(context => context.Message.OrderNumber));
 
             Initially(
                 When(BasketCheckedOut)
@@ -85,7 +94,8 @@ namespace MultiShop.Order.Application.Sagas
                     .Then(context => context.Saga.FailReason = null)
                     .Send(CommitStockQueue, context => new CommitStock(context.Saga.CorrelationId))
                     .TransitionTo(Paid)
-                    .Activity(x => x.OfInstanceType<SyncOrderingStatusActivity>()),
+                    .Activity(x => x.OfInstanceType<SyncOrderingStatusActivity>())
+                    .Activity(x => x.OfType<StartShipmentActivity>()),
 
                 // Müşteri aynı sipariş için tekrar deneyebilir; deneme hakkı bitince sipariş iptal edilir (karar 2).
                 When(PaymentFailed)
@@ -119,13 +129,45 @@ namespace MultiShop.Order.Application.Sagas
                 Ignore(CancelOrder));
 
             During(Paid,
+                When(ShipmentDispatched)
+                    .Then(context =>
+                    {
+                        context.Saga.TrackingNumber = context.Message.TrackingNumber;
+                        context.Saga.CargoCompanyName = context.Message.CargoCompanyName;
+                    })
+                    .TransitionTo(Shipped)
+                    .Activity(x => x.OfInstanceType<SyncOrderingStatusActivity>()),
+
+                // Mesaj sırası garanti değil: "teslim edildi", "kargoya verildi"den önce işlenirse sipariş yine tamamlanır.
+                When(ShipmentDelivered)
+                    .Then(context => context.Saga.TrackingNumber = context.Message.TrackingNumber)
+                    .TransitionTo(Completed)
+                    .Activity(x => x.OfInstanceType<SyncOrderingStatusActivity>()),
+
                 Ignore(StockReserved),
                 Ignore(PaymentSucceeded),
                 Ignore(PaymentFailed),
                 Ignore(CancelOrder));
 
-            // Aynı sipariş numarasıyla ikinci sepet onayı: sipariş zaten var.
-            During(Pending, AwaitingPayment, Paid, Cancelled,
+            During(Shipped,
+                When(ShipmentDelivered)
+                    .TransitionTo(Completed)
+                    .Activity(x => x.OfInstanceType<SyncOrderingStatusActivity>()),
+
+                Ignore(ShipmentDispatched),
+                Ignore(PaymentSucceeded),
+                Ignore(PaymentFailed),
+                Ignore(CancelOrder));
+
+            During(Completed,
+                Ignore(ShipmentDispatched),
+                Ignore(ShipmentDelivered),
+                Ignore(PaymentSucceeded),
+                Ignore(PaymentFailed),
+                Ignore(CancelOrder));
+
+            // Aynı sipariş numarasıyla ikinci sepet onayı: sipariş zaten var. DuringAny, Initial dışındaki tüm durumlar.
+            DuringAny(
                 Ignore(BasketCheckedOut));
         }
 

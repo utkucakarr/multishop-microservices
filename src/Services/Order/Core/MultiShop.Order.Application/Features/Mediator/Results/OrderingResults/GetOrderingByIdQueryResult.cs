@@ -24,5 +24,10 @@ namespace MultiShop.Order.Application.Features.Mediator.Results.OrderingResults
 
         /// <summary>İptal sebebi ya da son başarısız ödeme denemesinin sebebi.</summary>
         public string? FailMessage { get; set; }
+
+        /// <summary>Kargo takip numarası ve firması (sipariş kargoya verildiyse).</summary>
+        public string? TrackingNumber { get; set; }
+
+        public string? CargoCompanyName { get; set; }
     }
 }

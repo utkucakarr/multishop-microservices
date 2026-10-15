@@ -5,9 +5,10 @@
     public enum OrderStatus
     {
         Pending = 0,          // Sipariş oluşturuldu, stok ayrılması bekleniyor
-        Completed = 1,        // Sipariş tamamlandı (KT-13'te kargo teslimiyle; KT-12 öncesi siparişler de bu durumda)
+        Completed = 1,        // Kargo teslim edildi, sipariş tamamlandı (KT-12 öncesi siparişler de bu durumda)
         Cancelled = 2,        // Stok yetersiz, ödeme denemeleri bitti ya da müşteri/admin iptal etti (sebep: FailMessage)
         AwaitingPayment = 3,  // Stok ayrıldı, ödeme bekleniyor
-        Paid = 4              // Ödeme alındı, stok kesinleşti
+        Paid = 4,             // Ödeme alındı, stok kesinleşti, gönderi hazırlanıyor
+        Shipped = 5           // Kargoya verildi (takip no: TrackingNumber)
     }
 }
