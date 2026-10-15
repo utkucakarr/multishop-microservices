@@ -22,6 +22,7 @@
     <ProjectReference Include="..\MultiShop.Cargo.DtoLayer\MultiShop.Cargo.DtoLayer.csproj" />
     <ProjectReference Include="..\MultiShop.Cargo.EntityLayer\MultiShop.Cargo.EntityLayer.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.Contracts\MultiShop.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

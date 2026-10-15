@@ -34,6 +34,7 @@
                                             <th>Sipariş Tarihi</th>
                                             <th>Toplam Fiyat</th>
                                             <th>Durum</th>
+                                            <th>Kargo</th>
                                             <th>Açıklama</th>
                                             <th>İşlemler</th>
                                         </tr>
@@ -46,6 +47,17 @@
                                                 <td>@item.OrderDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
                                                 <td>@item.TotalPrice.ToString("N2") ₺</td>
                                                 <td><span class="badge @OrderStatusDisplay.BadgeClass(item.Status)">@OrderStatusDisplay.Text(item.Status)</span></td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(item.TrackingNumber))
+                                                    {
+                                                        <span>@item.CargoCompanyName</span><br />
+                                                        <small>Takip no: <strong>@item.TrackingNumber</strong></small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>-</span>
+                                                    }
+                                                </td>
                                                 <td>@item.FailMessage</td>
                                                 <td>
                                                     <a href="/User/MyOrder/MyOrderDetail/@item.OrderingId" class="btn btn-primary btn-sm">Detaylar</a>

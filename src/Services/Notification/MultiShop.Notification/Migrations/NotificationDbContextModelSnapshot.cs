@@ -386,6 +386,30 @@ namespace MultiShop.Notification.Migrations
                             EmailEnabled = true,
                             InAppEnabled = true,
                             SmsEnabled = true
+                        },
+                        new
+                        {
+                            Type = "order-paid",
+                            DisplayName = "Sipariş onayı (müşteriye)",
+                            EmailEnabled = true,
+                            InAppEnabled = false,
+                            SmsEnabled = false
+                        },
+                        new
+                        {
+                            Type = "new-order",
+                            DisplayName = "Yeni sipariş (admin'e)",
+                            EmailEnabled = false,
+                            InAppEnabled = true,
+                            SmsEnabled = false
+                        },
+                        new
+                        {
+                            Type = "order-shipped",
+                            DisplayName = "Kargoya verildi (müşteriye)",
+                            EmailEnabled = true,
+                            InAppEnabled = false,
+                            SmsEnabled = false
                         });
                 });
 

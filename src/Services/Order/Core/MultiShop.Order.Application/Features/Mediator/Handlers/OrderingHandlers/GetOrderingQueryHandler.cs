@@ -37,7 +37,9 @@ namespace MultiShop.Order.Application.Features.Mediator.Handlers.OrderingHandler
                 UserId = x.UserId,
                 AddressId = x.AddressId,
                 Status = x.Status,
-                FailMessage = x.FailMessage
+                FailMessage = x.FailMessage,
+                TrackingNumber = x.TrackingNumber,
+                CargoCompanyName = x.CargoCompanyName
             }).ToList();
         }
     }

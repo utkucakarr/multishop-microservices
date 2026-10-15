@@ -51,6 +51,7 @@ builder.Services.AddHealthChecks().AddDbContextCheck<OrderContext>("sqlserver");
 // yazılır, saga'nın gönderdiği komut/event'ler commit'ten sonra RabbitMQ'ya gider. Inbox: aynı mesaj ikinci kez işlenmez.
 builder.Services.AddScoped<CreateOrderingActivity>();
 builder.Services.AddScoped<SyncOrderingStatusActivity>();
+builder.Services.AddScoped<StartShipmentActivity>();
 
 builder.AddMultiShopMessaging("Order", x =>
 {
