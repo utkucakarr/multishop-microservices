@@ -22,7 +22,7 @@
                 <h3 class="mb-3">Erişim reddedildi</h3>
                 <p class="mb-4">Bu sayfayı görüntüleme yetkiniz yok. Farklı bir hesapla işlem yapmak istiyorsanız çıkış yapıp yeniden giriş yapabilirsiniz.</p>
                 <a href="/Default/Index" class="btn btn-primary px-4 mr-2">Ana Sayfaya Dön</a>
-                <a href="/Login/Logout/" class="btn btn-outline-dark px-4">Çıkış Yap</a>
+                <form method="post" asp-area="" asp-controller="Login" asp-action="Logout" style="display:none"></form><a onclick="this.previousElementSibling.submit(); return false;" href="#" class="btn btn-outline-dark px-4">Çıkış Yap</a>
             </div>
         </div>
     </div>

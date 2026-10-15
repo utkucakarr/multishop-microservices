@@ -71,6 +71,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return RedirectToAction("Index", "SpecialOffer", new { area = "Admin" });
         }
 
+        [HttpPost]
         [Route("DeleteSpecialOffer/{id}")]
         public async Task<IActionResult> DeleteSpecialOffer(string id)
         {

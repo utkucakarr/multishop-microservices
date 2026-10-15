@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
@@ -50,7 +51,8 @@ builder.Services.AddAccessTokenManagement();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllersWithViews()
+// GET/HEAD/OPTIONS dışındaki her istek antiforgery token'ı taşımalı (form tag helper'ı token'ı kendisi ekler).
+builder.Services.AddControllersWithViews(opt => opt.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
     .AddRazorRuntimeCompilation()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization();
@@ -217,7 +219,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseMultiShopRequestLogging();
 
-// Gövdesiz hata yanıtları ErrorController.Status'a gider; yalnızca 404 için sayfa gösterilir.
+// Gövdesiz hata yanıtları ErrorController.Status'a gider; yalnızca 404 ve 400 için sayfa gösterilir.
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 // UseRouting'den önce: hata sayfasını isteği yeniden yönlendirerek üretir.
 app.UseMiddleware<ServiceExceptionMiddleware>();

@@ -50,6 +50,9 @@ namespace MultiShop.WebUI.Controllers
             return View();
         }
 
+        // POST + antiforgery: başka bir sayfaya gömülü bir link/görsel kullanıcının oturumunu kapatamasın.
+        // Menülerdeki "Çıkış Yap" linkleri yanlarındaki gizli formu gönderir.
+        [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await _identityService.Logout();

@@ -45,7 +45,7 @@
                                     </td>
                                     <td>@item.ReservedStock</td>
                                     <td>@(item.AvailableStock - item.ReservedStock)</td>
-                                    <td><a href="/Admin/Product/DeleteProduct/@item.ProductId" class="btn btn-danger">Sil</a></td>
+                                    <td><form method="post" asp-area="Admin" asp-controller="Product" asp-action="DeleteProduct" asp-route-id="@item.ProductId" style="display:inline" onsubmit="return confirm('Ürün silinsin mi?');"><button type="submit" class="btn btn-danger">Sil</button></form></td>
                                     <td><a href="/Admin/Product/UpdateProduct/@item.ProductId" class="btn btn-success">Güncelle</a></td>
                                     <td><a href="/Admin/ProductImage/ProductImageDetail/@item.ProductId" class="btn btn-warning">Görseller</a></td>
                                     <td><a href="/Admin/ProductDetail/UpdateProductDetail/@item.ProductId" class="btn btn-info">Açıklama</a></td>

@@ -77,6 +77,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return View(createProductDto);
         }
 
+        [HttpPost]
         [Route("DeleteProduct/{id}")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
