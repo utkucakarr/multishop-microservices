@@ -1,71 +1,109 @@
-﻿@model CreateOrderAddressDto
+﻿@model OrderCheckoutViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Sipariş Onayı";
     Layout = "~/Views/UILayout/_UILayout.cshtml";
 }
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-8">
-            <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Addres Bilgileriniz</span></h5>
-            <div class="bg-light p-30 mb-5">
-                <form method="post">
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>Adınız</label>
-                            <input class="form-control" type="text" asp-for="Name" placeholder="Adınız">
+    @if (TempData["ErrorMessage"] != null || ViewBag.errorMessage != null)
+    {
+        <div class="alert alert-danger mx-xl-5" role="alert">@(TempData["ErrorMessage"] ?? ViewBag.errorMessage)</div>
+    }
+    <form method="post" id="checkoutForm">
+        <input type="hidden" asp-for="ExpectedTotal" />
+        <div class="row px-xl-5">
+            <div class="col-lg-8">
+                <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Teslimat Adresi</span></h5>
+                <div class="bg-light p-30 mb-5">
+                    @foreach (var address in Model.Addresses)
+                    {
+                        <div class="custom-control custom-radio mb-3">
+                            <input type="radio" class="custom-control-input address-choice" id="address-@address.AddressId"
+                                   name="SelectedAddressId" value="@address.AddressId" @(Model.SelectedAddressId == address.AddressId ? "checked" : "")>
+                            <label class="custom-control-label" for="address-@address.AddressId">
+                                <strong>@address.Name @address.SurName</strong> · @address.Phone<br />
+                                @address.Detail1 @address.Detail2, @address.District / @address.City, @address.Country @address.ZipCode
+                            </label>
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label>Soyadınız</label>
-                            <input class="form-control" type="text" asp-for="SurName" placeholder="Soyadınız">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>E-mail</label>
-                            <input class="form-control" type="text" asp-for="Email" placeholder="mail@email.com">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Telefon Numaranız</label>
-                            <input class="form-control" type="text" asp-for="Phone" placeholder="+90 123 456 78 90">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Address Satır 1</label>
-                            <input class="form-control" type="text" asp-for="Detail1" placeholder="123 Mahallesi">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Address Satır 2</label>
-                            <input class="form-control" type="text" asp-for="Detail2" placeholder="123 Sokak">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Ülke</label>
-                            <input class="form-control" type="text" asp-for="Country" placeholder="Türkiye">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Şehir</label>
-                            <input class="form-control" type="text" asp-for="City" placeholder="Şehriniz">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>İlçe</label>
-                            <input class="form-control" type="text" asp-for="District" placeholder="İlçeniz">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Posta Kodu</label>
-                            <input class="form-control" type="text" asp-for="ZipCode" placeholder="12345">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <button class="btn btn-block btn-primary font-weight-bold py-3">Ödeme Adımına Geç</button>
-                        </div>
+                    }
+                    <div class="custom-control custom-radio mb-3">
+                        <input type="radio" class="custom-control-input address-choice" id="address-new"
+                               name="SelectedAddressId" value="0" @(Model.SelectedAddressId == 0 ? "checked" : "")>
+                        <label class="custom-control-label" for="address-new"><strong>Yeni adres</strong></label>
                     </div>
-                </form>
+
+                    <fieldset id="newAddress">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Adınız</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.Name" placeholder="Adınız" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Soyadınız</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.SurName" placeholder="Soyadınız" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>E-mail</label>
+                                <input class="form-control" type="email" asp-for="NewAddress.Email" placeholder="mail@email.com" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Telefon Numaranız</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.Phone" placeholder="+90 123 456 78 90" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Adres Satır 1</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.Detail1" placeholder="123 Mahallesi" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Adres Satır 2 (isteğe bağlı)</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.Detail2" placeholder="123 Sokak">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Ülke</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.Country" placeholder="Türkiye" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Şehir</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.City" placeholder="Şehriniz" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>İlçe</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.District" placeholder="İlçeniz" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Posta Kodu (isteğe bağlı)</label>
+                                <input class="form-control" type="text" asp-for="NewAddress.ZipCode" placeholder="12345">
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Sipariş Özeti</span></h5>
+
+                @await Component.InvokeAsync("_OrderSummaryComponentPartial")
+
+                <button type="submit" id="checkoutButton" class="btn btn-block btn-primary font-weight-bold py-3 mb-5">Siparişi Onayla ve Ödemeye Geç</button>
             </div>
         </div>
-
-        <div class="col-lg-4">
-            <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Sipariş Özeti</span></h5>
-
-            @await Component.InvokeAsync("_OrderSummaryComponentPartial")
-
-            @await Component.InvokeAsync("_PaymentMethodComponentPartial")
-        </div>
-    </div>
+    </form>
 </div>
+
+<script>
+    // Kayıtlı adres seçiliyken yeni adres formu kapalı: disabled alanlar ne doğrulanır ne gönderilir.
+    function toggleNewAddress() {
+        var isNew = document.getElementById('address-new').checked;
+        document.getElementById('newAddress').disabled = !isNew;
+    }
+    document.querySelectorAll('.address-choice').forEach(function (radio) { radio.addEventListener('change', toggleNewAddress); });
+    toggleNewAddress();
+
+    // Çift tıklamada ikinci istek gitmesin (Basket ayrıca kilitler).
+    document.getElementById('checkoutForm').addEventListener('submit', function () {
+        var button = document.getElementById('checkoutButton');
+        button.disabled = true;
+        button.innerText = 'Sipariş oluşturuluyor...';
+    });
+</script>

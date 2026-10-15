@@ -59,5 +59,11 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
             var responseMessage = await _httpClient.PutAsJsonAsync<UpdateProductDto>("products", updateProductDto);
             return await responseMessage.GetErrorMessageAsync();
         }
+
+        public async Task<string?> UpdateStockAsync(string productId, int availableStock)
+        {
+            var responseMessage = await _httpClient.PutAsJsonAsync($"products/{Uri.EscapeDataString(productId)}/stock", new { availableStock });
+            return await responseMessage.GetErrorMessageAsync();
+        }
     }
 }

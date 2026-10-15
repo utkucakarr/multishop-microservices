@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.WebUI.Services.OrderServices.OrderDetailServices;
 using MultiShop.WebUI.Services.OrderServices.OrderOrderingServices;
-using MultiShop.WebUI.ViewComponents.OrderViewComponents;
 
 namespace MultiShop.WebUI.Areas.User.Controllers
 {
@@ -21,10 +20,9 @@ namespace MultiShop.WebUI.Areas.User.Controllers
 
         public async Task<IActionResult> MyOrderList()
         {
-            // Kullanıcı ID'si artık gönderilmiyor; Order servisi token'dan belirliyor.
+            // Kullanıcı ID'si gönderilmiyor; Order servisi token'dan belirliyor. Liste en yeni sipariş önce gelir.
             var values = await _orderOrderingService.GetMyOrderingsAsync();
-            var orderedValues = values.OrderByDescending(x => x.OrderDate).ToList();
-            return View(orderedValues);
+            return View(values);
         }
 
         [Route("User/MyOrder/MyOrderDetail/{orderingId}")]
@@ -34,6 +32,19 @@ namespace MultiShop.WebUI.Areas.User.Controllers
             if (orderDetails is null)
                 return NotFound();
             return View(orderDetails);
+        }
+
+        /// <summary>Ödenmemiş siparişi iptal ettirir; ayrılan stok bırakılır. İptal arka planda birkaç saniyede tamamlanır.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(Guid orderNumber)
+        {
+            var error = await _orderOrderingService.CancelAsync(orderNumber);
+            if (error is null)
+                TempData["SuccessMessage"] = "İptal isteğiniz alındı; sipariş birkaç saniye içinde iptal edilecek.";
+            else
+                TempData["ErrorMessage"] = error;
+            return RedirectToAction(nameof(MyOrderList));
         }
     }
 }

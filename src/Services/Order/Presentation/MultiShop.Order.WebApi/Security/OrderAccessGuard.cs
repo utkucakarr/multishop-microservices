@@ -30,6 +30,15 @@ namespace MultiShop.Order.WebApi.Security
             return ordering;
         }
 
+        /// <summary>Sipariş numarasıyla (Guid) erişim; WebUI sepet onayından sonra siparişi bununla izler.</summary>
+        public async Task<Ordering> EnsureOrderingAccessAsync(Guid orderNumber)
+        {
+            var ordering = await _orderingRepository.GetByFilterAsync(x => x.OrderNumber == orderNumber);
+            if (ordering is null || !CanAccess(ordering.UserId))
+                throw new NotFoundException("Sipariş", orderNumber);
+            return ordering;
+        }
+
         public async Task<Address> EnsureAddressAccessAsync(int addressId)
         {
             var address = await _addressRepository.GetByIdAsync(addressId);

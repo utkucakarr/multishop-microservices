@@ -73,6 +73,20 @@ namespace MultiShop.Catalog.Services.ProductServices
             return dtos;
         }
 
+        public async Task UpdateStockAsync(string id, int availableStock)
+        {
+            var product = await _productRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Ürün", id);
+
+            if (!await _productRepository.SetAvailableStockAsync(id, availableStock))
+            {
+                // Okumadan sonra yeni bir rezervasyon gelmiş olabilir; güncel ayrılmış adet mesajda gösterilir.
+                var current = await _productRepository.GetByIdAsync(id);
+                throw new CatalogDomainException(
+                    $"{product.ProductName}: stok, ödemesi beklenen siparişlere ayrılmış adetten ({current?.ReservedStock ?? product.ReservedStock}) az olamaz.");
+            }
+        }
+
         public async Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync()
         {
             // N+1 problemi C# tarafında In-Memory Join (Dictionary) kullanılarak çözüldü.
@@ -128,7 +142,8 @@ namespace MultiShop.Catalog.Services.ProductServices
                 string.IsNullOrWhiteSpace(updateProductDto.ProductImageUrl) ? product.ProductImageUrl : updateProductDto.ProductImageUrl
             );
 
-            await _productRepository.UpdateAsync(product.ProductId, product);
+            // Stok alanları yazılmaz: rezervasyonlar atomik $inc ile değişir (KT-12).
+            await _productRepository.UpdateDetailsAsync(product);
         }
 
         // Ürün var olmayan bir kategoriye ya da markaya bağlanamaz. Kategori boşsa kontrolü

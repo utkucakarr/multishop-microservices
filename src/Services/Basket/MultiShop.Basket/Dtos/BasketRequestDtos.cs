@@ -25,6 +25,19 @@ namespace MultiShop.Basket.Dtos
         public string Code { get; set; } = string.Empty;
     }
 
+    public class CheckoutDto
+    {
+        /// <summary>Kullanıcının Order'daki adreslerinden biri; başkasının adresi kabul edilmez.</summary>
+        [Range(1, int.MaxValue, ErrorMessage = "Teslimat adresi seçilmeli.")]
+        public int AddressId { get; set; }
+
+        /// <summary>
+        /// Kullanıcının onay ekranında gördüğü genel toplam. Sunucunun o anki hesabı farklıysa (fiyat ya da kupon arada
+        /// değişti) sipariş açılmaz: kullanıcı görmediği bir tutarı onaylamış olmaz.
+        /// </summary>
+        public decimal ExpectedTotal { get; set; }
+    }
+
     public static class BasketLimits
     {
         public const int MinQuantity = 1;

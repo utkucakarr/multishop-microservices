@@ -9,6 +9,7 @@ using MultiShop.Basket.Services;
 using MultiShop.Basket.Settings;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Messaging;
 using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,7 @@ builder.Services.AddScoped<BasketRepository>();
 builder.Services.Configure<PricingOptions>(builder.Configuration.GetSection(PricingOptions.SectionName));
 builder.Services.AddSingleton<PricingCalculator>();
 
-// Fiyat Catalog'dan, kupon Discount'tan; ikisine de kullanıcının token'ı iletilir.
+// Fiyat Catalog'dan, kupon Discount'tan, adres kontrolü Order'dan; hepsine kullanıcının token'ı iletilir.
 var serviceUrls = builder.Configuration.GetSection(ServiceUrls.SectionName).Get<ServiceUrls>() ?? new ServiceUrls();
 builder.Services.AddTransient<ForwardAccessTokenHandler>();
 builder.Services.AddHttpClient<CatalogClient>(client =>
@@ -39,6 +40,15 @@ builder.Services.AddHttpClient<DiscountClient>(client =>
     client.BaseAddress = new Uri(serviceUrls.Discount);
     client.Timeout = TimeSpan.FromSeconds(5);
 }).AddHttpMessageHandler<ForwardAccessTokenHandler>();
+builder.Services.AddHttpClient<OrderClient>(client =>
+{
+    client.BaseAddress = new Uri(serviceUrls.Order);
+    client.Timeout = TimeSpan.FromSeconds(5);
+}).AddHttpMessageHandler<ForwardAccessTokenHandler>();
+
+// Sepet onayı BasketCheckedOut yayınlar (sipariş saga'sını başlatır). Basket mesaj dinlemez, yalnızca yayınlar.
+builder.AddMultiShopMessaging("Basket");
+
 builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("RedisSettings"));
 builder.Services.AddSingleton<RedisService>(sp =>
 {

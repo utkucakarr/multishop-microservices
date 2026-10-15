@@ -17,6 +17,9 @@ namespace MultiShop.Catalog.Services.ProductServices
         /// <summary>Sepet fiyatlaması: bulunan ürünlerin güncel fiyatı; olmayan id'ler sonuçta yer almaz.</summary>
         Task<List<ProductPriceDto>> GetPricesByIdsAsync(IReadOnlyCollection<string> ids);
 
+        /// <summary>Admin: eldeki stok. Ayrılmış adetin altına inemez (ödemesi beklenen siparişler etkilenmesin).</summary>
+        Task UpdateStockAsync(string id, int availableStock);
+
         Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryAsync();
 
         Task<IEnumerable<ResultProductsWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId);

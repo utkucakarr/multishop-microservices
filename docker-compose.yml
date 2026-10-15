@@ -36,15 +36,21 @@ services:
   mongo:
     image: mongo:8.0
     container_name: multishop-mongo
+    # Tek düğümlü replica set (KT-12): MongoDB çok dokümanlı transaction'ı yalnızca replica set'te destekler.
+    # Catalog'un stok rezervasyonu ("hepsi ya da hiçbiri") ve MassTransit outbox/inbox'ı buna dayanır.
+    # Uygulamalar ?directConnection=true ile bağlanır (üye adı container içindeki localhost:27017).
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "127.0.0.1:27018:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      # İlk açılışta replica set'i bir kez başlatır; yazmaya hazır birincil düğüm olunca healthy.
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }) }; quit(db.hello().isWritablePrimary ? 0 : 1)\""]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 6
+      start_period: 20s
     restart: unless-stopped
 
   postgres:

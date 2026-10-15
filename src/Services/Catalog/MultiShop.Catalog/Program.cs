@@ -1,11 +1,14 @@
-﻿using Microsoft.Extensions.Options;
+﻿using MassTransit;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Messaging;
 using MultiShop.BuildingBlocks.Storage;
 using MultiShop.BuildingBlocks.Swagger;
+using MultiShop.Catalog.Consumers;
 using MultiShop.Catalog.HealthChecks;
 using MultiShop.Catalog.Repositories.Concrete;
 using MultiShop.Catalog.Repositories.Interfaces;
@@ -20,7 +23,9 @@ using MultiShop.Catalog.Services.ProductImageServices;
 using MultiShop.Catalog.Services.ProductServices;
 using MultiShop.Catalog.Services.SpecialOfferServices;
 using MultiShop.Catalog.Services.StatisticServices;
+using MultiShop.Catalog.Services.StockServices;
 using MultiShop.Catalog.Settings;
+using MultiShop.Contracts.Catalog;
 using System.Reflection;
 
 // Mongo dokümanlarında entity class'ında karşılığı olmayan eski/fazladan alanlar
@@ -75,6 +80,24 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     new MongoClient(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.ConnectionString));
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<IMongoClient>().GetDatabase(sp.GetRequiredService<IOptions<DatabaseSettings>>().Value.DatabaseName));
+
+// Sipariş saga'sının stok komutları (KT-12). Mongo outbox/inbox: her consumer bir MongoDB transaction'ında çalışır;
+// stok, rezervasyon, inbox kaydı ve yayınlanan event birlikte commit edilir. MongoDB replica set gerektirir (docker-compose).
+builder.Services.AddScoped<StockReservationService>();
+builder.AddMultiShopMessaging("Catalog", x =>
+{
+    x.AddMongoDbOutbox(outbox =>
+    {
+        outbox.ClientFactory(sp => sp.GetRequiredService<IMongoClient>());
+        outbox.DatabaseFactory(sp => sp.GetRequiredService<IMongoDatabase>());
+    });
+    x.AddConfigureEndpointsCallback((context, _, endpoint) => endpoint.UseMongoDbOutbox(context));
+
+    // Kuyruk adları Contracts'taki sabitlerle: saga komutları Send ile doğrudan bu kuyruklara gönderir.
+    x.AddConsumer<ReserveStockConsumer>().Endpoint(e => e.Name = CatalogQueues.ReserveStock);
+    x.AddConsumer<CommitStockConsumer>().Endpoint(e => e.Name = CatalogQueues.CommitStock);
+    x.AddConsumer<ReleaseStockConsumer>().Endpoint(e => e.Name = CatalogQueues.ReleaseStock);
+});
 
 // Mongo erişilemezken sunucu seçimi 30 sn bekler; health check daha erken yanıt versin.
 builder.Services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", timeout: TimeSpan.FromSeconds(5));
