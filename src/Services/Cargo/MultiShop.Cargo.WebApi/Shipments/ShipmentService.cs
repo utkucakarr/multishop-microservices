@@ -101,9 +101,7 @@ namespace MultiShop.Cargo.WebApi.Shipments
 
             var now = DateTime.UtcNow;
             await ChangeStatusAsync(shipment, ShipmentStatus.Preparing, ShipmentStatus.Shipped, now,
-                set => set
-                    .SetProperty(x => x.CargoCompanyId, company.CargoCompanyId)
-                    .SetProperty(x => x.DispatchedAt, now),
+                cargoCompanyId: company.CargoCompanyId, dispatchedAt: now, deliveredAt: null,
                 $"Kargoya verildi ({company.CargoCompanyName}).",
                 new ShipmentDispatched(shipment.OrderNumber, shipment.Barcode, company.CargoCompanyName,
                     shipment.UserId, shipment.ReceiverName, shipment.ReceiverEmail, now));
@@ -118,22 +116,28 @@ namespace MultiShop.Cargo.WebApi.Shipments
 
             var now = DateTime.UtcNow;
             await ChangeStatusAsync(shipment, ShipmentStatus.Shipped, ShipmentStatus.Delivered, now,
-                set => set.SetProperty(x => x.DeliveredAt, now),
+                cargoCompanyId: null, dispatchedAt: null, deliveredAt: now,
                 "Teslim edildi.",
                 new ShipmentDelivered(shipment.OrderNumber, shipment.Barcode, now));
         }
 
         // Koşullu UPDATE (yalnızca beklenen durumdaysa): iki admin aynı anda tıklarsa ikincisi 409 alır, event ve müşteri
         // maili bir kez gider. Durum, hareket satırı ve event (outbox) tek transaction'da.
+        // ExecuteUpdate'e yalnızca SetProperty zinciri verilebilir (EF 8 delege çağrısını SQL'e çeviremez): null verilen
+        // alanlar mevcut değerini korur (SQL'de COALESCE).
         private async Task ChangeStatusAsync<TEvent>(CargoDetail shipment, ShipmentStatus from, ShipmentStatus to, DateTime now,
-            Func<Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<CargoDetail>, Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<CargoDetail>> extra,
+            int? cargoCompanyId, DateTime? dispatchedAt, DateTime? deliveredAt,
             string operation, TEvent @event) where TEvent : class
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
             var updated = await _context.CargoDetails
                 .Where(x => x.CargoDetailId == shipment.CargoDetailId && x.Status == from)
-                .ExecuteUpdateAsync(set => extra(set.SetProperty(x => x.Status, to)));
+                .ExecuteUpdateAsync(set => set
+                    .SetProperty(x => x.Status, to)
+                    .SetProperty(x => x.CargoCompanyId, x => cargoCompanyId ?? x.CargoCompanyId)
+                    .SetProperty(x => x.DispatchedAt, x => dispatchedAt ?? x.DispatchedAt)
+                    .SetProperty(x => x.DeliveredAt, x => deliveredAt ?? x.DeliveredAt));
             if (updated == 0)
                 throw new ConflictException("Gönderinin durumu bu arada değişti; sayfayı yenileyin.");
 
