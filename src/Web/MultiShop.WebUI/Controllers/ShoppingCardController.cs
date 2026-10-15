@@ -6,7 +6,7 @@ using MultiShop.WebUI.Services.BasketServices;
 namespace MultiShop.WebUI.Controllers
 {
     // Sepet ekranı yalnızca gösterir: fiyat, indirim, KDV, kargo ve genel toplam Basket servisinden gelir (A-02).
-    // Ürün kartlarındaki linkler (/ShoppingCard/AddBasketItem/{id}, /shoppingCard/add|remove|removeAll/{id}) aynı kaldı.
+    // Sepeti değiştiren işlemler POST + antiforgery (ürün kartlarındaki ve sepetteki butonlar küçük formlardır).
     [Authorize]
     public class ShoppingCardController : Controller
     {
@@ -32,12 +32,22 @@ namespace MultiShop.WebUI.Controllers
             return View(basket);
         }
 
-        public async Task<IActionResult> AddBasketItem(string id)
+        // Giriş yapmamış ziyaretçi "Sepete ekle"ye basınca login'e gider; girişten sonra tarayıcı bu adrese GET ile döner.
+        // GET sepeti değiştirmez, yalnızca ürün sayfasına götürür (buton orada bir kez daha basılır).
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AddBasketItem(string id)
+            => RedirectToAction("ProductDetail", "ProductList", new { id });
+
+        [HttpPost]
+        [ActionName(nameof(AddBasketItem))]
+        public async Task<IActionResult> AddBasketItemPost(string id)
         {
             ShowError(await _basketService.AddItemAsync(id));
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
         [Route("shoppingCard/removeAll/{productId}")]
         public async Task<IActionResult> RemoveAllBasketItem(string productId)
         {
@@ -46,6 +56,7 @@ namespace MultiShop.WebUI.Controllers
         }
 
         /// <summary>Adedi bir azaltır; son adet "eksi" ile silinmez (çarpı butonu siler).</summary>
+        [HttpPost]
         [Route("shoppingCard/remove/{productId}")]
         public async Task<IActionResult> RemoveBasketItem(string productId, int quantity)
         {
@@ -54,6 +65,7 @@ namespace MultiShop.WebUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
         [Route("shoppingCard/add/{productId}")]
         public async Task<IActionResult> AddBasketBtnItem(string productId)
         {

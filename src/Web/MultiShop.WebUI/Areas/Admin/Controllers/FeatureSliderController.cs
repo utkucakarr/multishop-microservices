@@ -59,6 +59,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return RedirectToAction("Index", "FeatureSlider", new { area = "Admin" });
         }
 
+        [HttpPost]
         [Route("DeleteFeatureSlider/{id}")]
         public async Task<IActionResult> DeleteFeatureSlider(string id)
         {

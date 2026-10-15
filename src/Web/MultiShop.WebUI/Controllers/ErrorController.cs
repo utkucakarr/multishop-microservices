@@ -28,11 +28,20 @@ namespace MultiShop.WebUI.Controllers
             return View("Index");
         }
 
-        // UseStatusCodePagesWithReExecute: gövdesi boş hata yanıtları. Yalnızca 404 için sayfa gösterilir;
+        // UseStatusCodePagesWithReExecute: gövdesi boş hata yanıtları. Yalnızca 404 ve 400 için sayfa gösterilir;
         // diğer kodlar (ör. fetch ile çağrılan uçların 401'i) gövdesiz olarak aynen döner.
         [Route("{code:int}")]
         public IActionResult Status(int code)
         {
+            // Gövdesiz 400 çoğunlukla antiforgery doğrulamasının reddidir (ör. eski bir sekmedeki form).
+            if (code == StatusCodes.Status400BadRequest)
+            {
+                Response.StatusCode = StatusCodes.Status400BadRequest;
+                ViewBag.Title = "İstek doğrulanamadı";
+                ViewBag.Message = "Sayfanın süresi dolmuş olabilir. Lütfen sayfayı yenileyip işlemi tekrar deneyin.";
+                return View("Index");
+            }
+
             if (code != StatusCodes.Status404NotFound)
                 return StatusCode(code);
 
