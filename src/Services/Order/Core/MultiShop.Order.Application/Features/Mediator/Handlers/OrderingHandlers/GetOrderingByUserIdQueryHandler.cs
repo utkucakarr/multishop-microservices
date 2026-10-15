@@ -22,7 +22,7 @@ namespace MultiShop.Order.Application.Features.Mediator.Handlers.OrderingHandler
 
         public async Task<List<GetOrderingByUserIdQueryResult>> Handle(GetOrderingByUserIdQuery request, CancellationToken cancellationToken)
         {
-            var values = _orderingRepository.GetOrderingsByUserId(request.id);
+            var values = await _orderingRepository.GetOrderingsByUserIdAsync(request.id);
             return values.Select(x => new GetOrderingByUserIdQueryResult
             {
                 OrderDate = x.OrderDate,

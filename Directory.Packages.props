@@ -43,6 +43,8 @@
   <!-- Diğer -->
   <ItemGroup>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <!-- FluentValidation Apache-2.0 (AutoMapper/MediatR gibi ticari lisansa geçmedi). -->
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.13.0" />
     <PackageVersion Include="MailKit" Version="4.18.1" />
     <!-- MassTransit 8.4.1'e sabit: v9+ ticari lisanslı; 8.5.x'in EF paketi EF Core 9 istiyor (bizde EF Core 8). -->

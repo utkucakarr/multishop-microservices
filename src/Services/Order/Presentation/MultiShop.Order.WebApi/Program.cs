@@ -1,8 +1,7 @@
 using MassTransit;
 using System.Text.Json.Serialization;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
-using MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers;
-using MultiShop.Order.Application.Features.CQRS.Handlers.OrderDetailHandlers;
 using MultiShop.Order.Application.Interfaces;
 using MultiShop.Order.Application.Sagas;
 using MultiShop.Order.Application.Sagas.Activities;
@@ -11,6 +10,7 @@ using MultiShop.Order.Persistence.Context;
 using MultiShop.Order.Persistence.Repositories;
 using MultiShop.Order.WebApi.BackgroundServices;
 using MultiShop.Order.WebApi.Security;
+using MultiShop.Order.WebApi.Validation;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Messaging;
@@ -27,23 +27,10 @@ builder.Services.AddDbContext<OrderContext>(options =>
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IOrderingRepository), typeof(OrderingRepository));
-builder.Services.AddScoped(typeof(IOrderDetailRepository), typeof(OrderDetailRepository));
+// Tüm sorgu ve komutlar MediatR üzerinden (ORD-07); handler'lar ve doğrulayıcılar Application'dan otomatik kaydedilir.
 builder.Services.AddApplicationService(builder.Configuration);
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddScoped<OrderAccessGuard>();
-
-#region
-builder.Services.AddScoped<GetAddressQueryHandler>();
-builder.Services.AddScoped<GetAddressByIdQueryHandler>();
-builder.Services.AddScoped<CreateAddressCommandHandler>();
-builder.Services.AddScoped<UpdateAddressCommandHandler>();
-builder.Services.AddScoped<RemoveAddressCommandHandler>();
-
-builder.Services.AddScoped<GetOrderDetailQueryHandler>();
-builder.Services.AddScoped<GetOrderDetailByIdQueryHandler>();
-builder.Services.AddScoped<UpdateOrderDetailQueryHandler>();
-builder.Services.AddScoped<GetOrderDetailByOrderingIdQueryHandler>();
-builder.Services.AddScoped<RemoveOrderDetailQueryHandler>();
-#endregion
 
 builder.Services.AddHealthChecks().AddDbContextCheck<OrderContext>("sqlserver");
 
