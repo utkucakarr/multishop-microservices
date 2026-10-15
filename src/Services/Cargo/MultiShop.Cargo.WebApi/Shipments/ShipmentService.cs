@@ -106,7 +106,7 @@ namespace MultiShop.Cargo.WebApi.Shipments
                     .SetProperty(x => x.DispatchedAt, now),
                 $"Kargoya verildi ({company.CargoCompanyName}).",
                 new ShipmentDispatched(shipment.OrderNumber, shipment.Barcode, company.CargoCompanyName,
-                    shipment.ReceiverName, shipment.ReceiverEmail, now));
+                    shipment.UserId, shipment.ReceiverName, shipment.ReceiverEmail, now));
         }
 
         /// <summary>Kargodaki gönderiyi teslim edildi yapar; sipariş tamamlanır.</summary>

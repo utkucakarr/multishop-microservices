@@ -4,11 +4,13 @@
 // Notification müşteriye haber verir; Cargo kimin dinlediğini bilmez.
 
 /// <summary>Gönderi kargo firmasına verildi.</summary>
+/// <param name="UserId">Siparişin sahibi; bildirim bu kullanıcıya gider.</param>
 /// <param name="CustomerEmail">Bildirim için (event-carried state transfer; Notification kimseye sormaz).</param>
 public record ShipmentDispatched(
     Guid OrderNumber,
     string TrackingNumber,
     string CargoCompanyName,
+    string UserId,
     string CustomerName,
     string CustomerEmail,
     DateTime DispatchedAt);
