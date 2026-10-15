@@ -6,6 +6,7 @@ using IdentityModel;
 using IdentityServer4;
 using MultiShop.IdentityServer.Data;
 using MultiShop.IdentityServer.Models;
+using MultiShop.IdentityServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -70,7 +71,9 @@ namespace MultiShop.IdentityServer
                 .AddInMemoryApiResources(Config.ApiResources)
                 .AddInMemoryApiScopes(Config.ApiScopes)
                 .AddInMemoryClients(Config.GetClients(Configuration))
-                .AddAspNetIdentity<ApplicationUser>();
+                .AddAspNetIdentity<ApplicationUser>()
+                // Userinfo'ya ad, soyad ve e-posta (WebUI cookie'si için).
+                .AddProfileService<MultiShopProfileService>();
 
             // not recommended for production - you need to store your key material somewhere secure
             builder.AddDeveloperSigningCredential();

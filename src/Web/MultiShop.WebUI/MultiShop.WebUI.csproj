@@ -15,7 +15,6 @@
   <ItemGroup>
     <PackageReference Include="IdentityModel.AspNetCore" />
     <PackageReference Include="MailKit" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
   </ItemGroup>
