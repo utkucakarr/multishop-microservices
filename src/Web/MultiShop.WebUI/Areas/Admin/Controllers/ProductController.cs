@@ -7,8 +7,6 @@ using MultiShop.DtoLayer.CatalogDtos.ProductDtos;
 using MultiShop.WebUI.Services.CatalogServices.BrandServices;
 using MultiShop.WebUI.Services.CatalogServices.CategoryServices;
 using MultiShop.WebUI.Services.CatalogServices.ProductServices;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -82,7 +80,8 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [Route("DeleteProduct/{id}")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
-            await _productService.DeleteProductAsync(id);
+            var error = await _productService.DeleteProductAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Ürün silindi.";
             return RedirectToAction("Index", "Product", new { area = "Admin" });
         }
 

@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.ProductDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
 {
@@ -18,40 +17,28 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
             return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteProductAsync(string id)
+        public async Task<string?> DeleteProductAsync(string id)
         {
-            await _httpClient.DeleteAsync("products?id=" + id);
+            var responseMessage = await _httpClient.DeleteAsync("products?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultProductDto>> GetAllProductAsync()
         {
             var responseMessage = await _httpClient.GetAsync("products");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultProductDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultProductDto>>();
         }
 
         public async Task<GetByIdProductDto> GetByIdProductAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("products/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductDto>();
-            return values;
-        }
-
-        public async Task<List<ResultProductWithCategoryDto>> GetProductsWithCategoryAsync()
-        {
-            var responseMessage = await _httpClient.GetAsync("products");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultProductWithCategoryDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<GetByIdProductDto>();
         }
 
         public async Task<List<ResultProductWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId)
         {
             var responseMessage = await _httpClient.GetAsync("products/GetProductsWithCategoryByCategoryId/" + CategoryId);
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultProductWithCategoryDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultProductWithCategoryDto>>();
         }
 
         public async Task<string?> UpdateProductAsync(UpdateProductDto updateProductDto)

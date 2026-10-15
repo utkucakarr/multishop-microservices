@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.FeatureSliderDtos;
 using MultiShop.WebUI.Services.CatalogServices.FeatureSliderServices;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -50,14 +48,22 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> CreateFeatureSlider(CreateFeatureSliderDto createFeatureSliderDto)
         {
             createFeatureSliderDto.Status = false;
-            await _featureSliderService.CreateFeatureSliderAsync(createFeatureSliderDto);
+            var error = await _featureSliderService.CreateFeatureSliderAsync(createFeatureSliderDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                FeatureSliderViewBagList();
+                return View(createFeatureSliderDto);
+            }
+            TempData["SuccessMessage"] = "Slider eklendi.";
             return RedirectToAction("Index", "FeatureSlider", new { area = "Admin" });
         }
 
         [Route("DeleteFeatureSlider/{id}")]
         public async Task<IActionResult> DeleteFeatureSlider(string id)
         {
-            await _featureSliderService.DeleteFeatureSliderAsync(id);
+            var error = await _featureSliderService.DeleteFeatureSliderAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Slider silindi.";
             return RedirectToAction("Index", "FeatureSlider", new { area = "Admin" });
         }
 
@@ -74,7 +80,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateFeatureSlider(UpdateFeatureSliderDto updateFeatureSliderDto)
         {
-            await _featureSliderService.UpdateFeatureSliderAsync(updateFeatureSliderDto);
+            var error = await _featureSliderService.UpdateFeatureSliderAsync(updateFeatureSliderDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                FeatureSliderViewBagList();
+                return View(updateFeatureSliderDto);
+            }
+            TempData["SuccessMessage"] = "Slider güncellendi.";
             return RedirectToAction("Index", "FeatureSlider", new { area = "Admin" });
         }
     }

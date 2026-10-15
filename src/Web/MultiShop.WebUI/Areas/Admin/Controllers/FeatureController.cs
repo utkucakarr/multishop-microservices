@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.FeatureDtos;
 using MultiShop.WebUI.Services.CatalogServices.FeautureServices;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -48,14 +46,22 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateFeature(CreateFeatureDto createFeatureDto)
         {
-            await _featureService.CreateFeatureAsync(createFeatureDto);
+            var error = await _featureService.CreateFeatureAsync(createFeatureDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                FeatureViewBagList();
+                return View(createFeatureDto);
+            }
+            TempData["SuccessMessage"] = "Özellik eklendi.";
             return RedirectToAction("Index", "Feature", new { area = "Admin" });
         }
 
         [Route("DeleteFeature/{id}")]
         public async Task<IActionResult> DeleteFeature(string id)
         {
-            await _featureService.DeleteFeatureAsync(id);
+            var error = await _featureService.DeleteFeatureAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Özellik silindi.";
             return RedirectToAction("Index", "Feature", new { area = "Admin" });
         }
 
@@ -72,7 +78,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateFeature(UpdateFeatureDto updateFeatureDto)
         {
-            await _featureService.UpdateFeatureAsync(updateFeatureDto);
+            var error = await _featureService.UpdateFeatureAsync(updateFeatureDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                FeatureViewBagList();
+                return View(updateFeatureDto);
+            }
+            TempData["SuccessMessage"] = "Özellik güncellendi.";
             return RedirectToAction("Index", "Feature", new { area = "Admin" });
         }
     }

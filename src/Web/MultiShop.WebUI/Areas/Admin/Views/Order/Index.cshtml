@@ -11,14 +11,6 @@
         <div class="col-md-12">
             <div class="chart-box">
                 <h4>Siparişler <small>(@Model.Count kayıt)</small></h4>
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-                }
-                @if (TempData["ErrorMessage"] != null)
-                {
-                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-                }
 
                 <form method="get" action="/Admin/Order/Index" class="form-inline" style="margin-bottom:15px">
                     <label for="status">Durum:&nbsp;</label>

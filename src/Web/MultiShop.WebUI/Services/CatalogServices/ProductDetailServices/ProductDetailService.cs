@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.ProductDetailDtos;
-using Newtonsoft.Json;
 using System.Net;
 
 namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
@@ -19,34 +18,13 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
             return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteProductDetailAsync(string id)
-        {
-            await _httpClient.DeleteAsync("productdetails?id=" + id);
-        }
-
-        public async Task<List<ResultProductDetailDto>> GetAllProductDetailAsync()
-        {
-            var responseMessage = await _httpClient.GetAsync("productdetails");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultProductDetailDto>>(jsonData);
-            return values;
-        }
-
-        public async Task<GetByIdProductDetailDto> GetByIdProductDetailAsync(string id)
-        {
-            var responseMessage = await _httpClient.GetAsync("productdetails/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductDetailDto>();
-            return values;
-        }
-
         public async Task<GetByIdProductDetailDto> GetByProductIdProductDetailAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("productdetails/GetProductDetailByProductId/" + id);
             // Detay kaydı girilmemiş ürünlerde Catalog 404 döner; sayfa boş açıklamayla gösterilir.
             if (responseMessage.StatusCode == HttpStatusCode.NotFound)
                 return new GetByIdProductDetailDto();
-            var values = await responseMessage.Content.ReadFromJsonAsync<GetByIdProductDetailDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<GetByIdProductDetailDto>();
         }
 
         public async Task<string?> UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto)
