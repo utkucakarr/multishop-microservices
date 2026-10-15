@@ -14,5 +14,8 @@ namespace MultiShop.Catalog.Repositories.Concrete
             => await _collection
                 .Find(x => x.ProductId == productId)
                 .FirstOrDefaultAsync();
+
+        public async Task DeleteByProductIdAsync(string productId)
+            => await _collection.DeleteManyAsync(x => x.ProductId == productId);
     }
 }

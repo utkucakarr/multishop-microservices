@@ -32,6 +32,8 @@ namespace MultiShop.Catalog.Entities
 
         public int MaxStockThreshold { get; private set; } // Depoda tutulacak maksimum stok miktarıdır.
 
+        // Eşik alanları ürün oluşturulurken kaydedilir; "stok eşiğin altında" uyarısı henüz yok.
+        // Stok değişiklikleri: StockReservationService (ayır/düş/bırak) ve admin stok güncellemesi.
         public bool OnReorder { get; private set; }
 
         /// <summary>
@@ -70,42 +72,6 @@ namespace MultiShop.Catalog.Entities
                 ProductDescription = parameters.ProductDescription,
                 ProductImageUrl = parameters.ProductImageUrl
             };
-        }
-
-        public int RemoveStock(int quantityDesired)
-        {
-            if(AvailableStock == 0)
-            {
-                throw new CatalogDomainException($"Empty stock, product item {ProductName} is sold out");
-            }
-
-            if(quantityDesired <= 0)
-            {
-                throw new CatalogDomainException($"Item units desired should be greater than zero");
-            }
-
-            int removed = Math.Min(quantityDesired, this.AvailableStock);
-
-            this.AvailableStock -= removed;
-
-            return removed;
-        }
-
-        public int AddStock(int quantity)
-        {
-            int original = this.AvailableStock;
-
-            if((this.AvailableStock + quantity) > this.MaxStockThreshold)
-            {
-                this.AvailableStock += (this.MaxStockThreshold - this.AvailableStock);
-            }
-            else
-            {
-                this.AvailableStock += quantity;
-            }
-
-            this.OnReorder = false;
-            return this.AvailableStock - original;
         }
 
         public void UpdateProductDetails(string? description, string? imageUrl)

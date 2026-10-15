@@ -21,5 +21,7 @@ namespace MultiShop.Catalog.Repositories.Interfaces
         Task<bool> BrandExistsAsync(string brandId);
         /// <summary>Bu markaya bağlı ürün sayısı (marka silinmeden önce kontrol için).</summary>
         Task<long> CountByBrandIdAsync(string brandId);
+        /// <summary>Bu kategorideki ürün sayısı (kategori silinmeden önce kontrol için).</summary>
+        Task<long> CountByCategoryIdAsync(string categoryId);
     }
 }
