@@ -67,9 +67,9 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpS
 
 builder.Services.AddScoped<IUserAccessTokenService, UserAccessTokenService>();
 // Kullanıcıya özel servisler (sepet, sipariş, admin istatistikleri...): giriş yapmış kullanıcının token'ı.
-builder.Services.AddScoped<ResourceOwnerPasswordTokenHandler>();
+builder.Services.AddTransient<ResourceOwnerPasswordTokenHandler>();
 // Herkese açık sayfalarda da kullanılan servisler (Catalog, Comment): kullanıcı varsa onun, yoksa ziyaretçi token'ı.
-builder.Services.AddScoped<UserOrVisitorTokenHandler>();
+builder.Services.AddTransient<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IClientCredentialTokenService, ClientCredentialTokenService>();
 
