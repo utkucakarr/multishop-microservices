@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Catalog: API uçları (WebApplicationFactory) ve gerçek MongoDB (Testcontainers, Docker gerekir). -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.MongoDb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Catalog\MultiShop.Catalog\MultiShop.Catalog.csproj" />
+  </ItemGroup>
+
+</Project>
