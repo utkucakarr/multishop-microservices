@@ -30,5 +30,17 @@ namespace MultiShop.WebUI.Services
 
             return $"İşlem başarısız oldu ({(int)response.StatusCode}).";
         }
+
+        /// <summary>
+        /// Başarılıysa gövdeyi okur; değilse <see cref="ServiceApiException"/> fırlatır (sayfa okuyan GET'ler için).
+        /// Hata, kullanıcıya genel bir sayfa olarak gösterilir; ayrıntısı Seq'e yazılır.
+        /// </summary>
+        public static async Task<T> ReadOrThrowAsync<T>(this HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+                throw new ServiceApiException(response.StatusCode, response.RequestMessage?.RequestUri, await response.GetErrorMessageAsync());
+
+            return (await response.Content.ReadFromJsonAsync<T>())!;
+        }
     }
 }

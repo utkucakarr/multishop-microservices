@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
 using MultiShop.WebUI.Handlers;
+using MultiShop.WebUI.Middlewares;
 using MultiShop.WebUI.Services.BasketServices;
 using MultiShop.WebUI.Services.CargoServices.CargoCompanyServices;
 using MultiShop.WebUI.Services.CargoServices.ShipmentServices;
@@ -49,13 +50,13 @@ builder.Services.AddAccessTokenManagement();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
 
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddHttpClient<IIdentityService, IdentityService>();
-
-builder.Services.AddHttpClient();
-builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<ClientSettings>(builder.Configuration.GetSection("ClientSettings"));
 builder.Services.Configure<ServiceApiSettings>(builder.Configuration.GetSection("ServiceApiSettings"));
@@ -200,14 +201,12 @@ builder.Services.AddLocalization(opt =>
     opt.ResourcesPath = "Resources"; 
 });
 
-builder.Services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Development'ta beklenmeyen kod hataları geliştirici sayfasında görünür; servis hataları her ortamda ServiceExceptionMiddleware'de.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -216,6 +215,11 @@ app.UseMultiShopHealthChecks();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseMultiShopRequestLogging();
+
+// Gövdesiz hata yanıtları ErrorController.Status'a gider; yalnızca 404 için sayfa gösterilir.
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
+// UseRouting'den önce: hata sayfasını isteği yeniden yönlendirerek üretir.
+app.UseMiddleware<ServiceExceptionMiddleware>();
 
 app.UseRouting();
 app.UseAuthentication();
@@ -226,18 +230,6 @@ var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(sup
     (supportedCultures).AddSupportedUICultures(supportedCultures);
 
 app.UseRequestLocalization(localizationOptions);
-
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Default}/{action=Index}/{id?}");
-
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapControllerRoute(
-//      name: "areas",
-//      pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-//    );
-//});
 
 app.MapControllerRoute(
     name: "areas",

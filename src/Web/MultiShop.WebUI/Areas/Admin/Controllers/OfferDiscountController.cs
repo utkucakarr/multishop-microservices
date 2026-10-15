@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.OfferDiscountDtos;
 using MultiShop.WebUI.Services.CatalogServices.OfferDiscountServices;
-using Newtonsoft.Json;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -50,14 +48,22 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOfferDiscount(CreateOfferDiscountDto createOfferDiscountDto)
         {
-            await _offerDiscountService.CreateOfferDiscountAsync(createOfferDiscountDto);
+            var error = await _offerDiscountService.CreateOfferDiscountAsync(createOfferDiscountDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                OfferDiscountViewBagList();
+                return View(createOfferDiscountDto);
+            }
+            TempData["SuccessMessage"] = "İndirim teklifi eklendi.";
             return RedirectToAction("Index", "OfferDiscount", new { area = "Admin" });
         }
 
         [Route("DeleteOfferDiscount/{id}")]
         public async Task<IActionResult> DeleteOfferDiscount(string id)
         {
-            await _offerDiscountService.DeleteOfferDiscountAsync(id);
+            var error = await _offerDiscountService.DeleteOfferDiscountAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "İndirim teklifi silindi.";
             return RedirectToAction("Index", "OfferDiscount", new { area = "Admin" });
         }
 
@@ -75,7 +81,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateOfferDiscount(UpdateOfferDiscountDto updateOfferDiscountDto)
         {
-            await _offerDiscountService.UpdateOfferDiscountAsync(updateOfferDiscountDto);
+            var error = await _offerDiscountService.UpdateOfferDiscountAsync(updateOfferDiscountDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                OfferDiscountViewBagList();
+                return View(updateOfferDiscountDto);
+            }
+            TempData["SuccessMessage"] = "İndirim teklifi güncellendi.";
             return RedirectToAction("Index", "OfferDiscount", new { area = "Admin" });
         }
     }
