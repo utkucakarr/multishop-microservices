@@ -32,7 +32,7 @@ namespace MultiShop.WebUI.Controllers
                 return RedirectToAction("Index", "Order");
 
             var order = await _orderOrderingService.GetByNumberAsync(orderNumber);
-            if (order?.Status is OrderStatusDisplay.Paid or OrderStatusDisplay.Completed)
+            if (OrderStatusDisplay.IsPaid(order?.Status))
             {
                 TempData["SuccessMessage"] = "Bu siparişin ödemesi alındı.";
                 return RedirectToAction("MyOrderList", "MyOrder", new { area = "User" });
