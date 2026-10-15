@@ -2,19 +2,22 @@
 
 namespace MultiShop.WebUI.Services.CargoServices.CargoCompanyServices
 {
+    /// <summary>Cargo servisinin kargo firması istemcisi. Değiştiren işlemler başarıda null, değilse Cargo'nun mesajını döner.</summary>
     public interface ICargoCompanyService
     {
         Task<List<ResultCargoCompanyDto>> GetAllCargoCompanyAsync();
 
-        Task CreateCargoCompanyAsync(CreateCargoCompanyDto createCargoCompanyDto);
+        /// <summary>Firma yoksa null.</summary>
+        Task<UpdateCargoCompanyDto?> GetByIdCargoCompanyAsync(int id);
 
-        Task UpdateCargoCompanyAsync(UpdateCargoCompanyDto updateCargoCompanyDto);
+        Task<string?> CreateCargoCompanyAsync(CreateCargoCompanyDto createCargoCompanyDto);
 
-        Task DeleteCargoCompanyAsync(int id);
+        Task<string?> UpdateCargoCompanyAsync(UpdateCargoCompanyDto updateCargoCompanyDto);
 
-        Task<UpdateCargoCompanyDto> GetByIdCargoCompanyAsync(int id);
+        /// <summary>Gönderisi olan firma silinemez (Cargo 409 ve mesajı döner).</summary>
+        Task<string?> DeleteCargoCompanyAsync(int id);
 
-        /// <summary>Firmayı varsayılan yapar (yeni gönderilere atanır). Başarıda null, değilse Cargo'nun mesajı.</summary>
+        /// <summary>Firmayı varsayılan yapar (yeni gönderilere atanır).</summary>
         Task<string?> SetDefaultCargoCompanyAsync(int id);
     }
 }

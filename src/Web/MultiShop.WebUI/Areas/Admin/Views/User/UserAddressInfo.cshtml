@@ -1,6 +1,6 @@
-﻿@model GetCargoCustomerByIdDto
+﻿@model List<ResultOrderAddressDto>
 @{
-    ViewData["Title"] = "UserAddressInfo";
+    ViewData["Title"] = "Kullanıcı Adresleri";
     Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
 }
 
@@ -8,17 +8,42 @@
     <div class="row">
         <div class="col-md-12">
             <div class="chart-box">
-                <div class="bs-example" data-example-id="bordered-table">
-                    <h3>Kullanıcı Adres ve İletişim Bilgisi</h3>
-                    <div class="alert alert-info">Kullanıcı Id : @Model.CargoCustomerId</div>
-                    <div class="alert alert-warning">Kullanıcı Adı : @Model.Name @Model.Surname</div>
-                    <div class="alert alert-info">Email Adresi : @Model.Email</div>
-                    <div class="alert alert-warning">Telefon : @Model.Phone</div>
-                    <div class="alert alert-info">İlçe-Şehir : @Model.City</div>
-                    <div class="alert alert-warning">Adres : @Model.Address</div>
-                </div>
+                <h4>Kullanıcının Adresleri <small>(@Model.Count kayıt)</small></h4>
+                @if (Model.Count == 0)
+                {
+                    <p>Kullanıcının kayıtlı adresi yok (sipariş verirken eklenir).</p>
+                }
+                else
+                {
+                    <div class="bs-example" data-example-id="bordered-table">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Ad Soyad</th>
+                                    <th>E-posta</th>
+                                    <th>Telefon</th>
+                                    <th>Adres</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Name @item.SurName</td>
+                                        <td>@item.Email</td>
+                                        <td>@item.Phone</td>
+                                        <td>
+                                            @item.Detail1 @item.Detail2<br />
+                                            @item.District / @item.City @item.ZipCode, @item.Country
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                <a href="/Admin/User/UserList" class="btn btn-default">Kullanıcı listesine dön</a>
             </div>
         </div>
     </div>
 </section>
-

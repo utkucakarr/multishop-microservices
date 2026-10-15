@@ -51,7 +51,14 @@
                                             </form>
                                         }
                                     </td>
-                                    <td><a href="/Admin/Cargo/DeleteCargoCompany/@item.CargoCompanyId" class="btn btn-danger">Sil</a></td>
+                                    <td>
+                                        <form method="post" action="/Admin/Cargo/DeleteCargoCompany" style="display:inline"
+                                              onsubmit="return confirm('Kargo firması silinsin mi?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.CargoCompanyId" />
+                                            <button type="submit" class="btn btn-danger">Sil</button>
+                                        </form>
+                                    </td>
                                     <td><a href="/Admin/Cargo/UpdateCargoCompany/@item.CargoCompanyId" class="btn btn-success">Güncelle</a></td>
                                 </tr>
                             }

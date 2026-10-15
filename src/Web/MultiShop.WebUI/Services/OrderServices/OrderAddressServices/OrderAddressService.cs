@@ -25,6 +25,9 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderAddressServices
         public async Task<List<ResultOrderAddressDto>> GetMyAddressesAsync()
             => await _httpClient.GetFromJsonAsync<List<ResultOrderAddressDto>>("addresses/mine") ?? new();
 
+        public async Task<List<ResultOrderAddressDto>> GetAddressesByUserIdAsync(string userId)
+            => await _httpClient.GetFromJsonAsync<List<ResultOrderAddressDto>>("addresses?userId=" + Uri.EscapeDataString(userId)) ?? new();
+
         // Order'ın POST addresses yanıtı: { "addressId": 5 }
         private record CreatedAddress(int AddressId);
     }
