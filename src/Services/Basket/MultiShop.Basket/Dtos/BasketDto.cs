@@ -26,6 +26,12 @@
         public List<string> Warnings { get; set; } = new();
     }
 
+    /// <summary>Sepet onayının sonucu: sipariş numarası. Sipariş arka planda oluşur, durumu Order'dan izlenir.</summary>
+    public class CheckoutResultDto
+    {
+        public Guid OrderNumber { get; set; }
+    }
+
     public class BasketLineDto
     {
         public string ProductId { get; set; } = string.Empty;

@@ -1,146 +1,154 @@
-﻿using MultiShop.Payment.Dtos.PaymentDtos;
-using System.Text;
-using System.Security.Cryptography;
-using MultiShop.Payment.Repositories;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using MultiShop.BuildingBlocks.Exceptions;
+using MultiShop.Contracts.Payments;
+using MultiShop.Payment.Context;
+using MultiShop.Payment.Dtos.PaymentDtos;
 using MultiShop.Payment.Entities;
-using System.Xml.Linq;
-using System.Globalization;
-using Microsoft.Extensions.Options;
-using MultiShop.Payment.Settings;
+using MultiShop.Payment.Services.GarantiPosServices;
 
 namespace MultiShop.Payment.Services.PaymentServices
 {
+    /// <summary>
+    /// Kartla tahsilat. Tutar, Order saga'sının açtığı ödeme kaydından gelir (istekten değil). Aynı sipariş için aynı anda
+    /// tek deneme yapılır: kayıt önce koşullu bir UPDATE ile Processing'e alınır, ikinci istek 409 alır (çift çekim yok).
+    /// Sonuç (kayıt durumu, deneme kaydı, PaymentSucceeded/PaymentFailed) tek transaction'da yazılır; event outbox'tan gider.
+    /// </summary>
     public class PaymentService : IPaymentService
     {
-        private readonly IRepository<PaymentInfo> _repository;
-        private readonly GarantiPosSettings _posSettings;
+        private readonly PaymentContext _context;
+        private readonly GarantiPosClient _posClient;
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger<PaymentService> _logger;
 
-        public PaymentService(IRepository<PaymentInfo> repository, IOptions<GarantiPosSettings> posSettings)
+        public PaymentService(PaymentContext context, GarantiPosClient posClient, IPublishEndpoint publishEndpoint, ILogger<PaymentService> logger)
         {
-            _repository = repository;
-            _posSettings = posSettings.Value;
+            _context = context;
+            _posClient = posClient;
+            _publishEndpoint = publishEndpoint;
+            _logger = logger;
         }
 
-        public async Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto)
+        public async Task<CreatePaymentResponseDto> CreatePaymentAsync(string userId, CreatePaymentDto createPaymentDto)
         {
-            var orderId = "MLT-SHP-" + createPaymentDto.OrderingId.ToString(); //Guid.NewGuid().ToString("N");
-            // Tutar kültürden bağımsız ("123.45") gelir; Garanti kuruş cinsinden ister (123.45 TL -> 12345).
-            if (!decimal.TryParse(createPaymentDto.PaymentAmounth, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+            var payment = await _context.OrderPayments.AsNoTracking()
+                .SingleOrDefaultAsync(x => x.OrderNumber == createPaymentDto.OrderNumber);
+
+            // Başkasının siparişi de "bulunamadı" görünür (IDOR). Kayıt, sipariş stok ayrılıp ödeme beklemeye geçince açılır.
+            if (payment is null || payment.UserId != userId)
+                throw new NotFoundException("Ödeme bekleyen sipariş", createPaymentDto.OrderNumber);
+
+            if (payment.Status != OrderPaymentStatus.AwaitingPayment)
+                throw new ConflictException(NotPayableMessage(payment.Status));
+
+            var claimed = await _context.OrderPayments
+                .Where(x => x.Id == payment.Id && x.Status == OrderPaymentStatus.AwaitingPayment)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(x => x.Status, OrderPaymentStatus.Processing)
+                    .SetProperty(x => x.UpdatedAt, DateTime.UtcNow));
+            if (claimed == 0)
+                throw new ConflictException("Bu sipariş için başka bir ödeme işlemi sürüyor.");
+
+            // Bankadaki sipariş kimliği her denemede farklı. Sonucu belirsiz kalan deneme sayılmadığı için tekrarında
+            // aynı kimlik gider; çekim aslında olduysa banka aynı kimliği ikinci kez kabul etmez.
+            var bankOrderId = $"MLT-SHP-{payment.OrderingId}-{payment.FailedAttempts + 1}";
+            var card = new CardDetails(createPaymentDto.CardNumber, createPaymentDto.Month, createPaymentDto.Year, createPaymentDto.Cvv);
+
+            GarantiPosResult result;
+            try
             {
-                return new CreatePaymentResponseDto { IsSuccess = false, ErrorMessage = "Geçersiz ödeme tutarı." };
+                result = await _posClient.SaleAsync(bankOrderId, payment.Amount, card);
             }
-            var paymentAmounth = (ulong)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
-            //Güvenlik için hash oluşturuluyor. POS bilgileri GarantiPosSettings'ten (user-secrets) okunur.
-            var hashData = GetHashData(_posSettings.ProvisionPassword, _posSettings.TerminalId, orderId, createPaymentDto.CardNumber, paymentAmounth, _posSettings.CurrencyCode);
-            var xmlData = $"<?xml version='1.0' encoding='iso-8859-9'?>\n" +
-                      $"<GVPSRequest>\n" +
-                      $"    <Mode>{_posSettings.Mode}</Mode>\n" +
-                      $"    <Version>512</Version>\n" +
-                      $"    <Terminal>\n" +
-                      $"        <ProvUserID>{_posSettings.ProvUserId}</ProvUserID>\n" +
-                      $"        <HashData>{hashData}</HashData>\n" +
-                      $"        <UserID>{_posSettings.ProvUserId}</UserID>\n" +
-                      $"        <ID>{_posSettings.TerminalId}</ID>\n" +
-                      $"        <MerchantID>{_posSettings.MerchantId}</MerchantID>\n" +
-                      $"    </Terminal>\n" +
-                      $"    <Customer>\n" +
-                      $"        <IPAddress>{_posSettings.CustomerIpAddress}</IPAddress>\n" +
-                      $"        <EmailAddress>{_posSettings.CustomerEmailAddress}</EmailAddress>\n" +
-                      $"    </Customer>\n" +
-                      $"    <Card>\n" +
-                      $"        <Number>{createPaymentDto.CardNumber}</Number>\n" +
-                      $"        <ExpireDate>{createPaymentDto.Month+createPaymentDto.Year.Substring(createPaymentDto.Year.Length-2)}</ExpireDate>\n" +
-                      $"        <CVV2>{createPaymentDto.Cvv}</CVV2>\n" +
-                      $"    </Card>\n" +
-                      $"    <Order>\n" +
-                      $"        <OrderID>{orderId}</OrderID>\n" +
-                      $"        <GroupID />\n" +
-                      $"    </Order>\n" +
-                      $"    <Transaction>\n" +
-                      $"        <Type>sales</Type>\n" +
-                      $"        <Amount>{paymentAmounth}</Amount>\n" +
-                      $"        <CurrencyCode>{_posSettings.CurrencyCode}</CurrencyCode>\n" +
-                      $"        <CardholderPresentCode>0</CardholderPresentCode>\n" +
-                      $"        <MotoInd>N</MotoInd>\n" +
-                      $"    </Transaction>\n" +
-                      $"</GVPSRequest>";
-
-            var client = new HttpClient();
-
-            var requestContent = new StringContent(xmlData, Encoding.GetEncoding("iso-8859-9"), "application/xml");
-
-            var response = await client.PostAsync(_posSettings.ApiUrl, requestContent);
-
-            string responseString = await response.Content.ReadAsStringAsync();
-
-            var xml = XDocument.Parse(responseString); // Gelen xml'e dönüştürüyor.
-            var code = xml.Descendants("Code").FirstOrDefault()?.Value;
-            var reasonCode = xml.Descendants("ReasonCode").FirstOrDefault()?.Value;
-            var message = xml.Descendants("Message").FirstOrDefault()?.Value;
-            var errorMessage = xml.Descendants("ErrorMsg").FirstOrDefault()?.Value;
-
-            var isSuccess = code == "00" && reasonCode == "00" && message == "Approved";
-
-            await _repository.CreateAsync(new PaymentInfo
+            catch (Exception ex)
             {
-                UserId = createPaymentDto.UserId,
-                OrderingId = createPaymentDto.OrderingId,
-                BankResponse = responseString,
-                IsSuccess = isSuccess,
-                CreatedDate = DateTime.Now,
-                CardNumber = createPaymentDto.CardNumber,
-                Amount = amount
+                // Sonuç belirsiz (ya da istek hiç gitmedi, ör. eksik banka ayarı): deneme sayılmaz, kayıt ödeme beklemeye
+                // döner (bu arada iptal geldiyse iptal kalır). Aksi halde kayıt Processing'de takılır, sipariş ödenemez.
+                await _context.OrderPayments
+                    .Where(x => x.Id == payment.Id && x.Status == OrderPaymentStatus.Processing)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.Status, OrderPaymentStatus.AwaitingPayment)
+                        .SetProperty(x => x.UpdatedAt, DateTime.UtcNow));
+                if (ex is GarantiPosException)
+                    throw new ServiceUnavailableException(ex.Message, ex);
+                throw;
+            }
+
+            try
+            {
+                return await CompleteAsync(payment, result, createPaymentDto.CardNumber);
+            }
+            catch (Exception ex)
+            {
+                // Banka sonuç verdi ama kaydedilemedi: kayıt Processing'de kalır, elle mutabakat gerekir.
+                _logger.LogCritical(ex, "Ödeme sonucu kaydedilemedi: sipariş {OrderNumber}, banka sipariş no {BankOrderId}, başarılı: {IsSuccess}.",
+                    payment.OrderNumber, bankOrderId, result.IsSuccess);
+                throw;
+            }
+        }
+
+        private async Task<CreatePaymentResponseDto> CompleteAsync(OrderPayment payment, GarantiPosResult result, string cardNumber)
+        {
+            var now = DateTime.UtcNow;
+            var failedAttempts = result.IsSuccess ? payment.FailedAttempts : payment.FailedAttempts + 1;
+            var newStatus = result.IsSuccess
+                ? OrderPaymentStatus.Succeeded
+                : failedAttempts >= PaymentPolicy.MaxAttempts ? OrderPaymentStatus.Failed : OrderPaymentStatus.AwaitingPayment;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            // Yalnızca hâlâ Processing ise: banka beklenirken sipariş iptal edildiyse kayıt Cancelled kalır.
+            var updated = await _context.OrderPayments
+                .Where(x => x.Id == payment.Id && x.Status == OrderPaymentStatus.Processing)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(x => x.Status, newStatus)
+                    .SetProperty(x => x.FailedAttempts, failedAttempts)
+                    .SetProperty(x => x.PaidAt, result.IsSuccess ? now : (DateTime?)null)
+                    .SetProperty(x => x.UpdatedAt, now));
+
+            if (updated == 0)
+            {
+                newStatus = OrderPaymentStatus.Cancelled;
+                if (result.IsSuccess)
+                    _logger.LogError("İptal edilmiş sipariş {OrderNumber} için {Amount} TL ödeme alındı; iade gerekli.", payment.OrderNumber, payment.Amount);
+            }
+
+            _context.PaymentInfos.Add(new PaymentInfo
+            {
+                OrderNumber = payment.OrderNumber,
+                OrderingId = payment.OrderingId,
+                UserId = payment.UserId,
+                Amount = payment.Amount,
+                IsSuccess = result.IsSuccess,
+                ErrorMessage = result.ErrorMessage is { Length: > 500 } message ? message[..500] : result.ErrorMessage,
+                CardNumber = "**** " + cardNumber[^4..],
+                CreatedDate = now
             });
 
-            var paymentResponse = new CreatePaymentResponseDto
+            // Para çekildiyse sipariş iptal edilmiş olsa da PaymentSucceeded gider: olan budur, saga iade için loglar.
+            if (result.IsSuccess)
+                await _publishEndpoint.Publish(new PaymentSucceeded(payment.OrderNumber, payment.Amount, now));
+            else
+                await _publishEndpoint.Publish(new PaymentFailed(payment.OrderNumber, result.ErrorMessage!));
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return new CreatePaymentResponseDto
             {
-                ErrorMessage = errorMessage,
-                IsSuccess = isSuccess
+                IsSuccess = result.IsSuccess,
+                ErrorMessage = result.ErrorMessage,
+                Status = newStatus,
+                RemainingAttempts = newStatus == OrderPaymentStatus.AwaitingPayment ? PaymentPolicy.MaxAttempts - failedAttempts : 0
             };
-
-            return paymentResponse;
         }
 
-        //Eski sistemlerde kullanıyor daha az güvenli açık var
-        public static string Sha1(string text)
+        private static string NotPayableMessage(OrderPaymentStatus status) => status switch
         {
-            var provider = CodePagesEncodingProvider.Instance; // Iso "ISO-8859-9" kodunu getiriyor
-            Encoding.RegisterProvider(provider); //Türkçe karaktere çevirmek için iso kodunu
-
-            var cryptoServiceProvider = new SHA1CryptoServiceProvider(); //cryptoservice'e sha1 şifreleme işlemini uyguluyoruz.
-            var inputbytes = cryptoServiceProvider.ComputeHash(Encoding.GetEncoding("ISO-8859-9").GetBytes(text)); // hash ile şifreliyoruz.
-
-            var builder = new StringBuilder();
-            for (int i = 0; i < inputbytes.Length; i++)
-            {
-                builder.Append(string.Format("{0,2:x}", inputbytes[i]).Replace(" ", "0")); //Bu satırda her bir byte hexadecimal (onaltılık) forma çevrilir, tek basamaklı olanlara başına 0 konur.
-            }
-
-            return builder.ToString().ToUpper(); //Sonuç olarak elde edilen değer büyük harflerle döndürülür:
-        }
-
-        //Yeni sistemlerde kullanılıyor
-        public static string Sha512(string text)
-        {
-            var provider = CodePagesEncodingProvider.Instance;
-            Encoding.RegisterProvider(provider);
-
-            var cryptoServiceProvider = new SHA512CryptoServiceProvider();
-            var inputbytes = cryptoServiceProvider.ComputeHash(Encoding.GetEncoding("ISO-8859-9").GetBytes(text));
-
-            var builder = new StringBuilder();
-            for (int i = 0; i < inputbytes.Length; i++)
-            {
-                builder.Append(string.Format("{0,2:x}", inputbytes[i]).Replace(" ", "0"));
-            }
-
-            return builder.ToString().ToUpper();
-        }
-
-        public static string GetHashData(string userPassword, string terminalId, string orderId, string cardNumber, ulong amount, int currencyCode)
-        {
-            var hashedPassword = Sha1(userPassword + "0" + terminalId);
-            return Sha512(orderId + terminalId + cardNumber + amount + currencyCode + hashedPassword).ToUpper();
-        }
+            OrderPaymentStatus.Processing => "Bu sipariş için başka bir ödeme işlemi sürüyor.",
+            OrderPaymentStatus.Succeeded => "Bu siparişin ödemesi zaten alındı.",
+            OrderPaymentStatus.Failed => "Bu sipariş için ödeme deneme hakkı doldu.",
+            OrderPaymentStatus.Cancelled => "Sipariş iptal edildiği için ödeme alınamaz.",
+            _ => "Sipariş ödeme beklemiyor."
+        };
     }
 }

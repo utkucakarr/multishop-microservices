@@ -38,6 +38,18 @@ namespace MultiShop.Basket.Data
 
         public Task DeleteAsync(string userId) => _redisService.GetDb().KeyDeleteAsync(Key(userId));
 
+        /// <summary>
+        /// Sepet onayı kilidi (<c>checkout:{userId}</c>): aynı kullanıcının iki onayı aynı anda sipariş açamaz (çift tıklama).
+        /// Kilit yalnızca alan istek tarafından (<paramref name="token"/>) bırakılabilir; süresi dolunca kendiliğinden kalkar.
+        /// </summary>
+        public Task<bool> TryAcquireCheckoutLockAsync(string userId, string token, TimeSpan duration)
+            => _redisService.GetDb().LockTakeAsync(CheckoutLockKey(userId), token, duration);
+
+        public Task ReleaseCheckoutLockAsync(string userId, string token)
+            => _redisService.GetDb().LockReleaseAsync(CheckoutLockKey(userId), token);
+
         private static string Key(string userId) => $"basket:{userId}";
+
+        private static string CheckoutLockKey(string userId) => $"checkout:{userId}";
     }
 }

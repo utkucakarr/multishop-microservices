@@ -34,6 +34,17 @@ namespace MultiShop.Catalog.Entities
 
         public bool OnReorder { get; private set; }
 
+        /// <summary>
+        /// Ödemesi beklenen siparişlere ayrılmış adet (KT-12). <see cref="AvailableStock"/> eldeki stoktur;
+        /// ödeme gelince ikisi birlikte düşer, sipariş iptalinde yalnızca bu azalır. Yalnızca stok rezervasyonu
+        /// (StockReservationService) atomik $inc ile değiştirir; eski dokümanlarda alan yoktur, 0 sayılır.
+        /// </summary>
+        public int ReservedStock { get; private set; }
+
+        /// <summary>Satılabilir adet: eldeki − ayrılmış.</summary>
+        [BsonIgnore]
+        public int SellableStock => AvailableStock - ReservedStock;
+
         [BsonIgnore]
         public Category Category { get; set; }
 

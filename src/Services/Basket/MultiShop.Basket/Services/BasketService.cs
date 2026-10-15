@@ -1,21 +1,34 @@
-﻿using MultiShop.Basket.Clients;
+﻿using MassTransit;
+using MultiShop.Basket.Clients;
 using MultiShop.Basket.Data;
 using MultiShop.Basket.Dtos;
 using MultiShop.Basket.Models;
 using MultiShop.Basket.Pricing;
 using MultiShop.BuildingBlocks.Exceptions;
+using MultiShop.Contracts.Baskets;
 
 namespace MultiShop.Basket.Services
 {
     public class BasketService : IBasketService
     {
+        // Çift tıklamayı kapsayacak kadar uzun, sipariş açılamazsa (hata) kilit hemen bırakılır.
+        private static readonly TimeSpan CheckoutLockDuration = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan PublishTimeout = TimeSpan.FromSeconds(10);
+
         private readonly BasketRepository _repository;
         private readonly CatalogClient _catalogClient;
         private readonly DiscountClient _discountClient;
         private readonly PricingCalculator _pricingCalculator;
+        private readonly OrderClient _orderClient;
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger<BasketService> _logger;
 
-        public BasketService(BasketRepository repository, CatalogClient catalogClient, DiscountClient discountClient, PricingCalculator pricingCalculator)
+        public BasketService(BasketRepository repository, CatalogClient catalogClient, DiscountClient discountClient, PricingCalculator pricingCalculator,
+            OrderClient orderClient, IPublishEndpoint publishEndpoint, ILogger<BasketService> logger)
         {
+            _orderClient = orderClient;
+            _publishEndpoint = publishEndpoint;
+            _logger = logger;
             _repository = repository;
             _catalogClient = catalogClient;
             _discountClient = discountClient;
@@ -150,6 +163,72 @@ namespace MultiShop.Basket.Services
         }
 
         public Task DeleteBasketAsync(string userId) => _repository.DeleteAsync(userId);
+
+        public async Task<CheckoutResultDto> CheckoutAsync(string userId, CheckoutDto request)
+        {
+            var lockToken = Guid.NewGuid().ToString("N");
+            if (!await _repository.TryAcquireCheckoutLockAsync(userId, lockToken, CheckoutLockDuration))
+                throw new ConflictException("Siparişiniz oluşturuluyor, lütfen bekleyin.");
+
+            try
+            {
+                // Onay anındaki fiyat ve kupon: sepet Catalog ve Discount'tan yeniden hesaplanır.
+                var basket = await GetBasketAsync(userId);
+
+                if (basket.Items.Count == 0)
+                    throw new BadRequestException("Sepetiniz boş.");
+
+                // Okurken sepet değişti (ürün satıştan kalktı, kupon geçersizleşti): kullanıcı yeni sepeti görmeden sipariş açılmaz.
+                if (basket.Warnings.Count > 0)
+                    throw new ConflictException(string.Join(" ", basket.Warnings) + " Lütfen sepetinizi kontrol edip tekrar onaylayın.");
+
+                if (basket.GrandTotal != request.ExpectedTotal)
+                    throw new ConflictException("Sepet tutarı değişti. Lütfen güncel tutarı kontrol edip tekrar onaylayın.");
+
+                if (!await _orderClient.IsOwnAddressAsync(request.AddressId))
+                    throw new BadRequestException("Teslimat adresi bulunamadı.");
+
+                var orderNumber = Guid.NewGuid();
+                await PublishCheckedOutAsync(new BasketCheckedOut(
+                    orderNumber,
+                    userId,
+                    request.AddressId,
+                    basket.Items.Select(x => new BasketCheckedOutItem(x.ProductId, x.ProductName, x.UnitPrice, x.Quantity, x.LineTotal)).ToList(),
+                    basket.CouponCode,
+                    basket.DiscountRate,
+                    basket.Subtotal,
+                    basket.DiscountAmount,
+                    basket.TaxAmount,
+                    basket.ShippingFee,
+                    basket.GrandTotal,
+                    DateTime.UtcNow));
+
+                _logger.LogInformation("Sepet onaylandı: sipariş {OrderNumber}, {Total} TL.", orderNumber, basket.GrandTotal);
+                return new CheckoutResultDto { OrderNumber = orderNumber };
+            }
+            catch
+            {
+                // Sipariş açılmadı: kullanıcı beklemeden tekrar deneyebilsin. Başarıda kilit süresi dolana kadar kalır (çift tıklama).
+                await _repository.ReleaseCheckoutLockAsync(userId, lockToken);
+                throw;
+            }
+        }
+
+        // Redis'te transaction olmadığı için outbox yok: event doğrudan yayınlanır. RabbitMQ'ya ulaşılamazsa istek 503 alır
+        // ve sipariş hiç oluşmaz (yarım kalan bir şey yok); kullanıcı tekrar dener.
+        private async Task PublishCheckedOutAsync(BasketCheckedOut message)
+        {
+            using var timeout = new CancellationTokenSource(PublishTimeout);
+            try
+            {
+                await _publishEndpoint.Publish(message, timeout.Token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "BasketCheckedOut yayınlanamadı (sipariş {OrderNumber}).", message.OrderNumber);
+                throw new ServiceUnavailableException("Siparişiniz şu anda alınamıyor, lütfen biraz sonra tekrar deneyin.", ex);
+            }
+        }
 
         private static void EnsureQuantityInRange(int quantity)
         {
