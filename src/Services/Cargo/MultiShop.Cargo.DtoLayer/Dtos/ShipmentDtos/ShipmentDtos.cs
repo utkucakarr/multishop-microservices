@@ -1,6 +1,6 @@
 ﻿using MultiShop.Cargo.EntityLayer.Concrete;
 
-namespace MultiShop.Cargo.WebApi.Shipments
+namespace MultiShop.Cargo.DtoLayer.Dtos.ShipmentDtos
 {
     public record ShipmentListItemDto(
         int CargoDetailId,

@@ -11,6 +11,8 @@
 
         public string Phone { get; set; } = string.Empty;
 
+        public string Email { get; set; } = string.Empty;
+
         public string Detail1 { get; set; } = string.Empty;
 
         public string? Detail2 { get; set; }

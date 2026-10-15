@@ -1,11 +1,13 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.Cargo.DataAccessLayer.Concrete;
+using MultiShop.Cargo.DtoLayer.Dtos.ShipmentDtos;
 using MultiShop.Cargo.EntityLayer.Concrete;
 using MultiShop.Contracts.Cargo;
 
-namespace MultiShop.Cargo.WebApi.Shipments
+namespace MultiShop.Cargo.BusinessLayer.Services
 {
     /// <summary>
     /// Gönderiler (KT-13): Order saga'sının komutuyla açılır, admin panelinden kargoya verilir ve teslim edilir. Durum
