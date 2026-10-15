@@ -25,5 +25,7 @@
         public string BrandCollectionName { get; set; }
 
         public string AboutCollectionName { get; set; }
+
+        public string StockReservationCollectionName { get; set; }
     }
 }

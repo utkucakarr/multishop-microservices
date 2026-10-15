@@ -1,10 +1,8 @@
 ﻿@model List<ResultOrderingByUserIdDto>
 
 @{
-    ViewData["Title"] = "MyOrderList";
+    ViewData["Title"] = "Siparişlerim";
     Layout = "~/Areas/User/Views/UserLayout/Index.cshtml";
-    int count = 0;
-    string tableRowColor = "";
 }
 
 <div class="main-panel">
@@ -14,37 +12,71 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Sipariş Geçmişim</h4>
-                        <div class="table-responsive pt-3">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Toplam Fiyat</th>
-                                        <th>Sipariş Tarihi</th>
-                                        <th>Sipariş Detayları</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model)
-                                    {
-                                        count++;
-                                        if (count == 1) { tableRowColor = "table-info"; }
-                                        if (count == 2) { tableRowColor = "table-warning"; }
-                                        if (count == 3) { tableRowColor = "table-danger"; }
-                                        if (count == 4) { tableRowColor = "table-success"; }
-                                        if (count == 5) { tableRowColor = "table-primary"; }
-                                        if (count == 6) { tableRowColor = "table-dark"; }
-                                        if (count == 7) { tableRowColor = "table-secondary"; }
-                                        <tr class="@tableRowColor">
-                                            <th>@count</th>
-                                            <td>@item.TotalPrice</td>
-                                            <td>@(((DateTime)item.OrderDate).ToString("dd-MMM-yyyy"))</td>
-                                            <td><a href="/User/MyOrder/MyOrderDetail/@item.OrderingId" class="btn btn-primary">Sipariş Detayları</a></td>
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                        }
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                        }
+                        @if (Model.Count == 0)
+                        {
+                            <p>Henüz siparişiniz yok.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive pt-3">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Sipariş No</th>
+                                            <th>Sipariş Tarihi</th>
+                                            <th>Toplam Fiyat</th>
+                                            <th>Durum</th>
+                                            <th>Kargo</th>
+                                            <th>Açıklama</th>
+                                            <th>İşlemler</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@item.OrderNumber.ToString()[..8].ToUpperInvariant()</td>
+                                                <td>@item.OrderDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                                <td>@item.TotalPrice.ToString("N2") ₺</td>
+                                                <td><span class="badge @OrderStatusDisplay.BadgeClass(item.Status)">@OrderStatusDisplay.Text(item.Status)</span></td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(item.TrackingNumber))
+                                                    {
+                                                        <span>@item.CargoCompanyName</span><br />
+                                                        <small>Takip no: <strong>@item.TrackingNumber</strong></small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>-</span>
+                                                    }
+                                                </td>
+                                                <td>@item.FailMessage</td>
+                                                <td>
+                                                    <a href="/User/MyOrder/MyOrderDetail/@item.OrderingId" class="btn btn-primary btn-sm">Detaylar</a>
+                                                    @if (OrderStatusDisplay.IsOpen(item.Status))
+                                                    {
+                                                        <a href="/Payment/Index?orderNumber=@item.OrderNumber" class="btn btn-success btn-sm">Ödemeye devam et</a>
+                                                        <form asp-area="User" asp-controller="MyOrder" asp-action="Cancel" method="post" class="d-inline"
+                                                              onsubmit="return confirm('Siparişi iptal etmek istediğinize emin misiniz?');">
+                                                            <input type="hidden" name="orderNumber" value="@item.OrderNumber" />
+                                                            <button type="submit" class="btn btn-danger btn-sm">İptal et</button>
+                                                        </form>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>

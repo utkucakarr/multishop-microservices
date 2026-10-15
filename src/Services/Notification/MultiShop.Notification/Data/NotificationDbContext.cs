@@ -62,7 +62,11 @@ public class NotificationDbContext : DbContext
             entity.HasData(
                 new NotificationRule { Type = NotificationTypes.ContactMessageReceived, DisplayName = "İletişim formu mesajı", InAppEnabled = true, EmailEnabled = true, SmsEnabled = false },
                 new NotificationRule { Type = NotificationTypes.CommentCreated, DisplayName = "Yeni yorum", InAppEnabled = true, EmailEnabled = false, SmsEnabled = false },
-                new NotificationRule { Type = NotificationTypes.Test, DisplayName = "Test bildirimi", InAppEnabled = true, EmailEnabled = true, SmsEnabled = true });
+                new NotificationRule { Type = NotificationTypes.Test, DisplayName = "Test bildirimi", InAppEnabled = true, EmailEnabled = true, SmsEnabled = true },
+                // KT-13. Müşterinin zili yok (kullanıcı panelinde SignalR yok): müşteri türleri yalnızca e-posta.
+                new NotificationRule { Type = NotificationTypes.OrderPaid, DisplayName = "Sipariş onayı (müşteriye)", InAppEnabled = false, EmailEnabled = true, SmsEnabled = false },
+                new NotificationRule { Type = NotificationTypes.NewOrder, DisplayName = "Yeni sipariş (admin'e)", InAppEnabled = true, EmailEnabled = false, SmsEnabled = false },
+                new NotificationRule { Type = NotificationTypes.OrderShipped, DisplayName = "Kargoya verildi (müşteriye)", InAppEnabled = false, EmailEnabled = true, SmsEnabled = false });
         });
 
         modelBuilder.Entity<NotificationRecipient>(entity =>

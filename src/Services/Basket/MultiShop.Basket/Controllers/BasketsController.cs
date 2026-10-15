@@ -69,6 +69,15 @@ namespace MultiShop.Basket.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Sepeti onaylar ve siparişi başlatır. 202 + sipariş numarası: sipariş arka planda oluşur (stok ayrılır),
+        /// durumu Order'dan <c>GET api/ordering/by-number/{orderNumber}</c> ile izlenir. Sepet silinmez.
+        /// 400: sepet boş ya da adres geçersiz · 409: sepet/tutar değişti ya da onay zaten sürüyor · 503: bir servis yanıt vermiyor.
+        /// </summary>
+        [HttpPost("checkout")]
+        public async Task<ActionResult<CheckoutResultDto>> Checkout(CheckoutDto request)
+            => Accepted(await _basketService.CheckoutAsync(UserId, request));
+
         [HttpDelete]
         public async Task<IActionResult> DeleteMyBasket()
         {

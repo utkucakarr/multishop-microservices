@@ -11,20 +11,21 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderAddressServices
             _httpClient = httpClient;
         }
 
-        public async Task<string> CreateOrderAddressAsync(CreateOrderAddressDto createOrderAddressDto)
+        public async Task<(int? AddressId, string? Error)> CreateOrderAddressAsync(CreateOrderAddressDto createOrderAddressDto)
         {
-            var responseMessage = await _httpClient.PostAsJsonAsync<CreateOrderAddressDto>("addresses", createOrderAddressDto);
-            if (responseMessage.IsSuccessStatusCode)
-            {
-                var jsonData = await responseMessage.Content.ReadAsStringAsync();
-                return jsonData;
-            }
-            else
-            {
-                var error = await responseMessage.Content.ReadAsStringAsync();
-                // Burada loglama veya özel hata mesajı oluşturabilirsin
-                return $"Hata oluştu: {responseMessage.StatusCode} - {error}";
-            }
+            var response = await _httpClient.PostAsJsonAsync("addresses", createOrderAddressDto);
+            var error = await response.GetErrorMessageAsync();
+            if (error is not null)
+                return (null, error);
+
+            var created = await response.Content.ReadFromJsonAsync<CreatedAddress>();
+            return (created?.AddressId, created is null ? "Adres kaydedilemedi." : null);
         }
+
+        public async Task<List<ResultOrderAddressDto>> GetMyAddressesAsync()
+            => await _httpClient.GetFromJsonAsync<List<ResultOrderAddressDto>>("addresses/mine") ?? new();
+
+        // Order'ın POST addresses yanıtı: { "addressId": 5 }
+        private record CreatedAddress(int AddressId);
     }
 }

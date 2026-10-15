@@ -37,6 +37,35 @@ namespace MultiShop.Catalog.Repositories.Concrete
             return await _collection.Find(p => validIds.Contains(p.ProductId)).ToListAsync();
         }
 
+        public async Task UpdateDetailsAsync(Product product)
+        {
+            var update = Builders<Product>.Update
+                .Set(p => p.ProductName, product.ProductName)
+                .Set(p => p.ProductPrice, product.ProductPrice)
+                .Set(p => p.CategoryId, product.CategoryId)
+                .Set(p => p.BrandId, product.BrandId)
+                .Set(p => p.ProductDescription, product.ProductDescription)
+                .Set(p => p.ProductImageUrl, product.ProductImageUrl);
+            await _collection.UpdateOneAsync(p => p.ProductId == product.ProductId, update);
+        }
+
+        public async Task<bool> SetAvailableStockAsync(string productId, int availableStock)
+        {
+            // Koşul ve yazma tek komutta: kontrol ile güncelleme arasında yeni bir rezervasyon araya giremez.
+            var filter = Builders<Product>.Filter.Eq("_id", ObjectId.Parse(productId))
+                & new BsonDocumentFilterDefinition<Product>(new BsonDocument("$expr", new BsonDocument("$lte", new BsonArray
+                {
+                    new BsonDocument("$ifNull", new BsonArray { "$ReservedStock", 0 }),
+                    availableStock,
+                })));
+            // Eski ürünlerde üst sınır 0; AddStock bu sınıra göre kırptığı için en az yeni stok kadar yapılır.
+            var update = Builders<Product>.Update
+                .Set(p => p.AvailableStock, availableStock)
+                .Max(p => p.MaxStockThreshold, availableStock);
+            var result = await _collection.UpdateOneAsync(filter, update);
+            return result.MatchedCount > 0;
+        }
+
         public async Task<IEnumerable<Product>> GetProductsWithCategoryAsync()
         {
             var products = await _collection.Find(_ => true).ToListAsync();

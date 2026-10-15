@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MultiShop.DtoLayer.PaymentDto
+﻿namespace MultiShop.DtoLayer.PaymentDto
 {
     public class CreatePaymentResponseDto
     {
         public bool IsSuccess { get; set; }
 
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        /// <summary>Denemeden sonraki ödeme durumu: Succeeded, AwaitingPayment, Failed, Cancelled.</summary>
+        public string? Status { get; set; }
+
+        /// <summary>Kalan deneme hakkı (ödeme beklemeye devam ediyorsa).</summary>
+        public int RemainingAttempts { get; set; }
     }
 }

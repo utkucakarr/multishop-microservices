@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.OrderDtos.OrderDetailDtos;
-using MultiShop.DtoLayer.OrderDtos.OrderOrderingDtos;
 using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.OrderServices.OrderDetailServices
@@ -11,11 +10,6 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderDetailServices
         public OrderDetailService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-        }
-
-        public async Task CreateOrderDetailAsync(CreateOrderDetailDto createOrderDetailDto)
-        {
-            var response = await _httpClient.PostAsJsonAsync<CreateOrderDetailDto>("orderDetails", createOrderDetailDto);
         }
 
         public async Task<List<GetOrderDetailByOrderIdDto>?> GetOrderDetailByOrderingId(int orderingId)

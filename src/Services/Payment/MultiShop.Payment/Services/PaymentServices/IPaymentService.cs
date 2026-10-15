@@ -4,6 +4,7 @@ namespace MultiShop.Payment.Services.PaymentServices
 {
     public interface IPaymentService
     {
-        Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto);
+        /// <summary>Kullanıcının ödeme bekleyen siparişinden kartla tahsilat.</summary>
+        Task<CreatePaymentResponseDto> CreatePaymentAsync(string userId, CreatePaymentDto createPaymentDto);
     }
 }
