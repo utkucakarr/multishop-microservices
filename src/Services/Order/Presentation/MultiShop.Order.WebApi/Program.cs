@@ -1,13 +1,19 @@
+using MassTransit;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers;
 using MultiShop.Order.Application.Features.CQRS.Handlers.OrderDetailHandlers;
 using MultiShop.Order.Application.Interfaces;
+using MultiShop.Order.Application.Sagas;
+using MultiShop.Order.Application.Sagas.Activities;
 using MultiShop.Order.Application.Services;
 using MultiShop.Order.Persistence.Context;
 using MultiShop.Order.Persistence.Repositories;
+using MultiShop.Order.WebApi.BackgroundServices;
 using MultiShop.Order.WebApi.Security;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
+using MultiShop.BuildingBlocks.Messaging;
 using MultiShop.BuildingBlocks.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +40,6 @@ builder.Services.AddScoped<RemoveAddressCommandHandler>();
 
 builder.Services.AddScoped<GetOrderDetailQueryHandler>();
 builder.Services.AddScoped<GetOrderDetailByIdQueryHandler>();
-builder.Services.AddScoped<CreateOrderDetailCommandHandler>();
 builder.Services.AddScoped<UpdateOrderDetailQueryHandler>();
 builder.Services.AddScoped<GetOrderDetailByOrderingIdQueryHandler>();
 builder.Services.AddScoped<RemoveOrderDetailQueryHandler>();
@@ -42,7 +47,38 @@ builder.Services.AddScoped<RemoveOrderDetailQueryHandler>();
 
 builder.Services.AddHealthChecks().AddDbContextCheck<OrderContext>("sqlserver");
 
-builder.Services.AddControllers();
+// Sipariş saga'sı (KT-12). Saga kaydı, sipariş ve outbox aynı OrderContext'te: bir mesajın tüm etkisi tek transaction'da
+// yazılır, saga'nın gönderdiği komut/event'ler commit'ten sonra RabbitMQ'ya gider. Inbox: aynı mesaj ikinci kez işlenmez.
+builder.Services.AddScoped<CreateOrderingActivity>();
+builder.Services.AddScoped<SyncOrderingStatusActivity>();
+builder.Services.AddScoped<StartShipmentActivity>();
+
+builder.AddMultiShopMessaging("Order", x =>
+{
+    x.AddEntityFrameworkOutbox<OrderContext>(outbox =>
+    {
+        outbox.UseSqlServer();
+        outbox.UseBusOutbox();
+    });
+    x.AddConfigureEndpointsCallback((context, _, endpoint) => endpoint.UseEntityFrameworkOutbox<OrderContext>(context));
+
+    // İyimser eşzamanlılık (RowVersion): aynı siparişin iki mesajı çakışırsa biri retry ile yeniden işlenir.
+    x.AddSagaStateMachine<OrderStateMachine, OrderState>()
+        .EntityFrameworkRepository(repository =>
+        {
+            repository.ConcurrencyMode = ConcurrencyMode.Optimistic;
+            repository.ExistingDbContext<OrderContext>();
+            repository.UseSqlServer();
+        });
+});
+
+// Ödenmeyen siparişler süre dolunca iptal edilir, ayrılan stok bırakılır (OrderSettings:PaymentTimeoutMinutes).
+builder.Services.Configure<OrderSettings>(builder.Configuration.GetSection(OrderSettings.SectionName));
+builder.Services.AddHostedService<OrderPaymentTimeoutService>();
+
+// Enum'lar JSON'da metin ("AwaitingPayment"): yanıtlar okunabilir, WebUI sayılara bağımlı olmaz.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddMultiShopSwagger("MultiShop Order API");
 
 var app = builder.Build();

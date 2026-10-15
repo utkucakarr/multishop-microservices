@@ -1,0 +1,97 @@
+﻿@model List<ResultShipmentDto>
+
+@{
+    ViewData["Title"] = "Gönderiler";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+    string? selectedStatus = ViewBag.status;
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>Gönderiler <small>(@Model.Count kayıt)</small></h4>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <form method="get" action="/Admin/Cargo/ShipmentList" class="form-inline" style="margin-bottom:15px">
+                    <label for="status">Durum:&nbsp;</label>
+                    <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+                        <option value="">Tümü</option>
+                        @foreach (var status in ShipmentStatusDisplay.All)
+                        {
+                            <option value="@status" selected="@(status == selectedStatus)">@ShipmentStatusDisplay.Text(status)</option>
+                        }
+                    </select>
+                </form>
+
+                @if (Model.Count == 0)
+                {
+                    <p>Bu durumda gönderi yok.</p>
+                }
+                else
+                {
+                    <div class="bs-example" data-example-id="bordered-table">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Barkod</th>
+                                    <th>Sipariş No</th>
+                                    <th>Alıcı</th>
+                                    <th>Şehir</th>
+                                    <th>Firma</th>
+                                    <th>Oluşturulma</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Barcode</td>
+                                        <td title="@item.OrderNumber">@item.OrderNumber.ToString()[..8].ToUpperInvariant()</td>
+                                        <td>@item.ReceiverName</td>
+                                        <td>@item.City</td>
+                                        <td>@(item.CargoCompanyName ?? "-")</td>
+                                        <td>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td><span class="label @ShipmentStatusDisplay.LabelClass(item.Status)">@ShipmentStatusDisplay.Text(item.Status)</span></td>
+                                        <td>
+                                            <a href="/Admin/Cargo/ShipmentDetail/@item.CargoDetailId" class="btn btn-primary btn-sm">Detay</a>
+                                            @if (item.Status == ShipmentStatuses.Preparing)
+                                            {
+                                                <form method="post" action="/Admin/Cargo/DispatchShipment" style="display:inline"
+                                                      onsubmit="return confirm('Gönderi kargoya verilsin mi? Müşteriye takip numarası gönderilir.');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.CargoDetailId" />
+                                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                                    <button type="submit" class="btn btn-info btn-sm">Kargoya ver</button>
+                                                </form>
+                                            }
+                                            else if (item.Status == ShipmentStatuses.Shipped)
+                                            {
+                                                <form method="post" action="/Admin/Cargo/DeliverShipment" style="display:inline"
+                                                      onsubmit="return confirm('Gönderi teslim edildi olarak işaretlensin mi? Sipariş tamamlanır.');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.CargoDetailId" />
+                                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                                    <button type="submit" class="btn btn-success btn-sm">Teslim edildi</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

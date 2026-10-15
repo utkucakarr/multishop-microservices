@@ -4,7 +4,7 @@ using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.Payment.Dtos.PaymentDtos;
 using MultiShop.Payment.Services.PaymentServices;
 
-namespace MultiShop.Payments.Controllers
+namespace MultiShop.Payment.Controllers
 {
     [Authorize(Policy = MultiShopPolicies.Authenticated)]
     [Route("api/[controller]")]
@@ -20,12 +20,14 @@ namespace MultiShop.Payments.Controllers
             _currentUser = currentUser;
         }
 
+        /// <summary>
+        /// Ödeme bekleyen siparişi kartla öder. Tutar siparişten gelir. Banka reddederse 200 + <c>isSuccess: false</c>
+        /// (kalan hak <c>remainingAttempts</c>); sipariş ödenemez durumdaysa 409, banka yanıt vermezse 503 (deneme sayılmaz).
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> CreatePayment(CreatePaymentDto createPaymentDto)
         {
-            // İstekteki UserId yok sayılır: ödeme her zaman token'daki kullanıcı adına kaydedilir.
-            createPaymentDto.UserId = _currentUser.GetRequiredUserId();
-            var response = await _paymentService.CreatePaymentAsync(createPaymentDto);
+            var response = await _paymentService.CreatePaymentAsync(_currentUser.GetRequiredUserId(), createPaymentDto);
             return Ok(response);
         }
     }

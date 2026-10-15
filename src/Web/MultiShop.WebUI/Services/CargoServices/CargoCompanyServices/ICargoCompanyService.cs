@@ -13,5 +13,8 @@ namespace MultiShop.WebUI.Services.CargoServices.CargoCompanyServices
         Task DeleteCargoCompanyAsync(int id);
 
         Task<UpdateCargoCompanyDto> GetByIdCargoCompanyAsync(int id);
+
+        /// <summary>Firmayı varsayılan yapar (yeni gönderilere atanır). Başarıda null, değilse Cargo'nun mesajı.</summary>
+        Task<string?> SetDefaultCargoCompanyAsync(int id);
     }
 }

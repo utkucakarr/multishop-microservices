@@ -58,6 +58,15 @@ namespace MultiShop.Catalog.Controllers
             return Ok("Ürün başarıyla eklendi");
         }
 
+        /// <summary>Admin: eldeki stoğu ayarlar (ürün güncelleme formu stok alanı taşımaz).</summary>
+        [Authorize(Policy = MultiShopPolicies.Admin)]
+        [HttpPut("{id}/stock")]
+        public async Task<IActionResult> UpdateStock(string id, UpdateProductStockDto updateProductStockDto)
+        {
+            await _productService.UpdateStockAsync(id, updateProductStockDto.AvailableStock);
+            return NoContent();
+        }
+
         [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpDelete]
         public async Task<IActionResult> DeleteProduct(string id)

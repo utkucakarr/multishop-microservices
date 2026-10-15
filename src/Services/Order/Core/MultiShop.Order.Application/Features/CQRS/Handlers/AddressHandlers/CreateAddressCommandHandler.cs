@@ -17,23 +17,25 @@ namespace MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers
         {
             _repository = repository;
         }
-        public async Task Handle(CreateAddressCommand createAddressCommand)
+        /// <returns>Oluşturulan adresin id'si (sepet onayında teslimat adresi olarak gönderilir).</returns>
+        public async Task<int> Handle(CreateAddressCommand createAddressCommand)
         {
-            await _repository.CreateAsync(new Address
+            var address = await _repository.CreateAsync(new Address
             {
                 City = createAddressCommand.City,
                 Detail1 = createAddressCommand.Detail1,
                 District = createAddressCommand.District,
-                UserId = createAddressCommand.UserId,
+                UserId = createAddressCommand.UserId!,
                 Country = createAddressCommand.Country,
-                Description = createAddressCommand.Description,
-                Detail2 = createAddressCommand.Detail2,
+                Description = createAddressCommand.Description ?? string.Empty,
+                Detail2 = createAddressCommand.Detail2 ?? string.Empty,
                 Email = createAddressCommand.Email,
                 Name = createAddressCommand.Name,
                 Phone = createAddressCommand.Phone,
                 SurName = createAddressCommand.SurName,
-                ZipCode = createAddressCommand.ZipCode
+                ZipCode = createAddressCommand.ZipCode ?? string.Empty
             });
+            return address.AddressId;
         }
     }
 }

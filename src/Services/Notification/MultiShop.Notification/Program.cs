@@ -57,6 +57,9 @@ builder.Services.AddSingleton<ISmsSender, LoggingSmsSender>();
 builder.Services.AddSingleton<INotificationTemplate, TestTemplate>();
 builder.Services.AddSingleton<INotificationTemplate, ContactMessageReceivedTemplate>();
 builder.Services.AddSingleton<INotificationTemplate, CommentCreatedTemplate>();
+builder.Services.AddSingleton<INotificationTemplate, OrderPaidTemplate>();
+builder.Services.AddSingleton<INotificationTemplate, NewOrderTemplate>();
+builder.Services.AddSingleton<INotificationTemplate, OrderShippedTemplate>();
 builder.Services.AddSingleton<NotificationTemplateRegistry>();
 
 // Strategy: kanallar. Yeni kanal = yeni INotificationChannel + bir satır kayıt.
@@ -79,6 +82,8 @@ builder.AddMultiShopMessaging("Notification", x =>
 
     x.AddConsumer<CommentCreatedConsumer>();
     x.AddConsumer<ContactMessageReceivedConsumer>();
+    x.AddConsumer<OrderPaidConsumer>();
+    x.AddConsumer<ShipmentDispatchedConsumer>();
 });
 
 // Admin paneli REST API'si (bildirim kutusu, ayarlar).

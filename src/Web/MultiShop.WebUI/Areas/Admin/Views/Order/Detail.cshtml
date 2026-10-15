@@ -1,0 +1,39 @@
+﻿@model List<MultiShop.DtoLayer.OrderDtos.OrderDetailDtos.GetOrderDetailByOrderIdDto>
+
+@{
+    ViewData["Title"] = "Sipariş Satırları";
+    Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
+}
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-box">
+                <h4>Sipariş Satırları <small>(sipariş #@ViewBag.orderingId)</small></h4>
+                <br />
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Birim Fiyat</th>
+                            <th>Adet</th>
+                            <th>Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td>@item.ProductPrice.ToString("N2") ₺</td>
+                                <td>@item.ProductAmount</td>
+                                <td>@item.ProductTotalPrice.ToString("N2") ₺</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <a href="/Admin/Order/Index" class="btn btn-default">Siparişlere dön</a>
+            </div>
+        </div>
+    </div>
+</section>

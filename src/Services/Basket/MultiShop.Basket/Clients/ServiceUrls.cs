@@ -8,5 +8,7 @@
         public string Catalog { get; set; } = string.Empty;
 
         public string Discount { get; set; } = string.Empty;
+
+        public string Order { get; set; } = string.Empty;
     }
 }

@@ -10,12 +10,14 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    <PackageReference Include="MassTransit.MongoDb" />
     <PackageReference Include="MongoDB.Bson" />
     <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.Contracts\MultiShop.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

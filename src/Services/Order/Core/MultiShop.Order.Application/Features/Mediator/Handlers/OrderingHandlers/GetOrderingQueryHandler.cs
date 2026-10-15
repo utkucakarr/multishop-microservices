@@ -24,13 +24,22 @@ namespace MultiShop.Order.Application.Features.Mediator.Handlers.OrderingHandler
         //cancellationToken sayfa yüklenmesini beklerken sayfayı kapattığımızda işlem iptal olsunmu görevi üstleniyor
         public async Task<List<GetOrderingQueryResult>> Handle(GetOrderingQuery request, CancellationToken cancellationToken)
         {
-            var values = await _repository.GetAllAsync();
-            return values.Select(x => new GetOrderingQueryResult
+            var values = request.Status is { } status
+                ? await _repository.GetListByFilterAsync(x => x.Status == status)
+                : await _repository.GetAllAsync();
+
+            return values.OrderByDescending(x => x.OrderDate).Select(x => new GetOrderingQueryResult
             {
                 OrderingId = x.OrderingId,
+                OrderNumber = x.OrderNumber,
                 OrderDate = x.OrderDate,
                 TotalPrice = x.TotalPrice,
                 UserId = x.UserId,
+                AddressId = x.AddressId,
+                Status = x.Status,
+                FailMessage = x.FailMessage,
+                TrackingNumber = x.TrackingNumber,
+                CargoCompanyName = x.CargoCompanyName
             }).ToList();
         }
     }

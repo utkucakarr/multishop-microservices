@@ -1,7 +1,4 @@
 ﻿using MultiShop.DtoLayer.PaymentDto;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Text;
 
 namespace MultiShop.WebUI.Services.PaymentServices
 {
@@ -9,8 +6,7 @@ namespace MultiShop.WebUI.Services.PaymentServices
     {
         private readonly HttpClient _httpClient;
 
-        // Gateway üzerinden ve giriş yapmış kullanıcının token'ıyla gider (bkz. Program.cs);
-        // önceden doğrudan http://localhost:7076'ya token'sız gidiyordu.
+        // Gateway üzerinden ve giriş yapmış kullanıcının token'ıyla gider (bkz. Program.cs).
         public PaymentService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -18,23 +14,17 @@ namespace MultiShop.WebUI.Services.PaymentServices
 
         public async Task<CreatePaymentResponseDto> CreatePaymentAsync(CreatePaymentDto createPaymentDto)
         {
-            var jsonData = JsonConvert.SerializeObject(createPaymentDto);
-            StringContent stringContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
-            var responseMessage = await _httpClient.PostAsync("payments", stringContent);
-            if (responseMessage.IsSuccessStatusCode)
+            var response = await _httpClient.PostAsJsonAsync("payments", createPaymentDto);
+            var error = await response.GetErrorMessageAsync();
+            if (error is null)
             {
-                var responseContent = await responseMessage.Content.ReadAsStringAsync();
-                var responseDto = JsonConvert.DeserializeObject<CreatePaymentResponseDto>(responseContent);
-                if (responseDto is not null)
-                    return responseDto;
+                var result = await response.Content.ReadFromJsonAsync<CreatePaymentResponseDto>();
+                if (result is not null)
+                    return result;
+                error = "Ödeme sonucu okunamadı, lütfen siparişlerinizi kontrol edin.";
             }
 
-            // Önceden null dönüyordu ve PaymentController response.IsSuccess'te çöküyordu.
-            return new CreatePaymentResponseDto
-            {
-                IsSuccess = false,
-                ErrorMessage = "Ödeme şu anda alınamıyor, lütfen tekrar deneyin."
-            };
+            return new CreatePaymentResponseDto { IsSuccess = false, ErrorMessage = error };
         }
     }
 }
