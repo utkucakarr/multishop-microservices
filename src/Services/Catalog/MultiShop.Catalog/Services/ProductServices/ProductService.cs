@@ -27,12 +27,13 @@ namespace MultiShop.Catalog.Services.ProductServices
             _mapper = mapper;
         }
 
-        public async Task CreateProductAsync(CreateProductDto createProductDto)
+        public async Task<string> CreateProductAsync(CreateProductDto createProductDto)
         {
             await EnsureCategoryAndBrandExistAsync(createProductDto.CategoryId, createProductDto.BrandId);
             // ✅ Manual mapping — Factory Method üzerinden geçiyor
             var product = createProductDto.ToEntity();
             await _productRepository.CreateAsync(product);
+            return product.ProductId;
         }
 
         public async Task DeleteProductAsync(string id)

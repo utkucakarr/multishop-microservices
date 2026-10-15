@@ -15,17 +15,18 @@ namespace MultiShop.Catalog.Mapping
 {
     public class GeneralMapping : Profile
     {
+        // Yalnızca kullanılan yönler (CAT-12): entity → okuma DTO'su, Create/Update DTO → entity. Önceki ReverseMap'ler
+        // her iki yönü de açıyordu; istemci DTO'sundan entity'ye beklenmeyen bir eşleme olmasın.
         public GeneralMapping()
         {
-            CreateMap<Category, ResultCategoryDto>().ReverseMap();
-            CreateMap<Category, CreateCategoryDto>().ReverseMap();
-            CreateMap<Category, UpdateCategoryDto>().ReverseMap();
-            CreateMap<Category, GetByIdCategoryDto>().ReverseMap();
+            CreateMap<Category, ResultCategoryDto>();
+            CreateMap<CreateCategoryDto, Category>();
+            CreateMap<UpdateCategoryDto, Category>();
+            CreateMap<Category, GetByIdCategoryDto>();
 
             CreateMap<Product, ResultProductDto>();
             CreateMap<Product, GetByIdProductDto>()
                 .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.BrandName : null));
-            CreateMap<Product, UpdateProductDto>();
 
             CreateMap<Product, ResultProductsWithCategoryDto>()
                 .ForMember(
@@ -36,41 +37,39 @@ namespace MultiShop.Catalog.Mapping
 
             CreateMap<ProductDetail, ResultProductDetailDto>();
             CreateMap<ProductDetail, GetByIdProductDetailDto>();
-            CreateMap<ProductDetail, UpdateProductDetailDto>();
 
             CreateMap<ProductImage, ResultProductImageDto>();
             CreateMap<ProductImage, GetByIdProductImageDto>();
-            CreateMap<ProductImage, UpdateProductImageDto>();
 
-            CreateMap<FeatureSlider, ResultFeatureSliderDto>().ReverseMap();
-            CreateMap<FeatureSlider, CreateFeatureSliderDto>().ReverseMap();
-            CreateMap<FeatureSlider, UpdateFeatureSliderDto>().ReverseMap();
-            CreateMap<FeatureSlider, GetByIdFeatureSliderDto>().ReverseMap();
+            CreateMap<FeatureSlider, ResultFeatureSliderDto>();
+            CreateMap<CreateFeatureSliderDto, FeatureSlider>();
+            CreateMap<UpdateFeatureSliderDto, FeatureSlider>();
+            CreateMap<FeatureSlider, GetByIdFeatureSliderDto>();
 
-            CreateMap<SpecialOffer, ResultSpecialOfferDto>().ReverseMap();
-            CreateMap<SpecialOffer, CreateSpecialOfferDto>().ReverseMap();
-            CreateMap<SpecialOffer, UpdateSpecialOfferDto>().ReverseMap();
-            CreateMap<SpecialOffer, GetByIdSpecialOfferDto>().ReverseMap();
+            CreateMap<SpecialOffer, ResultSpecialOfferDto>();
+            CreateMap<CreateSpecialOfferDto, SpecialOffer>();
+            CreateMap<UpdateSpecialOfferDto, SpecialOffer>();
+            CreateMap<SpecialOffer, GetByIdSpecialOfferDto>();
 
-            CreateMap<Feature, ResultFeatureDto>().ReverseMap();
-            CreateMap<Feature, CreateFeatureDto>().ReverseMap();
-            CreateMap<Feature, UpdateFeatureDto>().ReverseMap();
-            CreateMap<Feature, GetByIdFeatureDto>().ReverseMap();
+            CreateMap<Feature, ResultFeatureDto>();
+            CreateMap<CreateFeatureDto, Feature>();
+            CreateMap<UpdateFeatureDto, Feature>();
+            CreateMap<Feature, GetByIdFeatureDto>();
 
-            CreateMap<OfferDiscount, ResultOfferDiscountDto>().ReverseMap();
-            CreateMap<OfferDiscount, CreateOfferDiscountDto>().ReverseMap();
-            CreateMap<OfferDiscount, UpdateOfferDiscountDto>().ReverseMap();
-            CreateMap<OfferDiscount, GetByIdOfferDiscountDto>().ReverseMap();
+            CreateMap<OfferDiscount, ResultOfferDiscountDto>();
+            CreateMap<CreateOfferDiscountDto, OfferDiscount>();
+            CreateMap<UpdateOfferDiscountDto, OfferDiscount>();
+            CreateMap<OfferDiscount, GetByIdOfferDiscountDto>();
 
-            CreateMap<Brand, ResultBrandDto>().ReverseMap();
-            CreateMap<Brand, CreateBrandDto>().ReverseMap();
-            CreateMap<Brand, UpdateBrandDto>().ReverseMap();
-            CreateMap<Brand, GetByIdBrandDto>().ReverseMap();
+            CreateMap<Brand, ResultBrandDto>();
+            CreateMap<CreateBrandDto, Brand>();
+            CreateMap<UpdateBrandDto, Brand>();
+            CreateMap<Brand, GetByIdBrandDto>();
 
-            CreateMap<About, ResultAboutDto>().ReverseMap();
-            CreateMap<About, CreateAboutDto>().ReverseMap();
-            CreateMap<About, UpdateAboutDto>().ReverseMap();
-            CreateMap<About, GetByIdAboutDto>().ReverseMap();
+            CreateMap<About, ResultAboutDto>();
+            CreateMap<CreateAboutDto, About>();
+            CreateMap<UpdateAboutDto, About>();
+            CreateMap<About, GetByIdAboutDto>();
         }
     }
 }

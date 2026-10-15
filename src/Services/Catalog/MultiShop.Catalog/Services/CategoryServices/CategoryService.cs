@@ -18,10 +18,11 @@ namespace MultiShop.Catalog.Services.CategoryServices
             _mapper = mapper;
         }
 
-        public async Task CreateCategoryAsync(CreateCategoryDto createCategoryDto)
+        public async Task<string> CreateCategoryAsync(CreateCategoryDto createCategoryDto)
         {
             var value = _mapper.Map<Category>(createCategoryDto); //UIdan gelen veriyi veri tabanı modelina uyarlıyor.
             await _categoryCollection.InsertOneAsync(value);
+            return value.CategoryId;
         }
 
         public async Task DeleteCategoryAsync(string id)

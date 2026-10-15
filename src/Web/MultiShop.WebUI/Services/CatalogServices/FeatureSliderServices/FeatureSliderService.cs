@@ -22,16 +22,6 @@ namespace MultiShop.WebUI.Services.CatalogServices.FeatureSliderServices
             await _httpClient.DeleteAsync("featuresliders?id=" + id);
         }
 
-        public Task FeatureSliderChangeStatusToFalse(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FeatureSliderChangeStatusToTrue(string id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<ResultFeatureSliderDto>> GetAllFeatureSliderAsync()
         {
             var responseMessage = await _httpClient.GetAsync("featuresliders");

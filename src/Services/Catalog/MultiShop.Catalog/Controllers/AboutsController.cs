@@ -22,7 +22,7 @@ namespace MultiShop.Catalog.Controllers
         [HttpGet]
         public async Task<IActionResult> AboutList()
         {
-            var abouts = await _aboutService.GetallAboutAsync();
+            var abouts = await _aboutService.GetAllAboutAsync();
             return Ok(abouts);
         }
 
@@ -37,8 +37,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAbout(CreateAboutDto createAboutDto)
         {
-            await _aboutService.CreateAboutAsync(createAboutDto);
-            return Ok("Hakkımda alanı başarıyla eklendi");
+            var id = await _aboutService.CreateAboutAsync(createAboutDto);
+            return CreatedAtAction(nameof(GetAboutById), new { id }, new { id });
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -46,7 +46,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteAbout(string id)
         {
             await _aboutService.DeleteAboutAsync(id);
-            return Ok("Hakkımda alanı başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -54,7 +54,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateAbout(UpdateAboutDto updateAboutDto)
         {
             await _aboutService.UpdateAboutAsync(updateAboutDto);
-            return Ok("Hakkımda alanı başarıyla güncellendi");
+            return NoContent();
         }
     }
 }

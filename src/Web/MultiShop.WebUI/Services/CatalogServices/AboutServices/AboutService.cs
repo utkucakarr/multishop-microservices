@@ -23,7 +23,7 @@ namespace MultiShop.WebUI.Services.CatalogServices.AboutServices
             await _httpClient.DeleteAsync("abouts?id=" + id);
         }
 
-        public async Task<List<ResultAboutDto>> GetallAboutAsync()
+        public async Task<List<ResultAboutDto>> GetAllAboutAsync()
         {
             var responseMessage = await _httpClient.GetAsync("abouts");
             var jsonData = await responseMessage.Content.ReadAsStringAsync();

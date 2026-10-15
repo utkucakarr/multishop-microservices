@@ -18,10 +18,11 @@ namespace MultiShop.Catalog.Services.ProductDetailServices
             _repository = repository;
             _mapper = mapper;
         }
-        public async Task CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto)
+        public async Task<string> CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto)
         {
             var productDetail = createProductDetailDto.ToEntity();
             await _repository.CreateAsync(productDetail);
+            return productDetail.ProductDetailId;
         }
 
         public async Task DeleteProductDetailAsync(string id)
@@ -47,7 +48,7 @@ namespace MultiShop.Catalog.Services.ProductDetailServices
             return _mapper.Map<GetByIdProductDetailDto>(productDetail);
         }
 
-        public async Task UpdateProductDetailAsyn(UpdateProductDetailDto updateProductDetailDto)
+        public async Task UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto)
         {
             var productDetail = await _repository
                 .GetByIdAsync(updateProductDetailDto.ProductDetailId);

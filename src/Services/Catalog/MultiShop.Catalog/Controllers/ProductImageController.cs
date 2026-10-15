@@ -28,7 +28,7 @@ namespace MultiShop.Catalog.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductDetailById(string id)
+        public async Task<IActionResult> GetProductImageById(string id)
         {
             var productImagesId = await _productImageService.GetByIdProductImageAsync(id);
             return Ok(productImagesId);
@@ -38,8 +38,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProductImage(CreateProductImageDto createProductImageDto)
         {
-            await _productImageService.CreateProductImageAsync(createProductImageDto);
-            return Ok("Ürün resmi başarıyla eklendi");
+            var id = await _productImageService.CreateProductImageAsync(createProductImageDto);
+            return CreatedAtAction(nameof(GetProductImageById), new { id }, new { id });
         }
 
         // Dosya yükleme (multipart/form-data): dosya depolamaya yazılır, ürüne görsel olarak eklenir.
@@ -56,7 +56,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> SetMainProductImage(string id)
         {
             await _productImageService.SetMainProductImageAsync(id);
-            return Ok("Ana görsel güncellendi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -64,7 +64,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteProductImage(string id)
         {
             await _productImageService.DeleteProductImageAsync(id);
-            return Ok("Ürün resmi başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -72,7 +72,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateProductImage(UpdateProductImageDto updateProductImageDto)
         {
             await _productImageService.UpdateProductImageAsync(updateProductImageDto);
-            return Ok("Ürün resmi başarıyla güncellendi");
+            return NoContent();
         }
 
         [HttpGet("ProductImagesByProductId/{id}")]

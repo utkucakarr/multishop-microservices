@@ -13,9 +13,5 @@ namespace MultiShop.WebUI.Services.CatalogServices.FeatureSliderServices
         Task DeleteFeatureSliderAsync(string id);
 
         Task<UpdateFeatureSliderDto> GetByIdFeatureSliderAsync(string id);
-
-        Task FeatureSliderChangeStatusToTrue(string id);
-
-        Task FeatureSliderChangeStatusToFalse(string id);
     }
 }
