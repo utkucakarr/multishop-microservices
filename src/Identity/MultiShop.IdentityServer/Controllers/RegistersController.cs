@@ -42,7 +42,8 @@ namespace MultiShop.IdentityServer.Controllers
 
             // Yeni kayıt olan herkes müşteridir; Admin rolü yalnızca IdentitySeeder ile verilir.
             await _userManager.AddToRoleAsync(values, Roles.Customer);
-            return Ok("Kullanıcı başarıyla eklendi");
+            // Kullanıcıyı id ile döndüren herkese açık bir uç yok; 201 yeni kullanıcının id'sini gövdede taşır.
+            return StatusCode(StatusCodes.Status201Created, new { userId = values.Id });
         }
     }
 }
