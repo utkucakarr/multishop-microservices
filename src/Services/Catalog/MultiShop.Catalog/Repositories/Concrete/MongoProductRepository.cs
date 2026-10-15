@@ -115,6 +115,9 @@ namespace MultiShop.Catalog.Repositories.Concrete
         public async Task<long> CountByBrandIdAsync(string brandId)
             => await _collection.CountDocumentsAsync(p => p.BrandId == brandId);
 
+        public async Task<long> CountByCategoryIdAsync(string categoryId)
+            => await _collection.CountDocumentsAsync(p => p.CategoryId == categoryId);
+
         // Kategorideki gibi: gereken markalar tek sorguda çekilip bellekte eşleştirilir (N+1 yok).
         private async Task AttachBrandsAsync(List<Product> products)
         {

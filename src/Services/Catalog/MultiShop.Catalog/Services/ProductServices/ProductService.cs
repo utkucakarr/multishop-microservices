@@ -17,9 +17,11 @@ namespace MultiShop.Catalog.Services.ProductServices
         private readonly IProductImageRepository _productImageRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductImageService _productImageService;
+        private readonly IProductDetailRepository _productDetailRepository;
 
-        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository, ICategoryRepository categoryRepository, IProductImageService productImageService)
+        public ProductService(IMapper mapper, IProductRepository productRepository, IProductImageRepository productImageRepository, ICategoryRepository categoryRepository, IProductImageService productImageService, IProductDetailRepository productDetailRepository)
         {
+            _productDetailRepository = productDetailRepository;
             _productImageService = productImageService;
             _productRepository = productRepository;
             _productImageRepository = productImageRepository;
@@ -39,8 +41,9 @@ namespace MultiShop.Catalog.Services.ProductServices
         public async Task DeleteProductAsync(string id)
         {
             await _productRepository.DeleteAsync(id);
-            // Ürünün görsel kayıtları ve dosyaları sahipsiz kalmasın.
+            // Ürünün görsel kayıtları, dosyaları ve açıklama/bilgi kaydı sahipsiz kalmasın.
             await _productImageService.DeleteByProductIdAsync(id);
+            await _productDetailRepository.DeleteByProductIdAsync(id);
         }
 
         public async Task<IEnumerable<ResultProductDto>> GetAllProductAsync()
