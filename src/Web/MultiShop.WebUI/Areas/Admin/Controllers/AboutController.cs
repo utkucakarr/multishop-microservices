@@ -33,7 +33,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         {
             AboutViewBagList();
 
-            var values = await _aboutService.GetallAboutAsync();
+            var values = await _aboutService.GetAllAboutAsync();
             return View(values);
         }
 

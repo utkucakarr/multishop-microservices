@@ -8,7 +8,7 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
 
         Task CreateProductDetailAsync(CreateProductDetailDto createProductDetailDto);
 
-        Task UpdateProductDetailAsyn(UpdateProductDetailDto updateProductDetailDto);
+        Task UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto);
 
         Task DeleteProductDetailAsync(string id);
 

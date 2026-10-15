@@ -48,7 +48,7 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductDetailServices
             return values;
         }
 
-        public async Task UpdateProductDetailAsyn(UpdateProductDetailDto updateProductDetailDto)
+        public async Task UpdateProductDetailAsync(UpdateProductDetailDto updateProductDetailDto)
         {
             await _httpClient.PutAsJsonAsync<UpdateProductDetailDto>("productdetails", updateProductDetailDto);
         }

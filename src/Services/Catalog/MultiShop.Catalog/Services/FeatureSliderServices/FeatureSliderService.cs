@@ -18,25 +18,16 @@ namespace MultiShop.Catalog.Services.FeatureSliderServices
             _mapper = mapper;
         }
 
-        public async Task CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto)
+        public async Task<string> CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto)
         {
             var value = _mapper.Map<FeatureSlider>(createFeatureSliderDto);
             await _featureSliderCollection.InsertOneAsync(value);
+            return value.FeatureSliderId;
         }
 
         public async Task DeleteFeatureSliderAsync(string id)
         {
             await _featureSliderCollection.DeleteOneAsync(x => x.FeatureSliderId == id);
-        }
-
-        public Task FeatureSliderChangeStatusToFalse(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FeatureSliderChangeStatusToTrue(string id)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<List<ResultFeatureSliderDto>> GetAllFeatureSliderAsync()

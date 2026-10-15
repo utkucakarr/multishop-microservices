@@ -4,7 +4,7 @@ namespace MultiShop.WebUI.Services.CatalogServices.AboutServices
 {
     public interface IAboutService
     {
-        Task<List<ResultAboutDto>> GetallAboutAsync();
+        Task<List<ResultAboutDto>> GetAllAboutAsync();
 
         Task CreateAboutAsync(CreateAboutDto createAboutDto);
 
