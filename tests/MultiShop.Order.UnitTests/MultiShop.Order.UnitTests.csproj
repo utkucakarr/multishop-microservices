@@ -3,7 +3,8 @@
   <!-- Order: sipariş saga'sı (MassTransit test harness) ve adres doğrulamaları. -->
 
   <ItemGroup>
-    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <ItemGroup>
