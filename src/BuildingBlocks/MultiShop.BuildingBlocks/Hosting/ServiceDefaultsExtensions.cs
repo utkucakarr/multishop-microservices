@@ -8,13 +8,14 @@ using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
+using MultiShop.BuildingBlocks.Observability;
 
 namespace MultiShop.BuildingBlocks.Hosting;
 
 public static class ServiceDefaultsExtensions
 {
     /// <summary>
-    /// Her mikroservisin ortak kurulumu: user-secrets önceliği, Serilog (konsol + Seq),
+    /// Her mikroservisin ortak kurulumu: user-secrets önceliği, Serilog (konsol + Seq), OpenTelemetry tracing,
     /// ProblemDetails ile hata yönetimi, health check'ler ve <see cref="ICurrentUserService"/>.
     /// Bağlantı dizeleri okunmadan önce, <c>CreateBuilder</c>'dan hemen sonra çağrılmalı.
     /// </summary>
@@ -23,11 +24,12 @@ public static class ServiceDefaultsExtensions
     {
         builder.AddUserSecretsOverEnvironment();
         builder.Host.UseMultiShopSerilog(serviceName);
+        builder.Services.AddMultiShopTracing(builder.Configuration, serviceName);
 
         builder.Services.AddProblemDetails(options =>
-            // Yanıttaki traceId ile Seq'te aynı isteğin loglarına ulaşılabilir.
+            // Yanıttaki traceId Seq'te doğrudan aranabilir: trace'in span'leri ve logları (@TraceId).
             options.CustomizeProblemDetails = context =>
-                context.ProblemDetails.Extensions.TryAdd("traceId", Activity.Current?.Id ?? context.HttpContext.TraceIdentifier));
+                context.ProblemDetails.Extensions.TryAdd("traceId", Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier));
         builder.Services.AddOptions<ExceptionMappingOptions>();
         builder.Services.AddHealthChecks();
 
