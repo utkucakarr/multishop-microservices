@@ -1,0 +1,56 @@
+# Her push'ta ve dev/main'e açılan PR'larda: restore → build → test (KT-16).
+# Entegrasyon testleri Testcontainers ile SQL Server ve MongoDB container'ı açar; ubuntu runner'da Docker hazır.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Aynı dalda yeni push gelirse eski çalıştırma iptal edilir.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    name: Build ve test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore MultiShop.sln
+
+      - name: Build
+        run: dotnet build MultiShop.sln --no-restore --configuration Release
+
+      - name: Test
+        run: >
+          dotnet test MultiShop.sln --no-build --configuration Release
+          --logger "trx;LogFilePrefix=results"
+          --collect "XPlat Code Coverage"
+          --results-directory TestResults
+
+      - name: Test sonuçlarını yükle
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: TestResults
+          retention-days: 14
