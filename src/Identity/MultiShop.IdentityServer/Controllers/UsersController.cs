@@ -31,8 +31,15 @@ namespace MultiShop.IdentityServer.Controllers
         [HttpGet("GetUser")]
         public async Task<IActionResult> GetUser()
         {
-            var userClaim = User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub);
-            var user = await _userManager.FindByIdAsync(userClaim.Value);
+            // Client credentials token'ında (ör. Visitor) kullanıcı yoktur.
+            var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return NotFound();
+
             return Ok(new
             {
                 Id = user.Id,

@@ -28,7 +28,7 @@ namespace MultiShop.Catalog.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPorductDetailById(string id)
+        public async Task<IActionResult> GetProductDetailById(string id)
         {
             var productDetailId = await _productDetailService.GetByIdProductDetailAsync(id);
             return Ok(productDetailId);
@@ -45,8 +45,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProductDetail(CreateProductDetailDto createProductDetailDto)
         {
-            await _productDetailService.CreateProductDetailAsync(createProductDetailDto);
-            return Ok("Ürün detayı başarıyla eklendi");
+            var id = await _productDetailService.CreateProductDetailAsync(createProductDetailDto);
+            return CreatedAtAction(nameof(GetProductDetailById), new { id }, new { id });
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -54,15 +54,15 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteProductDetail(string id)
         {
             await _productDetailService.DeleteProductDetailAsync(id);
-            return Ok("Ürün detayı başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
         [HttpPut]
         public async Task<IActionResult> UpdateProductDetail(UpdateProductDetailDto updateProductDetailDto)
         {
-            await _productDetailService.UpdateProductDetailAsyn(updateProductDetailDto);
-            return Ok("Ürün detayı başarıyla güncellendi");
+            await _productDetailService.UpdateProductDetailAsync(updateProductDetailDto);
+            return NoContent();
         }
     }
 }

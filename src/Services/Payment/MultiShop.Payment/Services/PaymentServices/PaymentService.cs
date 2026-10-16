@@ -17,11 +17,11 @@ namespace MultiShop.Payment.Services.PaymentServices
     public class PaymentService : IPaymentService
     {
         private readonly PaymentContext _context;
-        private readonly GarantiPosClient _posClient;
+        private readonly IPosClient _posClient;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly ILogger<PaymentService> _logger;
 
-        public PaymentService(PaymentContext context, GarantiPosClient posClient, IPublishEndpoint publishEndpoint, ILogger<PaymentService> logger)
+        public PaymentService(PaymentContext context, IPosClient posClient, IPublishEndpoint publishEndpoint, ILogger<PaymentService> logger)
         {
             _context = context;
             _posClient = posClient;

@@ -5,17 +5,16 @@ namespace MultiShop.WebUI.Areas.Admin.ViewComponents.AdminLayoutViewComponents
 {
     public class _AdminLayoutSidebarComponentPartial : ViewComponent
     {
-        private readonly IUserService _userService;
+        private readonly ICurrentUser _currentUser;
 
-        public _AdminLayoutSidebarComponentPartial(IUserService userService)
+        public _AdminLayoutSidebarComponentPartial(ICurrentUser currentUser)
         {
-            _userService = userService;
+            _currentUser = currentUser;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
-            var values = await _userService.GetUserInfo();
-            ViewBag.userName = values.UserName + " " + values.Surname;
+            ViewBag.userName = _currentUser.DisplayName;
             return View();
         }
     }

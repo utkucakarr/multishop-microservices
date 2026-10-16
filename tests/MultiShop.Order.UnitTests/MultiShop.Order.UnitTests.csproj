@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Order: sipariş saga'sı (MassTransit test harness) ve adres doğrulamaları. -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Order\Core\MultiShop.Order.Application\MultiShop.Order.Application.csproj" />
+  </ItemGroup>
+
+</Project>

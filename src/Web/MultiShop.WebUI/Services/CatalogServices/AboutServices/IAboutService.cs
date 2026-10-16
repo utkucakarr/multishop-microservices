@@ -2,15 +2,18 @@
 
 namespace MultiShop.WebUI.Services.CatalogServices.AboutServices
 {
+    // Okuma metotları servis hata dönerse ServiceApiException fırlatır (bkz. ServiceExceptionMiddleware);
+    // yazma metotları başarılıysa null, değilse kullanıcıya gösterilecek hata mesajını döner.
     public interface IAboutService
     {
-        Task<List<ResultAboutDto>> GetallAboutAsync();
+        Task<List<ResultAboutDto>> GetAllAboutAsync();
 
-        Task CreateAboutAsync(CreateAboutDto createAboutDto);
+        Task<string?> CreateAboutAsync(CreateAboutDto createAboutDto);
 
-        Task UpdateAboutAsync(UpdateAboutDto updateAboutDto);
+        Task<string?> UpdateAboutAsync(UpdateAboutDto updateAboutDto);
 
-        Task DeleteAboutAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> DeleteAboutAsync(string id);
 
         Task<UpdateAboutDto> GetByIdAboutAsync(string id);
     }

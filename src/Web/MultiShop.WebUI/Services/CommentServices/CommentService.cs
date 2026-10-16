@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CommentDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CommentServices
 {
@@ -12,42 +11,27 @@ namespace MultiShop.WebUI.Services.CommentServices
             _httpClient = httpClient;
         }
 
-        public async Task<List<ResultCommentDto>> CommentListByProductId(string id)
+        public async Task<List<ResultProductCommentDto>> CommentListByProductId(string productId)
+            => await _httpClient.GetFromJsonAsync<List<ResultProductCommentDto>>($"comments/product/{Uri.EscapeDataString(productId)}") ?? new();
+
+        public async Task<string?> CreateCommentAsync(CreateCommentDto createCommentDto)
+            => await (await _httpClient.PostAsJsonAsync("comments", createCommentDto)).GetErrorMessageAsync();
+
+        public async Task<CommentPageDto> GetCommentsAsync(string? status, int page)
         {
-            var responseMessage = await _httpClient.GetAsync($"comments/CommentListByProductId/{id}");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultCommentDto>>(jsonData);
-            return values;
+            var url = $"comments?page={page}";
+            if (!string.IsNullOrEmpty(status))
+                url += "&status=" + Uri.EscapeDataString(status);
+            return await _httpClient.GetFromJsonAsync<CommentPageDto>(url) ?? new();
         }
 
-        public async Task CreateCommentAsync(CreateCommentDto createCommentDto)
-        {
-            await _httpClient.PostAsJsonAsync<CreateCommentDto>("comments", createCommentDto);
-        }
+        public async Task<string?> ApproveCommentAsync(int id)
+            => await (await _httpClient.PostAsync($"comments/{id}/approve", null)).GetErrorMessageAsync();
 
-        public async Task DeleteCommentAsync(string id)
-        {
-            await _httpClient.DeleteAsync("comments?id=" + id);
-        }
+        public async Task<string?> RejectCommentAsync(int id)
+            => await (await _httpClient.PostAsync($"comments/{id}/reject", null)).GetErrorMessageAsync();
 
-        public async Task<List<ResultCommentDto>> GetallCommentAsync()
-        {
-            var responseMessage = await _httpClient.GetAsync("comments");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultCommentDto>>(jsonData);
-            return values;
-        }
-
-        public async Task<UpdateCommentDto> GetByIdCommentAsync(string id)
-        {
-            var responseMessage = await _httpClient.GetAsync("comments/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateCommentDto>();
-            return values;
-        }
-
-        public async Task UpdateCommentAsync(UpdateCommentDto updateCommentDto)
-        {
-            await _httpClient.PutAsJsonAsync<UpdateCommentDto>("comments", updateCommentDto);
-        }
+        public async Task<string?> DeleteCommentAsync(int id)
+            => await (await _httpClient.DeleteAsync($"comments/{id}")).GetErrorMessageAsync();
     }
 }

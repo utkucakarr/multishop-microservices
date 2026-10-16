@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- İş kuralları: kargo firmaları ve gönderiler. Controller'lar ve consumer bu servisleri çağırır. -->
   <ItemGroup>
     <ProjectReference Include="..\MultiShop.Cargo.DataAccessLayer\MultiShop.Cargo.DataAccessLayer.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-    <Folder Include="ValidationRules\" />
+    <ProjectReference Include="..\MultiShop.Cargo.DtoLayer\MultiShop.Cargo.DtoLayer.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.BuildingBlocks\MultiShop.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\MultiShop.Contracts\MultiShop.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

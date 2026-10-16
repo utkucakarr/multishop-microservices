@@ -14,7 +14,7 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderDetailServices
 
         public async Task<List<GetOrderDetailByOrderIdDto>?> GetOrderDetailByOrderingId(int orderingId)
         {
-            var responseMessage = await _httpClient.GetAsync("orderDetails/GetOrderDetailById?id=" + orderingId);
+            var responseMessage = await _httpClient.GetAsync($"orderdetails/by-ordering/{orderingId}");
             // Order servisi başka kullanıcının siparişi için 404 döner.
             if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
                 return null;

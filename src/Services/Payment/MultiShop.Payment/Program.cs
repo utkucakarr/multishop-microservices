@@ -23,7 +23,7 @@ builder.Services.AddDbContext<PaymentContext>(options =>
 
 builder.Services.Configure<GarantiPosSettings>(builder.Configuration.GetSection("GarantiPosSettings"));
 // Banka isteği tekrar denenmez (satış idempotent değil); 30 sn içinde cevap gelmezse sonuç belirsiz sayılır.
-builder.Services.AddHttpClient<GarantiPosClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddHttpClient<IPosClient, GarantiPosClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddHealthChecks().AddDbContextCheck<PaymentContext>("sqlserver");

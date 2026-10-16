@@ -89,7 +89,7 @@
                         <li role="separator" class="divider"></li>
                         <li><a href="#"><i class="icon-gears"></i> Hesap Ayarları</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="/Login/Logout"><i class="fa fa-power-off"></i> Çıkış Yap</a></li>
+                        <li><form method="post" asp-area="" asp-controller="Login" asp-action="Logout" style="display:none"></form><a onclick="this.previousElementSibling.submit(); return false;" href="#"><i class="fa fa-power-off"></i> Çıkış Yap</a></li>
                     </ul>
                 </li>
             </ul>

@@ -13,8 +13,6 @@ namespace MultiShop.Cargo.DataAccessLayer.Concrete
 
         public DbSet<CargoCompany> CargoCompanies { get; set; }
 
-        public DbSet<CargoCustomer> CargoCustomers { get; set; }
-
         /// <summary>Gönderiler (KT-13: siparişe bağlı).</summary>
         public DbSet<CargoDetail> CargoDetails { get; set; }
 
@@ -24,6 +22,8 @@ namespace MultiShop.Cargo.DataAccessLayer.Concrete
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<CargoCompany>().Property(x => x.CargoCompanyName).HasMaxLength(CargoCompany.NameMaxLength);
 
             modelBuilder.Entity<CargoDetail>(entity =>
             {

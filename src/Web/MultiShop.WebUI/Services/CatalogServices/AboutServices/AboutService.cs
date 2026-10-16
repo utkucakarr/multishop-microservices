@@ -1,6 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.AboutDtos;
-using Newtonsoft.Json;
-using System.Net.Http.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.AboutServices
 {
@@ -13,34 +11,34 @@ namespace MultiShop.WebUI.Services.CatalogServices.AboutServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateAboutAsync(CreateAboutDto createAboutDto)
+        public async Task<string?> CreateAboutAsync(CreateAboutDto createAboutDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateAboutDto>("abouts", createAboutDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("abouts", createAboutDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteAboutAsync(string id)
+        public async Task<string?> DeleteAboutAsync(string id)
         {
-            await _httpClient.DeleteAsync("abouts?id=" + id);
+            var responseMessage = await _httpClient.DeleteAsync("abouts?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task<List<ResultAboutDto>> GetallAboutAsync()
+        public async Task<List<ResultAboutDto>> GetAllAboutAsync()
         {
             var responseMessage = await _httpClient.GetAsync("abouts");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultAboutDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultAboutDto>>();
         }
 
         public async Task<UpdateAboutDto> GetByIdAboutAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("abouts/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateAboutDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<UpdateAboutDto>();
         }
 
-        public async Task UpdateAboutAsync(UpdateAboutDto updateAboutDto)
+        public async Task<string?> UpdateAboutAsync(UpdateAboutDto updateAboutDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateAboutDto>("abouts", updateAboutDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("abouts", updateAboutDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

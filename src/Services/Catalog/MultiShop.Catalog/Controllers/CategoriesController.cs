@@ -38,8 +38,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryDto createCategoryDto)
         {
-            await _categoryService.CreateCategoryAsync(createCategoryDto);
-            return Ok("Katregori başarıyla eklendi");
+            var id = await _categoryService.CreateCategoryAsync(createCategoryDto);
+            return CreatedAtAction(nameof(GetCategoryById), new { id }, new { id });
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -47,7 +47,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteCategory(string id)
         {
             await _categoryService.DeleteCategoryAsync(id);
-            return Ok("Kategori başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -55,7 +55,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateCategory (UpdateCategoryDto updateCategoryDto)
         {
             await _categoryService.UpdateCategoryAsync(updateCategoryDto);
-            return Ok("Kategori başarıyla güncellendi");
+            return NoContent();
         }
     }
 }

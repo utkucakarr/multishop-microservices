@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using MultiShop.BuildingBlocks.Exceptions;
 using MultiShop.Discount.Context;
@@ -14,23 +15,23 @@ namespace MultiShop.Discount.Services
         // Kupon geçerliliği tek yerde: aktif ve son gün dahil süresi dolmamış (ValidDate gün bazında karşılaştırılır).
         private const string ValidCouponCondition = "IsActive = 1 And ValidDate >= CAST(GETDATE() AS date)";
 
-        private readonly DapperContext _context;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public DiscountService(DapperContext context)
+        public DiscountService(IDbConnectionFactory connectionFactory)
         {
-            _context = context;
+            _connectionFactory = connectionFactory;
         }
 
-        public async Task CreateDiscountCouponAsync(CreateDiscountCouponDto createCouponDto)
+        public async Task<int> CreateDiscountCouponAsync(CreateDiscountCouponDto createCouponDto)
         {
-            // Yeni indirim cuponu eklemek için kullanılan kodlar.
-            string query = "Insert Into Coupons (Code, Rate, IsActive, ValidDate) Values (@code, @rate, @isActive, @validDate)";
+            // Oluşan kuponun id'si aynı komutla döner (201 yanıtındaki id).
+            string query = "Insert Into Coupons (Code, Rate, IsActive, ValidDate) Output Inserted.CouponId Values (@code, @rate, @isActive, @validDate)";
             var parameters = new DynamicParameters();
             parameters.Add("@code", createCouponDto.Code);
             parameters.Add("@rate", createCouponDto.Rate);
             parameters.Add("@isActive", createCouponDto.IsActive);
             parameters.Add("@validDate", createCouponDto.ValidDate);
-            await ExecuteWithUniqueCodeAsync(query, parameters, createCouponDto.Code);
+            return await WithUniqueCodeAsync(connection => connection.ExecuteScalarAsync<int>(query, parameters), createCouponDto.Code);
         }
 
         public async Task DeleteDiscountCouponAsync(int id)
@@ -39,17 +40,16 @@ namespace MultiShop.Discount.Services
             string query = "Delete From Coupons Where CouponId = @couponId";
             var parameters = new DynamicParameters();
             parameters.Add("couponId", id);
-            using (var connection = _context.CreateConnection())
-            {
-                await connection.ExecuteAsync(query, parameters);
-            }
+            using var connection = _connectionFactory.CreateConnection();
+            if (await connection.ExecuteAsync(query, parameters) == 0)
+                throw new NotFoundException("Kupon", id);
         }
 
         public async Task<List<ResultDiscountCouponDto>> GetAllDiscountCouponAsync()
         {
             // Bütün verileri getirme işlemi
             string query = "Select * From Coupons";
-            using (var connection = _context.CreateConnection())
+            using (var connection = _connectionFactory.CreateConnection())
             {
                 var values = await connection.QueryAsync<ResultDiscountCouponDto>(query);
                 return values.ToList();
@@ -62,10 +62,10 @@ namespace MultiShop.Discount.Services
             var query = "Select * From Coupons Where CouponId = @couponId";
             var parameters = new DynamicParameters();
             parameters.Add("@couponId", id);
-            using (var connection = _context.CreateConnection())
+            using (var connection = _connectionFactory.CreateConnection())
             {
-                var values = await connection.QueryFirstOrDefaultAsync<GetByIdDiscountCouponDto>(query, parameters);
-                return values;
+                return await connection.QueryFirstOrDefaultAsync<GetByIdDiscountCouponDto>(query, parameters)
+                    ?? throw new NotFoundException("Kupon", id);
             }
         }
 
@@ -75,13 +75,13 @@ namespace MultiShop.Discount.Services
             string query = "Select Count(*) As CouponCount, " +
                 $"ISNULL(Sum(Case When {ValidCouponCondition} Then 1 Else 0 End), 0) As ActiveCouponCount " +
                 "From Coupons";
-            using (var connection = _context.CreateConnection())
+            using (var connection = _connectionFactory.CreateConnection())
             {
                 return await connection.QuerySingleAsync<DiscountStatisticsDto>(query);
             }
         }
 
-        public async Task UpdateDiscountCouponAync(UpdateDiscountCouponDto updateCouponDto)
+        public async Task UpdateDiscountCouponAsync(UpdateDiscountCouponDto updateCouponDto)
         {
             // Güncelleme işlemi
             string query = "Update Coupons Set Code=@code, Rate=@rate, IsActive=@isActive, ValidDate=@validDate Where CouponId=@couponId";
@@ -91,7 +91,9 @@ namespace MultiShop.Discount.Services
             parameters.Add("@isActive", updateCouponDto.IsActive);
             parameters.Add("@validDate", updateCouponDto.ValidDate);
             parameters.Add("@couponId", updateCouponDto.CouponId);
-            await ExecuteWithUniqueCodeAsync(query, parameters, updateCouponDto.Code);
+            var updated = await WithUniqueCodeAsync(connection => connection.ExecuteAsync(query, parameters), updateCouponDto.Code);
+            if (updated == 0)
+                throw new NotFoundException("Kupon", updateCouponDto.CouponId);
         }
 
         public async Task<CouponValidationDto> ValidateCouponAsync(string code)
@@ -99,7 +101,7 @@ namespace MultiShop.Discount.Services
             string query = $"Select Code, Rate From Coupons Where Code = @code And {ValidCouponCondition}";
             var parameters = new DynamicParameters();
             parameters.Add("@code", code);
-            using (var connection = _context.CreateConnection())
+            using (var connection = _connectionFactory.CreateConnection())
             {
                 return await connection.QueryFirstOrDefaultAsync<CouponValidationDto>(query, parameters)
                     ?? throw new NotFoundException("Kupon geçersiz veya süresi dolmuş.");
@@ -107,12 +109,12 @@ namespace MultiShop.Discount.Services
         }
 
         // Aynı kod ikinci kez eklenirse veritabanındaki unique index reddeder; kontrol + ekleme arasında yarış olmaz.
-        private async Task ExecuteWithUniqueCodeAsync(string query, DynamicParameters parameters, string code)
+        private async Task<T> WithUniqueCodeAsync<T>(Func<IDbConnection, Task<T>> command, string code)
         {
             try
             {
-                using var connection = _context.CreateConnection();
-                await connection.ExecuteAsync(query, parameters);
+                using var connection = _connectionFactory.CreateConnection();
+                return await command(connection);
             }
             catch (SqlException ex) when (UniqueViolationErrors.Contains(ex.Number))
             {

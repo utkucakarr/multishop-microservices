@@ -27,7 +27,7 @@
                                 <tr>
                                     <th scope="row">@count</th>
                                     <td>@item.Title</td>
-                                    <td><a href="/Admin/FeatureSlider/DeleteFeatureSlider/@item.FeatureSliderId" class="btn btn-danger">Sil</a></td>
+                                    <td><form method="post" asp-area="Admin" asp-controller="FeatureSlider" asp-action="DeleteFeatureSlider" asp-route-id="@item.FeatureSliderId" style="display:inline" onsubmit="return confirm('Slider silinsin mi?');"><button type="submit" class="btn btn-danger">Sil</button></form></td>
                                     <td><a href="/Admin/FeatureSlider/UpdateFeatureSlider/@item.FeatureSliderId" class="btn btn-success">Güncelle</a></td>
                                 </tr>
                             }

@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.CategoryServices
     {
         Task<List<ResultCategoryDto>> GetAllCategoryAsync();
 
-        Task CreateCategoryAsync(CreateCategoryDto createCategoryDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateCategoryAsync(CreateCategoryDto createCategoryDto);
 
         Task UpdateCategoryAsync(UpdateCategoryDto updateCategoryDto);
 

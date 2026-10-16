@@ -24,7 +24,7 @@
                                 <tr>
                                     <th scope="row">@item.Title</th>
                                     <td>@item.SubTitle</td>
-                                    <td><a href="/Admin/SpecialOffer/DeleteSpecialOffer/@item.SpecialOfferId" class="btn btn-danger">Sil</a></td>
+                                    <td><form method="post" asp-area="Admin" asp-controller="SpecialOffer" asp-action="DeleteSpecialOffer" asp-route-id="@item.SpecialOfferId" style="display:inline" onsubmit="return confirm('Özel teklif silinsin mi?');"><button type="submit" class="btn btn-danger">Sil</button></form></td>
                                     <td><a href="/Admin/SpecialOffer/UpdateSpecialOffer/@item.SpecialOfferId" class="btn btn-success">Güncelle</a></td>
                                 </tr>
                             }

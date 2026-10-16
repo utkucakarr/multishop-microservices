@@ -1,5 +1,5 @@
 ﻿using MassTransit;
-using MultiShop.Cargo.WebApi.Shipments;
+using MultiShop.Cargo.BusinessLayer.Services;
 using MultiShop.Contracts.Cargo;
 
 namespace MultiShop.Cargo.WebApi.Consumers
