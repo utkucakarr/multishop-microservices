@@ -9,5 +9,8 @@ namespace MultiShop.WebUI.Services.OrderServices.OrderAddressServices
 
         /// <summary>Kullanıcının kendi kayıtlı adresleri (Admin için de yalnızca kendisininki).</summary>
         Task<List<ResultOrderAddressDto>> GetMyAddressesAsync();
+
+        /// <summary>Bir kullanıcının adresleri (Admin: kullanıcı listesindeki "Adres Detayı").</summary>
+        Task<List<ResultOrderAddressDto>> GetAddressesByUserIdAsync(string userId);
     }
 }

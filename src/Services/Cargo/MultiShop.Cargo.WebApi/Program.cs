@@ -1,16 +1,12 @@
 using System.Text.Json.Serialization;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using MultiShop.Cargo.BusinessLayer.Abstract;
-using MultiShop.Cargo.BusinessLayer.Concrete;
-using MultiShop.Cargo.DataAccessLayer.Abstract;
+using MultiShop.Cargo.BusinessLayer.Services;
 using MultiShop.Cargo.DataAccessLayer.Concrete;
-using MultiShop.Cargo.DataAccessLayer.EntityFramework;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Messaging;
 using MultiShop.Cargo.WebApi.Consumers;
-using MultiShop.Cargo.WebApi.Shipments;
 using MultiShop.Contracts.Cargo;
 using MultiShop.BuildingBlocks.Swagger;
 
@@ -23,10 +19,8 @@ builder.Services.AddMultiShopAuthorization(fullScope: "CargoFullPermission");
 builder.Services.AddDbContext<CargoContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<ICargoCompanyDal, EfCargoCompanyDal>();
-builder.Services.AddScoped<ICargoCompanyService, CargoCompanyManager>();
-builder.Services.AddScoped<ICargoCustomerDal, EfCargoCustomerDal>();
-builder.Services.AddScoped<ICargoCustomerService, CargoCustomerManager>();
+// İş kuralları BusinessLayer'da; servisler CargoContext'i doğrudan kullanır (generic Manager/Dal katmanları kaldırıldı, CAR-07).
+builder.Services.AddScoped<CargoCompanyService>();
 builder.Services.AddScoped<ShipmentService>();
 
 builder.Services.AddHealthChecks().AddDbContextCheck<CargoContext>("sqlserver");

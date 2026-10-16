@@ -20,10 +20,11 @@ namespace MultiShop.Catalog.Services.SpecialOfferServices
             _mapper = mapper;
         }
 
-        public async Task CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto)
+        public async Task<string> CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto)
         {
             var value = _mapper.Map<SpecialOffer>(createSpecialOfferDto);
             await _specialOfferCollection.InsertOneAsync(value);
+            return value.SpecialOfferId;
         }
 
         public async Task DeleteSpecialOfferAsync(string id)

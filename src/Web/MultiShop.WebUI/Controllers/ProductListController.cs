@@ -1,20 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MultiShop.DtoLayer.CommentDtos;
 using MultiShop.WebUI.Services.CommentServices;
-using Newtonsoft.Json;
-using System.Text;
+using MultiShop.WebUI.Services.Interfaces;
 
 namespace MultiShop.WebUI.Controllers
 {
     public class ProductListController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICommentService _commentService;
+        private readonly IUserService _userService;
+        private readonly ICurrentUser _currentUser;
 
-        public ProductListController(IHttpClientFactory httpClientFactory, ICommentService commentService)
+        public ProductListController(ICommentService commentService, IUserService userService, ICurrentUser currentUser)
         {
-            _httpClientFactory = httpClientFactory;
             _commentService = commentService;
+            _userService = userService;
+            _currentUser = currentUser;
         }
 
         public IActionResult Index(string id)
@@ -41,18 +42,34 @@ namespace MultiShop.WebUI.Controllers
             return PartialView();
         }
 
+        /// <summary>
+        /// Yorum gönderir (fetch ile, JSON döner). Ad ve e-posta formdan değil giriş yapan kullanıcının profilinden;
+        /// durum ve tarih Comment servisinde atanır. Yorum admin onaylayana kadar sitede görünmez.
+        /// </summary>
         [HttpPost]
-        public async Task<IActionResult> AddComment(CreateCommentDto createCommentDto, string pid)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment(CreateCommentDto createCommentDto)
         {
             // Yorum yapmak için giriş gerekir; form fetch ile gönderildiği için login sayfasına yönlendirmek yerine 401 dönülür.
             if (User.Identity?.IsAuthenticated != true)
                 return Unauthorized();
 
-            createCommentDto.ImageUrl = "test";
-            createCommentDto.CreatedDate = DateTime.Parse(DateTime.Now.ToShortDateString());
-            createCommentDto.Status = false;
-            await _commentService.CreateCommentAsync(createCommentDto);
-            return Json(true);
+            createCommentDto.NameSurname = _currentUser.DisplayName;
+            createCommentDto.Email = _currentUser.Email ?? string.Empty;
+
+            // Yeni claim'lerden (ad, e-posta) önce açılmış oturumlarda e-posta cookie'de yok; profil Identity'den okunur.
+            if (string.IsNullOrEmpty(createCommentDto.Email))
+            {
+                var user = await _userService.GetUserInfo();
+                var fullName = $"{user.Name} {user.Surname}".Trim();
+                createCommentDto.NameSurname = string.IsNullOrEmpty(fullName) ? user.UserName : fullName;
+                createCommentDto.Email = user.Email;
+            }
+
+            var error = await _commentService.CreateCommentAsync(createCommentDto);
+            return error is null
+                ? Json(new { success = true, message = "Yorumunuz alındı; onaylandıktan sonra yayınlanacak." })
+                : BadRequest(new { success = false, message = error });
         }
     }
 }

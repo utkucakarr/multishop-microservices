@@ -29,7 +29,7 @@
                                     <td>@item.Address</td>
                                     <td>@item.Email</td>
                                     <td>@item.Phone</td>
-                                    <td><a href="/Admin/About/DeleteAbout/@item.AboutId" class="btn btn-danger">Sil</a></td>
+                                    <td><form method="post" asp-area="Admin" asp-controller="About" asp-action="DeleteAbout" asp-route-id="@item.AboutId" style="display:inline" onsubmit="return confirm('Hakkımızda kaydı silinsin mi?');"><button type="submit" class="btn btn-danger">Sil</button></form></td>
                                     <td><a href="/Admin/About/UpdateAbout/@item.AboutId" class="btn btn-success">Güncelle</a></td>
                                 </tr>
                             }

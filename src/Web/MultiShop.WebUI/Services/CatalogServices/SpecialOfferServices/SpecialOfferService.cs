@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.SpecialOfferDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.SpecialOfferServices
 {
@@ -12,34 +11,34 @@ namespace MultiShop.WebUI.Services.CatalogServices.SpecialOfferServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto)
+        public async Task<string?> CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateSpecialOfferDto>("specialoffers", createSpecialOfferDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("specialoffers", createSpecialOfferDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteSpecialOfferAsync(string id)
+        public async Task<string?> DeleteSpecialOfferAsync(string id)
         {
-            await _httpClient.DeleteAsync("specialoffers?id=" + id);
+            var responseMessage = await _httpClient.DeleteAsync("specialoffers?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultSpecialOfferDto>> GetAllSpecialOfferAsync()
         {
             var responseMessage = await _httpClient.GetAsync("specialoffers");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultSpecialOfferDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultSpecialOfferDto>>();
         }
 
         public async Task<UpdateSpecialOfferDto> GetByIdSpecialOfferAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("specialoffers/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateSpecialOfferDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<UpdateSpecialOfferDto>();
         }
 
-        public async Task UpdateSpecialOfferAsync(UpdateSpecialOfferDto updateSpecialOfferDto)
+        public async Task<string?> UpdateSpecialOfferAsync(UpdateSpecialOfferDto updateSpecialOfferDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateSpecialOfferDto>("specialoffers", updateSpecialOfferDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("specialoffers", updateSpecialOfferDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

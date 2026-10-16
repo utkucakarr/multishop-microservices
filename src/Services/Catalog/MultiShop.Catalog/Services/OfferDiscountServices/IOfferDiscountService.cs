@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.OfferDiscountServices
     {
         Task<List<ResultOfferDiscountDto>> GetAllOfferDiscountAsync();
 
-        Task CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto);
 
         Task UpdateOfferDiscountAsync(UpdateOfferDiscountDto updateOfferDiscountDto);
 

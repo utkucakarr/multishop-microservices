@@ -39,8 +39,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOfferDiscount(CreateOfferDiscountDto createOfferDiscountDto)
         {
-            await _offerDiscountService.CreateOfferDiscountAsync(createOfferDiscountDto);
-            return Ok("Özel teklif başarıyla eklendi");
+            var id = await _offerDiscountService.CreateOfferDiscountAsync(createOfferDiscountDto);
+            return CreatedAtAction(nameof(GetOfferDiscountById), new { id }, new { id });
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -48,7 +48,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteOfferDiscount(string id)
         {
             await _offerDiscountService.DeleteOfferDiscountAsync(id);
-            return Ok("Özel teklif başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -56,7 +56,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateOfferDiscount(UpdateOfferDiscountDto updateOfferDiscountDto)
         {
             await _offerDiscountService.UpdateOfferDiscountAsync(updateOfferDiscountDto);
-            return Ok("Özel teklif başarıyla güncellendi");
+            return NoContent();
         }
     }
 }

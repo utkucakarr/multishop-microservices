@@ -99,9 +99,11 @@
                     </button>
                 </div>
             </div>
-            <a href="/ShoppingCard/AddBasketItem/@Model.ProductId" class="btn btn-primary px-3">
-                <i class="fa fa-shopping-cart mr-1"></i> Sepete Ekle
-            </a>
+            <form method="post" asp-area="" asp-controller="ShoppingCard" asp-action="AddBasketItem" asp-route-id="@Model.ProductId" class="inline-form">
+                <button type="submit" class="btn btn-primary px-3">
+                    <i class="fa fa-shopping-cart mr-1"></i> Sepete Ekle
+                </button>
+            </form>
 
         </div>
 

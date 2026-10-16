@@ -2,6 +2,8 @@
 using MongoDB.Driver;
 using MultiShop.Catalog.Dtos.CategoryDtos;
 using MultiShop.Catalog.Entities;
+using MultiShop.Catalog.Exceptions;
+using MultiShop.Catalog.Repositories.Interfaces;
 using MultiShop.Catalog.Settings;
 using MultiShop.BuildingBlocks.Exceptions;
 
@@ -11,21 +13,29 @@ namespace MultiShop.Catalog.Services.CategoryServices
     {
         private readonly IMongoCollection<Category> _categoryCollection;
         private readonly IMapper _mapper;
+        private readonly IProductRepository _productRepository;
 
-        public CategoryService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings)
+        public CategoryService(IMapper mapper, IMongoDatabase database, IDatabaseSettings _databaseSettings, IProductRepository productRepository)
         {
+            _productRepository = productRepository;
             _categoryCollection = database.GetCollection<Category>(_databaseSettings.CategoryCollectionName);
             _mapper = mapper;
         }
 
-        public async Task CreateCategoryAsync(CreateCategoryDto createCategoryDto)
+        public async Task<string> CreateCategoryAsync(CreateCategoryDto createCategoryDto)
         {
             var value = _mapper.Map<Category>(createCategoryDto); //UIdan gelen veriyi veri tabanı modelina uyarlıyor.
             await _categoryCollection.InsertOneAsync(value);
+            return value.CategoryId;
         }
 
         public async Task DeleteCategoryAsync(string id)
         {
+            // Kullanılan kategori silinirse ürünler var olmayan bir kategoriyi gösterirdi (marka silmedeki kural).
+            var productCount = await _productRepository.CountByCategoryIdAsync(id);
+            if (productCount > 0)
+                throw new CatalogDomainException($"Bu kategoride {productCount} ürün var; önce bu ürünlerin kategorisini değiştirin.");
+
             await _categoryCollection.DeleteOneAsync(x => x.CategoryId == id);
         }
 

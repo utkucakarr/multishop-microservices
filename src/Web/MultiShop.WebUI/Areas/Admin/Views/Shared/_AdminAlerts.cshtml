@@ -1,0 +1,18 @@
+﻿@* İşlem sonucu mesajları (TempData "SuccessMessage" / "ErrorMessage"); admin layout'unda her sayfanın üstünde gösterilir. *@
+@{
+    var successMessage = TempData["SuccessMessage"] as string;
+    var errorMessage = TempData["ErrorMessage"] as string;
+}
+@if (successMessage is not null || errorMessage is not null)
+{
+    <div class="container-fluid" style="padding: 15px 15px 0;">
+        @if (successMessage is not null)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+        @if (errorMessage is not null)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+    </div>
+}

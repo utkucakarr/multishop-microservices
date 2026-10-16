@@ -2,18 +2,25 @@
 
 namespace MultiShop.WebUI.Services.CommentServices
 {
+    /// <summary>Comment servisinin istemcisi: ürün sayfası yorumları ve admin moderasyonu.</summary>
     public interface ICommentService
     {
-        Task<List<ResultCommentDto>> GetallCommentAsync();
+        /// <summary>Ürünün onaylı yorumları (en yeni önce).</summary>
+        Task<List<ResultProductCommentDto>> CommentListByProductId(string productId);
 
-        Task<List<ResultCommentDto>> CommentListByProductId(string id);
+        /// <summary>Yeni yorum (onay bekler). Başarıda null, değilse Comment'in mesajı.</summary>
+        Task<string?> CreateCommentAsync(CreateCommentDto createCommentDto);
 
-        Task CreateCommentAsync(CreateCommentDto createCommentDto);
+        /// <summary>Admin listesi; <paramref name="status"/> verilirse yalnızca o durumdakiler.</summary>
+        Task<CommentPageDto> GetCommentsAsync(string? status, int page);
 
-        Task UpdateCommentAsync(UpdateCommentDto updateCommentDto);
+        /// <summary>Başarıda null, değilse Comment'in mesajı.</summary>
+        Task<string?> ApproveCommentAsync(int id);
 
-        Task DeleteCommentAsync(string id);
+        /// <summary>Başarıda null, değilse Comment'in mesajı.</summary>
+        Task<string?> RejectCommentAsync(int id);
 
-        Task<UpdateCommentDto> GetByIdCommentAsync(string id);
+        /// <summary>Başarıda null, değilse Comment'in mesajı.</summary>
+        Task<string?> DeleteCommentAsync(int id);
     }
 }

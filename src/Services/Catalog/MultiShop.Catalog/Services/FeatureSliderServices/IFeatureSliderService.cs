@@ -7,16 +7,13 @@ namespace MultiShop.Catalog.Services.FeatureSliderServices
     {
         Task<List<ResultFeatureSliderDto>> GetAllFeatureSliderAsync();
 
-        Task CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto);
 
         Task UpdateFeatureSliderAsync(UpdateFeatureSliderDto updateFeatureSliderDto);
 
         Task DeleteFeatureSliderAsync(string id);
 
         Task<GetByIdFeatureSliderDto> GetByIdFeatureSliderAsync(string id);
-
-        Task FeatureSliderChangeStatusToTrue(string id);
-
-        Task FeatureSliderChangeStatusToFalse(string id);
     }
 }

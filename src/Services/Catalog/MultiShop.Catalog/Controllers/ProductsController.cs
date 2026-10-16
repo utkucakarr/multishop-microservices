@@ -54,8 +54,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductDto createProductDto)
         {
-            await _productService.CreateProductAsync(createProductDto);
-            return Ok("Ürün başarıyla eklendi");
+            var id = await _productService.CreateProductAsync(createProductDto);
+            return CreatedAtAction(nameof(GetProductById), new { id }, new { id });
         }
 
         /// <summary>Admin: eldeki stoğu ayarlar (ürün güncelleme formu stok alanı taşımaz).</summary>
@@ -72,7 +72,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteProduct(string id)
         {
             await _productService.DeleteProductAsync(id);
-            return Ok("Ürün başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -80,7 +80,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateProduct(UpdateProductDto updateProductDto)
         {
             await _productService.UpdateProductAsync(updateProductDto);
-            return Ok("Ürün başarıyla güncellendi");
+            return NoContent();
         }
 
         [HttpGet("ProductListWithCategory")]

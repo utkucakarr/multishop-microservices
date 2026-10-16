@@ -1,45 +1,40 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MultiShop.Order.Application.Features.CQRS.Commands.AddressCommands;
-using MultiShop.Order.Application.Features.CQRS.Handlers.AddressHandlers;
-using MultiShop.Order.Application.Features.CQRS.Queries.AddressQueries;
 using MultiShop.BuildingBlocks.Authentication;
+using MultiShop.Order.Application.Features.Mediator.Commands.AddressCommands;
+using MultiShop.Order.Application.Features.Mediator.Queries.AddressQueries;
 using MultiShop.Order.WebApi.Security;
 
 namespace MultiShop.Order.WebApi.Controllers
 {
-    // Müşteri yalnızca kendi adreslerini görür ve yönetir, Admin hepsini.
+    // Müşteri yalnızca kendi adreslerini görür ve yönetir, Admin hepsini. Komutlar handler'dan önce doğrulanır (400).
     [Authorize(Policy = MultiShopPolicies.Authenticated)]
     [Route("api/[controller]")]
     [ApiController]
     public class AddressesController : ControllerBase
     {
-        private readonly GetAddressQueryHandler _getAddressQueryHandler;
-        private readonly GetAddressByIdQueryHandler _getAddressByIdQueryHandler;
-        private readonly CreateAddressCommandHandler _createAddressCommandHandler;
-        private readonly UpdateAddressCommandHandler _updateAddressCommandHandler;
-        private readonly RemoveAddressCommandHandler _removeAddressCommandHandler;
+        private readonly IMediator _mediator;
         private readonly ICurrentUserService _currentUser;
         private readonly OrderAccessGuard _accessGuard;
 
-        public AddressesController(ICurrentUserService currentUser, OrderAccessGuard accessGuard, GetAddressQueryHandler getAddressQueryHandler, GetAddressByIdQueryHandler getAddressByIdQueryHandler, CreateAddressCommandHandler createAddressCommandHandler, UpdateAddressCommandHandler updateAddressCommandHandler, RemoveAddressCommandHandler removeAddressCommandHandler)
+        public AddressesController(IMediator mediator, ICurrentUserService currentUser, OrderAccessGuard accessGuard)
         {
-            _getAddressQueryHandler = getAddressQueryHandler;
-            _getAddressByIdQueryHandler = getAddressByIdQueryHandler;
-            _createAddressCommandHandler = createAddressCommandHandler;
-            _updateAddressCommandHandler = updateAddressCommandHandler;
-            _removeAddressCommandHandler = removeAddressCommandHandler;
+            _mediator = mediator;
             _currentUser = currentUser;
             _accessGuard = accessGuard;
         }
 
+        /// <summary>
+        /// Müşteri için kendi adresleri. Admin için tüm adresler; <paramref name="userId"/> verilirse yalnızca o kullanıcınınkiler
+        /// (admin panelinde kullanıcının adres bilgisi).
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> AddressList()
+        public async Task<IActionResult> AddressList([FromQuery] string? userId)
         {
             // Önceden herkes tüm kullanıcıların adreslerini (ad, telefon, açık adres) listeleyebiliyordu.
-            var values = await _getAddressQueryHandler.Handle(_currentUser.IsAdmin ? null : _currentUser.GetRequiredUserId());
-            return Ok(values);
+            var filter = _currentUser.IsAdmin ? userId : _currentUser.GetRequiredUserId();
+            return Ok(await _mediator.Send(new GetAddressQuery(filter)));
         }
 
         /// <summary>
@@ -48,17 +43,13 @@ namespace MultiShop.Order.WebApi.Controllers
         /// </summary>
         [HttpGet("mine")]
         public async Task<IActionResult> MyAddresses()
-        {
-            var values = await _getAddressQueryHandler.Handle(_currentUser.GetRequiredUserId());
-            return Ok(values);
-        }
+            => Ok(await _mediator.Send(new GetAddressQuery(_currentUser.GetRequiredUserId())));
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> AddressListById(int id)
+        public async Task<IActionResult> AddressById(int id)
         {
             await _accessGuard.EnsureAddressAccessAsync(id);
-            var values = await _getAddressByIdQueryHandler.Handle(new GetAddressByIdQuery(id));
-            return Ok(values);
+            return Ok(await _mediator.Send(new GetAddressByIdQuery(id)));
         }
 
         [HttpPost]
@@ -66,26 +57,27 @@ namespace MultiShop.Order.WebApi.Controllers
         {
             command.UserId = _currentUser.GetRequiredUserId();
             // Id, sepet onayında teslimat adresi olarak Basket'e gönderilir.
-            var addressId = await _createAddressCommandHandler.Handle(command);
-            return CreatedAtAction(nameof(AddressListById), new { id = addressId }, new { addressId });
+            var addressId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(AddressById), new { id = addressId }, new { addressId });
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateAddress(UpdateAddressCommand command)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateAddress(int id, UpdateAddressCommand command)
         {
             // Adres başka bir kullanıcıya devredilemez: sahibi değişmeden kalır.
-            var address = await _accessGuard.EnsureAddressAccessAsync(command.AddressId);
+            var address = await _accessGuard.EnsureAddressAccessAsync(id);
+            command.AddressId = id;
             command.UserId = address.UserId;
-            await _updateAddressCommandHandler.Handle(command); 
-            return Ok("Adres bilgisi başarıyla güncellendi");
+            await _mediator.Send(command);
+            return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> RemoveAddress(int id)
         {
             await _accessGuard.EnsureAddressAccessAsync(id);
-            await _removeAddressCommandHandler.Handle(new RemoveAddressCommand(id));
-            return Ok("Adres başarıyla silindi");
+            await _mediator.Send(new RemoveAddressCommand(id));
+            return NoContent();
         }
     }
 }

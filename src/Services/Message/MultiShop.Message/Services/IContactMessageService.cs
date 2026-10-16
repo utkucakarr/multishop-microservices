@@ -5,7 +5,8 @@ namespace MultiShop.Message.Services
 {
     public interface IContactMessageService
     {
-        Task CreateAsync(CreateContactMessageDto createContactMessageDto);
+        /// <returns>Oluşan mesajın id'si.</returns>
+        Task<int> CreateAsync(CreateContactMessageDto createContactMessageDto);
         Task<List<ResultContactMessageDto>> GetAllAsync(int? take = null);
         Task<ResultContactMessageDto> GetByIdAsync(int id);
         Task MarkAsReadAsync(int id);

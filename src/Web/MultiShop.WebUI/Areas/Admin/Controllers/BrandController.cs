@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.BrandDtos;
 using MultiShop.WebUI.Services.CatalogServices.BrandServices;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -50,17 +47,24 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [Route("CreateBrand")]
         public async Task<IActionResult> CreateBrand(CreateBrandDto createBrandDto)
         {
-            await _brandService.CreateBrandAsync(createBrandDto);
+            var error = await _brandService.CreateBrandAsync(createBrandDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                BrandViewBagList();
+                return View(createBrandDto);
+            }
+            TempData["SuccessMessage"] = "Marka eklendi.";
             return RedirectToAction("Index", "Brand", new { area = "Admin" });
         }
 
+        [HttpPost]
         [Route("DeleteBrand/{id}")]
         public async Task<IActionResult> DeleteBrand(string id)
         {
             // Markaya bağlı ürün varsa Catalog silmeyi reddeder; mesaj liste sayfasında gösterilir.
             var error = await _brandService.DeleteBrandAsync(id);
-            if (error is not null)
-                TempData["BrandError"] = error;
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Marka silindi.";
             return RedirectToAction("Index", "Brand", new { area = "Admin" });
         }
 
@@ -77,7 +81,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateBrand(UpdateBrandDto updateBrandDto)
         {
-            await _brandService.UpdateBrandAsync(updateBrandDto);
+            var error = await _brandService.UpdateBrandAsync(updateBrandDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                BrandViewBagList();
+                return View(updateBrandDto);
+            }
+            TempData["SuccessMessage"] = "Marka güncellendi.";
             return RedirectToAction("Index", "Brand", new { area = "Admin" });
         }
     }

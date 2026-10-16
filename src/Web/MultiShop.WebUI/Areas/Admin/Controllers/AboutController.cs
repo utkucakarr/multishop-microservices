@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.AboutDtos;
 using MultiShop.WebUI.Services.CatalogServices.AboutServices;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -33,7 +31,7 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         {
             AboutViewBagList();
 
-            var values = await _aboutService.GetallAboutAsync();
+            var values = await _aboutService.GetAllAboutAsync();
             return View(values);
         }
 
@@ -49,14 +47,23 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [Route("CreateAbout")]
         public async Task<IActionResult> CreateAbout(CreateAboutDto createAboutDto)
         {
-            await _aboutService.CreateAboutAsync(createAboutDto);
+            var error = await _aboutService.CreateAboutAsync(createAboutDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                AboutViewBagList();
+                return View(createAboutDto);
+            }
+            TempData["SuccessMessage"] = "Hakkımızda kaydı eklendi.";
             return RedirectToAction("Index", "About", new { area = "Admin" });
         }
 
+        [HttpPost]
         [Route("DeleteAbout/{id}")]
         public async Task<IActionResult> DeleteAbout(string id)
         {
-            await _aboutService.DeleteAboutAsync(id);
+            var error = await _aboutService.DeleteAboutAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Hakkımızda kaydı silindi.";
             return RedirectToAction("Index", "About", new { area = "Admin" });
 
         }
@@ -74,7 +81,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [Route("UpdateAbout/{id}")]
         public async Task<IActionResult> UpdateAbout(UpdateAboutDto updateAboutDto)
         {
-            await _aboutService.UpdateAboutAsync(updateAboutDto);
+            var error = await _aboutService.UpdateAboutAsync(updateAboutDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                AboutViewBagList();
+                return View(updateAboutDto);
+            }
+            TempData["SuccessMessage"] = "Hakkımızda kaydı güncellendi.";
             return RedirectToAction("Index", "About", new { area = "Admin" });
         }
     }

@@ -1,6 +1,5 @@
-﻿
+﻿using System.Net;
 using MultiShop.DtoLayer.CargoDtos.CargoCompanyDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CargoServices.CargoCompanyServices
 {
@@ -13,37 +12,30 @@ namespace MultiShop.WebUI.Services.CargoServices.CargoCompanyServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateCargoCompanyAsync(CreateCargoCompanyDto createCargoCompanyDto)
-        {
-            await _httpClient.PostAsJsonAsync<CreateCargoCompanyDto>("CargoCompanies", createCargoCompanyDto);
-        }
-
-        public async Task DeleteCargoCompanyAsync(int id)
-        {
-            await _httpClient.DeleteAsync("CargoCompanies?id=" + id);
-        }
-
         public async Task<List<ResultCargoCompanyDto>> GetAllCargoCompanyAsync()
+            => await _httpClient.GetFromJsonAsync<List<ResultCargoCompanyDto>>("cargocompanies") ?? new();
+
+        public async Task<UpdateCargoCompanyDto?> GetByIdCargoCompanyAsync(int id)
         {
-            var responseMessage = await _httpClient.GetAsync("CargoCompanies");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultCargoCompanyDto>>(jsonData);
-            return values;
+            var response = await _httpClient.GetAsync($"cargocompanies/{id}");
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<UpdateCargoCompanyDto>();
         }
 
-        public async Task<UpdateCargoCompanyDto> GetByIdCargoCompanyAsync(int id)
-        {
-            var responseMessage = await _httpClient.GetAsync("CargoCompanies/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateCargoCompanyDto>();
-            return values;
-        }
+        public async Task<string?> CreateCargoCompanyAsync(CreateCargoCompanyDto createCargoCompanyDto)
+            => await (await _httpClient.PostAsJsonAsync("cargocompanies", createCargoCompanyDto)).GetErrorMessageAsync();
 
-        public async Task UpdateCargoCompanyAsync(UpdateCargoCompanyDto updateCargoCompanyDto)
-        {
-            await _httpClient.PutAsJsonAsync<UpdateCargoCompanyDto>("CargoCompanies", updateCargoCompanyDto);
-        }
+        public async Task<string?> UpdateCargoCompanyAsync(UpdateCargoCompanyDto updateCargoCompanyDto)
+            => await (await _httpClient.PutAsJsonAsync($"cargocompanies/{updateCargoCompanyDto.CargoCompanyId}",
+                new { updateCargoCompanyDto.CargoCompanyName })).GetErrorMessageAsync();
+
+        public async Task<string?> DeleteCargoCompanyAsync(int id)
+            => await (await _httpClient.DeleteAsync($"cargocompanies/{id}")).GetErrorMessageAsync();
 
         public async Task<string?> SetDefaultCargoCompanyAsync(int id)
-            => await (await _httpClient.PostAsync($"CargoCompanies/{id}/default", null)).GetErrorMessageAsync();
+            => await (await _httpClient.PostAsync($"cargocompanies/{id}/default", null)).GetErrorMessageAsync();
     }
 }

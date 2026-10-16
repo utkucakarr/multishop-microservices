@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Payment: ödeme kaydının eşzamanlı ve tekrar denemelerdeki davranışı, gerçek SQL Server (Testcontainers, Docker gerekir). -->
+
+  <ItemGroup>
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Testcontainers.MsSql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Payment\MultiShop.Payment\MultiShop.Payment.csproj" />
+  </ItemGroup>
+
+</Project>

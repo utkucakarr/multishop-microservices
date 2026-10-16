@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.FeatureDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.FeautureServices
 {
@@ -12,34 +11,34 @@ namespace MultiShop.WebUI.Services.CatalogServices.FeautureServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateFeatureAsync(CreateFeatureDto createFeatureDto)
+        public async Task<string?> CreateFeatureAsync(CreateFeatureDto createFeatureDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateFeatureDto>("features", createFeatureDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("features", createFeatureDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteFeatureAsync(string id)
+        public async Task<string?> DeleteFeatureAsync(string id)
         {
-            await _httpClient.DeleteAsync("features?id=" + id);
+            var responseMessage = await _httpClient.DeleteAsync("features?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultFeatureDto>> GetAllFeatureAsync()
         {
             var responseMessage = await _httpClient.GetAsync("features");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultFeatureDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultFeatureDto>>();
         }
 
         public async Task<UpdateFeatureDto> GetByIdFeatureAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("features/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateFeatureDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<UpdateFeatureDto>();
         }
 
-        public async Task UpdateFeatureAsync(UpdateFeatureDto updateFeatureDto)
+        public async Task<string?> UpdateFeatureAsync(UpdateFeatureDto updateFeatureDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateFeatureDto>("features", updateFeatureDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("features", updateFeatureDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }
