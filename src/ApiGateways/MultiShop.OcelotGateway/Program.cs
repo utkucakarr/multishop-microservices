@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
+using MultiShop.BuildingBlocks.Observability;
 using MultiShop.OcelotGateway.Aggregators;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -8,6 +9,7 @@ using Ocelot.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseMultiShopSerilog("Gateway");
+builder.Services.AddMultiShopTracing(builder.Configuration, "Gateway");
 
 builder.Services.AddAuthentication().AddJwtBearer("OcelotAuthenticationSheme", opt =>
 {
