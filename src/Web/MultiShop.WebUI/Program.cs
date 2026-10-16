@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
+using MultiShop.BuildingBlocks.Observability;
 using MultiShop.WebUI.Handlers;
 using MultiShop.WebUI.Middlewares;
 using MultiShop.WebUI.Services.BasketServices;
@@ -34,6 +35,7 @@ using MultiShop.WebUI.Services.PaymentServices;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseMultiShopSerilog("WebUI");
+builder.Services.AddMultiShopTracing(builder.Configuration, "WebUI");
 builder.Services.AddHealthChecks();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
