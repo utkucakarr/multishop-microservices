@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.FeatureServices
     {
         Task<List<ResultFeatureDto>> GetAllFeatureAsync();
 
-        Task CreateFeatureAsync(CreateFeatureDto createFeatureDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateFeatureAsync(CreateFeatureDto createFeatureDto);
 
         Task UpdateFeatureAsync(UpdateFeatureDto updateFeatureDto);
 

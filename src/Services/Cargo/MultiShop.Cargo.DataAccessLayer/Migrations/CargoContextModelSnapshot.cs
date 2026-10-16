@@ -202,7 +202,8 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
 
                     b.Property<string>("CargoCompanyName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -210,50 +211,6 @@ namespace MultiShop.Cargo.DataAccessLayer.Migrations
                     b.HasKey("CargoCompanyId");
 
                     b.ToTable("CargoCompanies");
-                });
-
-            modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoCustomer", b =>
-                {
-                    b.Property<int>("CargoCustomerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CargoCustomerId"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("District")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserCustomerId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CargoCustomerId");
-
-                    b.ToTable("CargoCustomers");
                 });
 
             modelBuilder.Entity("MultiShop.Cargo.EntityLayer.Concrete.CargoDetail", b =>

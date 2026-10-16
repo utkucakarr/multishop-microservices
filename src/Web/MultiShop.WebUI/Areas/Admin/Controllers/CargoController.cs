@@ -38,35 +38,60 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return View();
         }
 
+        // Hata (ör. boş ad) Cargo'dan mesaj olarak gelir; form girilen değerle tekrar gösterilir.
         [HttpPost]
         [Route("CreateCargoCompany")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCargoCompany(CreateCargoCompanyDto createCargoCompanyDto)
         {
-            await _cargoCompanyService.CreateCargoCompanyAsync(createCargoCompanyDto);
-            return RedirectToAction("CargoCompanyList", "Cargo", new { Area = "Admin" });
+            var error = await _cargoCompanyService.CreateCargoCompanyAsync(createCargoCompanyDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                return View(createCargoCompanyDto);
+            }
+            TempData["SuccessMessage"] = "Kargo firması eklendi.";
+            return RedirectToAction(nameof(CargoCompanyList));
         }
 
-        [Route("DeleteCargoCompany/{id}")]
+        /// <summary>Gönderisi olan firma silinemez; Cargo'nun mesajı listede gösterilir (önceden GET link'ti ve hata yutuluyordu).</summary>
+        [HttpPost]
+        [Route("DeleteCargoCompany")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteCargoCompany(int id)
         {
-            await _cargoCompanyService.DeleteCargoCompanyAsync(id);
-            return RedirectToAction("CargoCompanyList", "Cargo", new { Area = "Admin" });
+            var error = await _cargoCompanyService.DeleteCargoCompanyAsync(id);
+            if (error is null)
+                TempData["SuccessMessage"] = "Kargo firması silindi.";
+            else
+                TempData["ErrorMessage"] = error;
+            return RedirectToAction(nameof(CargoCompanyList));
         }
 
         [HttpGet]
-        [Route("UpdateCargoCompany/{id}")]
+        [Route("UpdateCargoCompany/{id:int}")]
         public async Task<IActionResult> UpdateCargoCompany(int id)
         {
             var values = await _cargoCompanyService.GetByIdCargoCompanyAsync(id);
+            if (values is null)
+                return NotFound();
             return View(values);
         }
 
+        // Form action'sız POST eder (sayfanın kendi adresine); route'ta id olmadan eşleşmiyordu.
         [HttpPost]
-        [Route("UpdateCargoCompany")]
+        [Route("UpdateCargoCompany/{id:int}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateCargoCompany(UpdateCargoCompanyDto updateCargoCompanyDto)
         {
-            await _cargoCompanyService.UpdateCargoCompanyAsync(updateCargoCompanyDto);
-            return RedirectToAction("CargoCompanyList", "Cargo", new { Area = "Admin" });
+            var error = await _cargoCompanyService.UpdateCargoCompanyAsync(updateCargoCompanyDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                return View(updateCargoCompanyDto);
+            }
+            TempData["SuccessMessage"] = "Kargo firması güncellendi.";
+            return RedirectToAction(nameof(CargoCompanyList));
         }
 
         [HttpPost]

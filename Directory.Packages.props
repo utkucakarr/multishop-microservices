@@ -43,6 +43,8 @@
   <!-- Diğer -->
   <ItemGroup>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <!-- FluentValidation Apache-2.0 (AutoMapper/MediatR gibi ticari lisansa geçmedi). -->
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.13.0" />
     <PackageVersion Include="MailKit" Version="4.18.1" />
     <!-- MassTransit 8.4.1'e sabit: v9+ ticari lisanslı; 8.5.x'in EF paketi EF Core 9 istiyor (bizde EF Core 8). -->
@@ -55,6 +57,23 @@
     <PackageVersion Include="Ocelot" Version="23.4.3" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Test (KT-16). AwesomeAssertions: FluentAssertions'ın Apache-2.0 kolu (FluentAssertions 8+ ticari lisanslı).
+       Mvc.Testing ASP.NET Core sürümüyle aynı olmalı. -->
+  <ItemGroup>
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
+    <!-- Web projesi olmayan testlerde (Order saga) DI konteyneri ve logging için; servisler bunları ASP.NET'ten alır. -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="Testcontainers.MongoDb" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
 </Project>

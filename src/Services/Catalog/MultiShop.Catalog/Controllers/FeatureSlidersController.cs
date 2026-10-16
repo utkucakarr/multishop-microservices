@@ -38,8 +38,8 @@ namespace MultiShop.Catalog.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateFeatureSlider(CreateFeatureSliderDto createFeatureSliderDto)
         {
-            await _featureSliderService.CreateFeatureSliderAsync(createFeatureSliderDto);
-            return Ok("Öne çıkan görsel başarıyla eklendi");
+            var id = await _featureSliderService.CreateFeatureSliderAsync(createFeatureSliderDto);
+            return CreatedAtAction(nameof(GetFeatureSliderById), new { id }, new { id });
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -47,7 +47,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> DeleteFeatureSlider(string id)
         {
             await _featureSliderService.DeleteFeatureSliderAsync(id);
-            return Ok("Öne çıkan görsel başarıyla silindi");
+            return NoContent();
         }
 
         [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -55,7 +55,7 @@ namespace MultiShop.Catalog.Controllers
         public async Task<IActionResult> UpdateFeatureSlider(UpdateFeatureSliderDto updateFeatureSliderDto)
         {
             await _featureSliderService.UpdateFeatureSliderAsync(updateFeatureSliderDto);
-            return Ok("Öne çıkan görsel başarıyla güncellendi");
+            return NoContent();
         }
     }
 }

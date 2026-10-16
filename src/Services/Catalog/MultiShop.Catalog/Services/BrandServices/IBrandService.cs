@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.BrandServices
     {
         Task<List<ResultBrandDto>> GetAllBrandAsync();
 
-        Task CreateBrandAsync(CreateBrandDto createBrandDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateBrandAsync(CreateBrandDto createBrandDto);
 
         Task UpdateBrandAsync(UpdateBrandDto updateBrandDto);
 

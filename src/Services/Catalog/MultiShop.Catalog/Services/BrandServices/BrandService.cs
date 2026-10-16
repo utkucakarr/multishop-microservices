@@ -22,10 +22,11 @@ namespace MultiShop.Catalog.Services.BrandServices
             _mapper = mapper;
         }
 
-        public async Task CreateBrandAsync(CreateBrandDto createBrandDto)
+        public async Task<string> CreateBrandAsync(CreateBrandDto createBrandDto)
         {
             var values = _mapper.Map<Brand>(createBrandDto);
             await _brandCollection.InsertOneAsync(values);
+            return values.BrandId;
         }
 
         public async Task DeleteBrandAsync(string id)

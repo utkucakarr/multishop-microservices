@@ -15,11 +15,10 @@ namespace MultiShop.WebUI.Services.CatalogServices.ProductServices
         /// <summary>Eldeki stoğu ayarlar; başarıda null, hatada Catalog'un mesajı.</summary>
         Task<string?> UpdateStockAsync(string productId, int availableStock);
 
-        Task DeleteProductAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> DeleteProductAsync(string id);
 
         Task<GetByIdProductDto> GetByIdProductAsync(string id);
-
-        Task<List<ResultProductWithCategoryDto>> GetProductsWithCategoryAsync();
 
         Task<List<ResultProductWithCategoryDto>> GetProductsWithCategoryByCategoryIdAsync(string CategoryId);
     }

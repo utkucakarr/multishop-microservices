@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
 using MultiShop.WebUI.Handlers;
+using MultiShop.WebUI.Middlewares;
 using MultiShop.WebUI.Services.BasketServices;
 using MultiShop.WebUI.Services.CargoServices.CargoCompanyServices;
-using MultiShop.WebUI.Services.CargoServices.CargoCustomerServices;
 using MultiShop.WebUI.Services.CargoServices.ShipmentServices;
 using MultiShop.WebUI.Services.CatalogServices.AboutServices;
 using MultiShop.WebUI.Services.CatalogServices.BrandServices;
@@ -50,13 +51,15 @@ builder.Services.AddAccessTokenManagement();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+// GET/HEAD/OPTIONS dışındaki her istek antiforgery token'ı taşımalı (form tag helper'ı token'ı kendisi ekler).
+builder.Services.AddControllersWithViews(opt => opt.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
+    .AddRazorRuntimeCompilation()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
 
-builder.Services.AddScoped<ILoginService, LoginService>();
+// Giriş yapan kullanıcının cookie claim'leri (ad, e-posta, rol); Identity'ye istek atmaz.
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddHttpClient<IIdentityService, IdentityService>();
-
-builder.Services.AddHttpClient();
-builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<ClientSettings>(builder.Configuration.GetSection("ClientSettings"));
 builder.Services.Configure<ServiceApiSettings>(builder.Configuration.GetSection("ServiceApiSettings"));
@@ -64,9 +67,9 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpS
 
 builder.Services.AddScoped<IUserAccessTokenService, UserAccessTokenService>();
 // Kullanıcıya özel servisler (sepet, sipariş, admin istatistikleri...): giriş yapmış kullanıcının token'ı.
-builder.Services.AddScoped<ResourceOwnerPasswordTokenHandler>();
+builder.Services.AddTransient<ResourceOwnerPasswordTokenHandler>();
 // Herkese açık sayfalarda da kullanılan servisler (Catalog, Comment): kullanıcı varsa onun, yoksa ziyaretçi token'ı.
-builder.Services.AddScoped<UserOrVisitorTokenHandler>();
+builder.Services.AddTransient<UserOrVisitorTokenHandler>();
 
 builder.Services.AddHttpClient<IClientCredentialTokenService, ClientCredentialTokenService>();
 
@@ -81,6 +84,12 @@ builder.Services.AddHttpClient<IUserIdentityService, UserIdentityService>(opt =>
 {
     opt.BaseAddress = new Uri(values.IdentityServerUrl);
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
+
+// Üye kaydı: IdentityServer'ın herkese açık ucu, token gerekmez.
+builder.Services.AddHttpClient<IRegisterService, RegisterService>(opt =>
+{
+    opt.BaseAddress = new Uri(values.IdentityServerUrl);
+});
 
 // Admin istatistikleri: dashboard tek istekte (Ocelot aggregate /services/admin/dashboard) + üst menü için tekil uçlar.
 builder.Services.AddHttpClient<IDashboardService, DashboardService>(opt =>
@@ -99,11 +108,6 @@ builder.Services.AddHttpClient<IOrderOrderingService, OrderOrderingService>(opt 
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
 
 builder.Services.AddHttpClient<ICargoCompanyService, CargoCompanyService>(opt =>
-{
-    opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Cargo.Path}");
-}).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
-
-builder.Services.AddHttpClient<ICargoCustomerService, CargoCustomerService>(opt =>
 {
     opt.BaseAddress = new Uri($"{values.OcelotUrl}/{values.Cargo.Path}");
 }).AddHttpMessageHandler<ResourceOwnerPasswordTokenHandler>();
@@ -200,14 +204,12 @@ builder.Services.AddLocalization(opt =>
     opt.ResourcesPath = "Resources"; 
 });
 
-builder.Services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Development'ta beklenmeyen kod hataları geliştirici sayfasında görünür; servis hataları her ortamda ServiceExceptionMiddleware'de.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -216,6 +218,11 @@ app.UseMultiShopHealthChecks();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseMultiShopRequestLogging();
+
+// Gövdesiz hata yanıtları ErrorController.Status'a gider; yalnızca 404 ve 400 için sayfa gösterilir.
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
+// UseRouting'den önce: hata sayfasını isteği yeniden yönlendirerek üretir.
+app.UseMiddleware<ServiceExceptionMiddleware>();
 
 app.UseRouting();
 app.UseAuthentication();
@@ -226,18 +233,6 @@ var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(sup
     (supportedCultures).AddSupportedUICultures(supportedCultures);
 
 app.UseRequestLocalization(localizationOptions);
-
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Default}/{action=Index}/{id?}");
-
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapControllerRoute(
-//      name: "areas",
-//      pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-//    );
-//});
 
 app.MapControllerRoute(
     name: "areas",

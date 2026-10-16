@@ -4,9 +4,10 @@ namespace MultiShop.Catalog.Services.AboutServices
 {
     public interface IAboutService
     {
-        Task<List<ResultAboutDto>> GetallAboutAsync();
+        Task<List<ResultAboutDto>> GetAllAboutAsync();
 
-        Task CreateAboutAsync(CreateAboutDto createAboutDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateAboutAsync(CreateAboutDto createAboutDto);
 
         Task UpdateAboutAsync(UpdateAboutDto updateAboutDto);
 

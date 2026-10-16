@@ -35,7 +35,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="/Login/Logout">
+            <form method="post" asp-area="" asp-controller="Login" asp-action="Logout" style="display:none"></form><a onclick="this.previousElementSibling.submit(); return false;" class="nav-link" href="#">
                 <i class="mdi mdi-emoticon menu-icon"></i>
                 <span class="menu-title">Çıkış Yap</span>
             </a>

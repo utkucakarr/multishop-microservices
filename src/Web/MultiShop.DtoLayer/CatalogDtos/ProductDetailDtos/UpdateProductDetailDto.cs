@@ -1,13 +1,19 @@
-﻿namespace MultiShop.DtoLayer.CatalogDtos.ProductDetailDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MultiShop.DtoLayer.CatalogDtos.ProductDetailDtos
 {
     public class UpdateProductDetailDto
     {
-        public string ProductDetailId { get; set; }
-
-        public string ProductDescription { get; set; }
-
-        public string ProductInfo { get; set; }
+        // Boşsa ürünün henüz detay kaydı yok demektir; WebUI bu durumda Create çağırır.
+        public string? ProductDetailId { get; set; }
 
         public string ProductId { get; set; }
+
+        [Required(ErrorMessage = "Kısa açıklama zorunludur.")]
+        public string ShortDescription { get; set; }
+
+        public string? LongDescription { get; set; }
+
+        public string? ProductInfo { get; set; }
     }
 }

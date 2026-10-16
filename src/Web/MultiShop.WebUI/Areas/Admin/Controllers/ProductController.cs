@@ -7,8 +7,6 @@ using MultiShop.DtoLayer.CatalogDtos.ProductDtos;
 using MultiShop.WebUI.Services.CatalogServices.BrandServices;
 using MultiShop.WebUI.Services.CatalogServices.CategoryServices;
 using MultiShop.WebUI.Services.CatalogServices.ProductServices;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
 {
@@ -56,22 +54,6 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Route("ProductListWithCategory")]
-        public async Task<IActionResult> ProductListWithCategory()
-        {
-            ProductViewBagList();
-
-            //var client = _httpClientFactory.CreateClient();
-            //var responseMessage = await client.GetAsync("https://localhost:7070/api/Products/ProductListWithCategory");
-            //if(responseMessage.IsSuccessStatusCode)
-            //{
-            //    var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            //    var values = JsonConvert.DeserializeObject<List<ResultProductWithCategoryDto>>(jsonData);
-            //    return View(values);
-            //}
-            return View();
-        }
-
         [Route("CreateProduct")]
         public async Task<IActionResult> CreateProduct()
         {
@@ -95,10 +77,12 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             return View(createProductDto);
         }
 
+        [HttpPost]
         [Route("DeleteProduct/{id}")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
-            await _productService.DeleteProductAsync(id);
+            var error = await _productService.DeleteProductAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Ürün silindi.";
             return RedirectToAction("Index", "Product", new { area = "Admin" });
         }
 

@@ -31,12 +31,13 @@ namespace MultiShop.Catalog.Services.ProductImageServices
             _mapper = mapper;
         }
 
-        public async Task CreateProductImageAsync(CreateProductImageDto createProductImageDto)
+        public async Task<string> CreateProductImageAsync(CreateProductImageDto createProductImageDto)
         {
             var productImage = createProductImageDto.ToEntity();
             if (productImage.IsMain)
                 await _productImageRepository.ClearMainAsync(productImage.ProductId);
             await _productImageRepository.CreateAsync(productImage);
+            return productImage.ProductImageId;
         }
 
         public async Task<GetByIdProductImageDto> UploadProductImageAsync(UploadProductImageDto uploadProductImageDto)

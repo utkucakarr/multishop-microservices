@@ -18,10 +18,11 @@ namespace MultiShop.Catalog.Services.OfferDiscountServices
             _mapper = mapper;
         }
 
-        public async Task CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto)
+        public async Task<string> CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto)
         {
             var value = _mapper.Map<OfferDiscount>(createOfferDiscountDto);
             await _offerDiscountCollection.InsertOneAsync(value);
+            return value.OfferDiscountId;
         }
 
         public async Task DeleteOfferDiscountAsync(string id)

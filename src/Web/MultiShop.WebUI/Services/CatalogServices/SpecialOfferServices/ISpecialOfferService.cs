@@ -2,15 +2,18 @@
 
 namespace MultiShop.WebUI.Services.CatalogServices.SpecialOfferServices
 {
+    // Okuma metotları servis hata dönerse ServiceApiException fırlatır (bkz. ServiceExceptionMiddleware);
+    // yazma metotları başarılıysa null, değilse kullanıcıya gösterilecek hata mesajını döner.
     public interface ISpecialOfferService
     {
         Task<List<ResultSpecialOfferDto>> GetAllSpecialOfferAsync();
 
-        Task CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto);
+        Task<string?> CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto);
 
-        Task UpdateSpecialOfferAsync(UpdateSpecialOfferDto updateSpecialOfferDto);
+        Task<string?> UpdateSpecialOfferAsync(UpdateSpecialOfferDto updateSpecialOfferDto);
 
-        Task DeleteSpecialOfferAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> DeleteSpecialOfferAsync(string id);
 
         Task<UpdateSpecialOfferDto> GetByIdSpecialOfferAsync(string id);
     }

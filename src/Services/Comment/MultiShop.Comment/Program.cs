@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.Comment.Context;
+using MultiShop.Comment.Services;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.Hosting;
 using MultiShop.BuildingBlocks.Messaging;
@@ -15,6 +17,8 @@ builder.Services.AddMultiShopAuthorization(fullScope: "CommentFullPermission", r
 builder.Services.AddDbContext<CommentContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<CommentService>();
+
 builder.Services.AddHealthChecks().AddDbContextCheck<CommentContext>("sqlserver");
 
 // Transactional outbox: CommentCreated yorumla aynı transaction'da OutboxMessage tablosuna yazılır,
@@ -26,7 +30,9 @@ builder.AddMultiShopMessaging("Comment", x =>
         outbox.UseBusOutbox();
     }));
 
-builder.Services.AddControllers();
+// Enum'lar JSON'da metin ("Pending"): WebUI sayılara bağımlı olmaz.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddMultiShopSwagger("MultiShop Comment API");
 
 var app = builder.Build();

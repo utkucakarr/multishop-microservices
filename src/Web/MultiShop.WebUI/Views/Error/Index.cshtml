@@ -1,0 +1,28 @@
+﻿@{
+    // Site layout'u kullanılmaz (bkz. ErrorController).
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>@ViewBag.Title - MultiShop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="~/online-shop-website-template/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row px-xl-5 py-5">
+            <div class="col-12 mb-5">
+                <div class="bg-light p-30 text-center">
+                    <i class="fa fa-exclamation-triangle fa-3x text-primary mb-3"></i>
+                    <h3 class="mb-3">@ViewBag.Title</h3>
+                    <p class="mb-4">@ViewBag.Message</p>
+                    <a href="/" class="btn btn-primary px-4">Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

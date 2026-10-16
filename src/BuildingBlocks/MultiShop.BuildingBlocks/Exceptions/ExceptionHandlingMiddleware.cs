@@ -49,13 +49,14 @@ public sealed class ExceptionHandlingMiddleware(
             logger.LogWarning("İstek {StatusCode} ile reddedildi: {Method} {Path} – {Message}",
                 statusCode, context.Request.Method, context.Request.Path, exception.Message);
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Detail = isServerError && !environment.IsDevelopment()
-                ? "Beklenmeyen bir hata oluştu."
-                : exception.Message,
-        };
+        // Doğrulama hatası alan bazlı döner ("errors": { "City": ["..."] }); MVC'nin otomatik 400'üyle aynı biçim.
+        var problemDetails = exception is ValidationFailedException validation
+            ? new ValidationProblemDetails(validation.Errors.ToDictionary(x => x.Key, x => x.Value))
+            : new ProblemDetails();
+        problemDetails.Status = statusCode;
+        problemDetails.Detail = isServerError && !environment.IsDevelopment()
+            ? "Beklenmeyen bir hata oluştu."
+            : exception.Message;
 
         context.Response.Clear();
         context.Response.StatusCode = statusCode;

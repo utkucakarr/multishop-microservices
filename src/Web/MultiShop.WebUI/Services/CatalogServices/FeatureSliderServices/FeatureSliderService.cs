@@ -1,5 +1,4 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.FeatureSliderDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.FeatureSliderServices
 {
@@ -12,44 +11,34 @@ namespace MultiShop.WebUI.Services.CatalogServices.FeatureSliderServices
             _httpClient = httpClient;
         }
 
-        public async Task CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto)
+        public async Task<string?> CreateFeatureSliderAsync(CreateFeatureSliderDto createFeatureSliderDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateFeatureSliderDto>("featuresliders", createFeatureSliderDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("featuresliders", createFeatureSliderDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
-        public async Task DeleteFeatureSliderAsync(string id)
+        public async Task<string?> DeleteFeatureSliderAsync(string id)
         {
-            await _httpClient.DeleteAsync("featuresliders?id=" + id);
-        }
-
-        public Task FeatureSliderChangeStatusToFalse(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FeatureSliderChangeStatusToTrue(string id)
-        {
-            throw new NotImplementedException();
+            var responseMessage = await _httpClient.DeleteAsync("featuresliders?id=" + id);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<List<ResultFeatureSliderDto>> GetAllFeatureSliderAsync()
         {
             var responseMessage = await _httpClient.GetAsync("featuresliders");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultFeatureSliderDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultFeatureSliderDto>>();
         }
 
         public async Task<UpdateFeatureSliderDto> GetByIdFeatureSliderAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("featuresliders/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateFeatureSliderDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<UpdateFeatureSliderDto>();
         }
 
-        public async Task UpdateFeatureSliderAsync(UpdateFeatureSliderDto updateFeatureSliderDto)
+        public async Task<string?> UpdateFeatureSliderAsync(UpdateFeatureSliderDto updateFeatureSliderDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateFeatureSliderDto>("featuresliders", updateFeatureSliderDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("featuresliders", updateFeatureSliderDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

@@ -42,7 +42,7 @@
                                 <a href="/Login/Index/" class="dropdown-item">Giriş Yap</a>
                                 @if (ViewBag.isLogin)
                                 {
-                                    <a href="/Login/Logout/" class="dropdown-item">Çıkış Yap</a>
+                                    <form method="post" asp-area="" asp-controller="Login" asp-action="Logout" style="display:none"></form><a onclick="this.previousElementSibling.submit(); return false;" href="#" class="dropdown-item">Çıkış Yap</a>
                                 }
                             </div>
                         </div>

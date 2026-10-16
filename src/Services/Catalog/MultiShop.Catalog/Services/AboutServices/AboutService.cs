@@ -18,10 +18,11 @@ namespace MultiShop.Catalog.Services.AboutServices
             _mapper = mapper;
         }
 
-        public async Task CreateAboutAsync(CreateAboutDto createAboutDto)
+        public async Task<string> CreateAboutAsync(CreateAboutDto createAboutDto)
         {
             var values = _mapper.Map<About>(createAboutDto);
             await _aboutCollection.InsertOneAsync(values);
+            return values.AboutId;
         }
 
         public async Task DeleteAboutAsync(string id)
@@ -29,7 +30,7 @@ namespace MultiShop.Catalog.Services.AboutServices
             await _aboutCollection.DeleteOneAsync(x => x.AboutId == id);
         }
 
-        public async Task<List<ResultAboutDto>> GetallAboutAsync()
+        public async Task<List<ResultAboutDto>> GetAllAboutAsync()
         {
             var values = await _aboutCollection.Find(x => true).ToListAsync();
             return _mapper.Map<List<ResultAboutDto>>(values);

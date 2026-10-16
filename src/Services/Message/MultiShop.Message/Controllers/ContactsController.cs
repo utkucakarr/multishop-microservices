@@ -24,8 +24,8 @@ namespace MultiShop.Message.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateContactMessageDto createContactMessageDto)
         {
-            await _contactMessageService.CreateAsync(createContactMessageDto);
-            return Ok("Mesajınız alındı");
+            var id = await _contactMessageService.CreateAsync(createContactMessageDto);
+            return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
 
         /// <param name="take">Verilirse yalnızca en yeni bu kadar mesaj döner (ör. admin üst menüsü için 5).</param>

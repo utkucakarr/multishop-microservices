@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.Cargo.EntityLayer.Concrete;
-using MultiShop.Cargo.WebApi.Shipments;
+using MultiShop.Cargo.BusinessLayer.Services;
 
 namespace MultiShop.Cargo.WebApi.Controllers
 {
