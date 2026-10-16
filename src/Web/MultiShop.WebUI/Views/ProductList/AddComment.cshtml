@@ -6,7 +6,8 @@
     }
     else
     {
-        <small>Yorumunuzun alınması için geçerli bir email adresi giriniz.*</small>
+        <small>Yorumunuz, adınız ve soyadınızla yayınlanır; yayınlanmadan önce onaylanır.</small>
+        <div id="commentResult" class="alert mt-2" style="display:none"></div>
         <form id="commentForm" method="post" asp-action="AddComment" asp-controller="ProductList">
             <div class="form-group">
                 <div class="d-flex my-3">
@@ -20,20 +21,10 @@
                     </div>
                 </div>
             </div>
-            @* Buradaka bu form AddComment'e gidecek neredeki ProductList'deki *@
-
             <input type="hidden" value="@ViewBag.pid" name="ProductId" />
             <div class="form-group">
-                <label for="name">Adınız Soyadınız *</label>
-                <input type="text" class="form-control" id="name" name="NameSurname">
-            </div>
-            <div class="form-group">
-                <label for="email">Email Adresiniz *</label>
-                <input type="email" class="form-control" id="email" name="Email">
-            </div>
-            <div class="form-group">
                 <label for="message">Yorumunuz *</label>
-                <textarea id="message" cols="30" rows="5" class="form-control" name="CommentDetail"></textarea>
+                <textarea id="message" cols="30" rows="5" class="form-control" name="CommentDetail" maxlength="1000" required></textarea>
             </div>
             <div class="form-group mb-0">
                 <input type="submit" value="Yorum Yap" class="btn btn-primary px-3">
@@ -79,26 +70,26 @@
         formData.append('rating', rating);
 
 
+        const form = this;
+        const result = document.getElementById('commentResult');
+        const show = (ok, message) => {
+            result.className = 'alert mt-2 ' + (ok ? 'alert-success' : 'alert-danger');
+            result.textContent = message;
+            result.style.display = 'block';
+        };
+
+        // Yorum onaylanana kadar listede görünmez: sayfa yenilenmez, mesaj gösterilir.
         fetch('/ProductList/AddComment', {
             method: 'POST',
             body: formData
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json().catch(() => ({ success: false, message: 'Yorum gönderilemedi.' })))
             .then(data => {
-                if (data === true) {
-                    location.reload();
-                } else {
-                    console.error('Error: Comment could not be added.');
+                show(data.success === true, data.message);
+                if (data.success === true) {
+                    form.style.display = 'none';
                 }
-
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            .catch(() => show(false, 'Yorum gönderilemedi.'));
     });
 </script>

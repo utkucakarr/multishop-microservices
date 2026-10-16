@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.Comment.Context;
+using MultiShop.Comment.Entities;
 
 namespace MultiShop.Comment.Controllers
 {
-    /// <summary>Admin dashboard'unun Comment kısmı. <c>Status = true</c>: admin onaylamış yorum.</summary>
-    public record CommentStatisticsDto(int Total, int Approved, int Pending);
+    /// <summary>Admin dashboard'unun Comment kısmı (moderasyon durumlarına göre).</summary>
+    public record CommentStatisticsDto(int Total, int Approved, int Pending, int Rejected);
 
     // Admin dashboard istatistikleri: tek uç, Ocelot /services/admin/dashboard bunu diğer servislerle birleştirir.
     [Authorize(Policy = MultiShopPolicies.Admin)]
@@ -31,9 +32,9 @@ namespace MultiShop.Comment.Controllers
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            int approved = counts.Where(x => x.Status).Sum(x => x.Count);
-            int pending = counts.Where(x => !x.Status).Sum(x => x.Count);
-            return Ok(new CommentStatisticsDto(approved + pending, approved, pending));
+            int Count(CommentStatus status) => counts.Where(x => x.Status == status).Sum(x => x.Count);
+            return Ok(new CommentStatisticsDto(counts.Sum(x => x.Count), Count(CommentStatus.Approved),
+                Count(CommentStatus.Pending), Count(CommentStatus.Rejected)));
         }
     }
 }

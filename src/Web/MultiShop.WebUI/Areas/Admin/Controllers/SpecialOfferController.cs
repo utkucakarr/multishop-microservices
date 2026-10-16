@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.DtoLayer.CatalogDtos.SpecialOfferDtos;
 using MultiShop.WebUI.Services.CatalogServices.SpecialOfferServices;
-using Newtonsoft.Json;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MultiShop.WebUI.Areas.Admin.Controllers
@@ -44,10 +42,6 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             var offer = await _specialOfferService.GetAllSpecialOfferAsync();
             var offerCount = offer.Count();
             ViewBag.offerCount = offerCount;
-            if (offerCount >= 2)
-            {
-                TempData["errorMessage"] = "En fazla 2 özel teklif eklenebilir.";
-            }
             SpecialOfferViewBagList();
             return View();
         }
@@ -59,22 +53,30 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
             var offer = await _specialOfferService.GetAllSpecialOfferAsync();
             var offerCount = offer.Count();
             ViewBag.offerCount = offerCount;
+            // Ana sayfa tasarımı en fazla 2 özel teklif gösterir; uyarı view'da offerCount'a göre gösterilir.
             if (offerCount >= 2)
             {
-                TempData["errorMessage"] = "En fazla 2 özel teklif eklenebilir.";
+                SpecialOfferViewBagList();
                 return View(createSpecialOfferDto);
             }
-            else
+
+            var error = await _specialOfferService.CreateSpecialOfferAsync(createSpecialOfferDto);
+            if (error is not null)
             {
-                await _specialOfferService.CreateSpecialOfferAsync(createSpecialOfferDto);
-                return RedirectToAction("Index", "SpecialOffer", new { area = "Admin" });
+                ModelState.AddModelError(string.Empty, error);
+                SpecialOfferViewBagList();
+                return View(createSpecialOfferDto);
             }
+            TempData["SuccessMessage"] = "Özel teklif eklendi.";
+            return RedirectToAction("Index", "SpecialOffer", new { area = "Admin" });
         }
 
+        [HttpPost]
         [Route("DeleteSpecialOffer/{id}")]
         public async Task<IActionResult> DeleteSpecialOffer(string id)
         {
-            await _specialOfferService.DeleteSpecialOfferAsync(id);
+            var error = await _specialOfferService.DeleteSpecialOfferAsync(id);
+            TempData[error is null ? "SuccessMessage" : "ErrorMessage"] = error ?? "Özel teklif silindi.";
             return RedirectToAction("Index", "SpecialOffer", new { area = "Admin" });
         }
 
@@ -91,7 +93,14 @@ namespace MultiShop.WebUI.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateSpecialOffer(UpdateSpecialOfferDto updateSpecialOfferDto)
         {
-            await _specialOfferService.UpdateSpecialOfferAsync(updateSpecialOfferDto);
+            var error = await _specialOfferService.UpdateSpecialOfferAsync(updateSpecialOfferDto);
+            if (error is not null)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                SpecialOfferViewBagList();
+                return View(updateSpecialOfferDto);
+            }
+            TempData["SuccessMessage"] = "Özel teklif güncellendi.";
             return RedirectToAction("Index", "SpecialOffer", new { area = "Admin" });
         }
     }

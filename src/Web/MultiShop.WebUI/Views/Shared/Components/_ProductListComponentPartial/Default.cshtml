@@ -8,7 +8,9 @@
             <div class="product-img position-relative overflow-hidden">
                 <img class="img-fluid w-100" style="width: 400px; height: 350px" src="@item.ProductImageUrl" alt="">
                 <div class="product-action">
-                    <a class="btn btn-outline-dark btn-square" href="/ShoppingCard/AddBasketItem/@item.ProductId"><i class="fa fa-shopping-cart"></i></a>
+                    <form method="post" asp-area="" asp-controller="ShoppingCard" asp-action="AddBasketItem" asp-route-id="@item.ProductId">
+                        <button type="submit" class="btn btn-outline-dark btn-square" title="Sepete ekle"><i class="fa fa-shopping-cart"></i></button>
+                    </form>
                     <a class="btn btn-outline-dark btn-square" href=""><i class="far fa-heart"></i></a>
                     <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-sync-alt"></i></a>
                     <a class="btn btn-outline-dark btn-square" href="/ProductList/ProductDetail/@item.ProductId"><i class="fa fa-search"></i></a>

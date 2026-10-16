@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Catalog: domain kuralları (Product, ProductDetail). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Catalog\MultiShop.Catalog\MultiShop.Catalog.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -15,17 +15,8 @@
   <ItemGroup>
     <PackageReference Include="IdentityModel.AspNetCore" />
     <PackageReference Include="MailKit" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Areas\Admin\Data\" />
-    <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="Areas\User\Data\" />
-    <Folder Include="Areas\User\Models\" />
-    <Folder Include="SignalRHub\" />
   </ItemGroup>
 
   <ItemGroup>

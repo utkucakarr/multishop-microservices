@@ -1,45 +1,105 @@
-﻿@model List<ResultCommentDto>
+﻿@model CommentPageDto
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Yorumlar";
     Layout = "~/Areas/Admin/Views/AdminLayout/Index.cshtml";
-    int count = 0;
+    string selectedStatus = ViewBag.status;
 }
 
 <section class="content container-fluid">
     <div class="row">
         <div class="col-md-12">
             <div class="chart-box">
-                <div class="bs-example" data-example-id="bordered-table">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Kullanıcı</th>
-                                <th>Yorum</th>
-                                <th>Tarih</th>
-                                <th>Durum</th>
-                                <th>Sil</th>
-                                <th>Güncelle</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                count++;
+                <h4>Yorumlar <small>(@Model.TotalCount kayıt)</small></h4>
+
+                <form method="get" action="/Admin/Comment/Index" class="form-inline" style="margin-bottom:15px">
+                    <label for="status">Durum:&nbsp;</label>
+                    <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+                        @foreach (var status in CommentStatusDisplay.All)
+                        {
+                            <option value="@status" selected="@(status == selectedStatus)">@CommentStatusDisplay.Text(status)</option>
+                        }
+                        <option value="all" selected="@(selectedStatus == "all")">Tümü</option>
+                    </select>
+                </form>
+
+                @if (Model.Items.Count == 0)
+                {
+                    <p>Bu durumda yorum yok.</p>
+                }
+                else
+                {
+                    <div class="bs-example" data-example-id="bordered-table">
+                        <table class="table table-bordered">
+                            <thead>
                                 <tr>
-                                    <th scope="row">@count</th>
-                                    <td>@item.NameSurname</td>
-                                    <td>@item.CommentDetail</td>
-                                    <td>@item.CreatedDate.ToShortDateString()</td>
-                                    <td>@item.Status</td>
-                                    <td><a href="/Admin/Comment/DeleteComment/@item.UserCommentId" class="btn btn-danger">Sil</a></td>
-                                    <td><a href="/Admin/Comment/UpdateComment/@item.UserCommentId" class="btn btn-success">Güncelle</a></td>
+                                    <th>Kullanıcı</th>
+                                    <th>Ürün</th>
+                                    <th>Puan</th>
+                                    <th>Yorum</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.NameSurname<br /><small>@item.Email</small></td>
+                                        <td><a href="/ProductList/ProductDetail/@item.ProductId" target="_blank">Ürüne git</a></td>
+                                        <td>@item.Rating / 5</td>
+                                        <td style="max-width:400px; white-space:pre-wrap">@item.CommentDetail</td>
+                                        <td>@item.CreatedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td><span class="label @CommentStatusDisplay.LabelClass(item.Status)">@CommentStatusDisplay.Text(item.Status)</span></td>
+                                        <td style="white-space:nowrap">
+                                            @if (item.Status != CommentStatuses.Approved)
+                                            {
+                                                <form method="post" action="/Admin/Comment/Approve" style="display:inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.UserCommentId" />
+                                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                                    <input type="hidden" name="page" value="@Model.Page" />
+                                                    <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                                                </form>
+                                            }
+                                            @if (item.Status != CommentStatuses.Rejected)
+                                            {
+                                                <form method="post" action="/Admin/Comment/Reject" style="display:inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.UserCommentId" />
+                                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                                    <input type="hidden" name="page" value="@Model.Page" />
+                                                    <button type="submit" class="btn btn-warning btn-sm">Reddet</button>
+                                                </form>
+                                            }
+                                            <form method="post" action="/Admin/Comment/Delete" style="display:inline"
+                                                  onsubmit="return confirm('Yorum kalıcı olarak silinsin mi?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.UserCommentId" />
+                                                <input type="hidden" name="status" value="@selectedStatus" />
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model.TotalPages > 1)
+                    {
+                        <ul class="pagination">
+                            @for (var i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="@(i == Model.Page ? "active" : "")">
+                                    <a href="/Admin/Comment/Index?status=@selectedStatus&page=@i">@i</a>
+                                </li>
                             }
-                        </tbody>
-                    </table>
-                </div>
+                        </ul>
+                    }
+                }
             </div>
         </div>
     </div>

@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.ProductImageServices
     {
         Task<IEnumerable<ResultProductImageDto>> GetAllProductImageAsync();
 
-        Task CreateProductImageAsync(CreateProductImageDto createProductImageDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateProductImageAsync(CreateProductImageDto createProductImageDto);
 
         /// <summary>Dosyayı depolamaya kaydeder ve ürüne görsel olarak ekler; ürünün ilk görseli ana görsel olur.</summary>
         Task<GetByIdProductImageDto> UploadProductImageAsync(UploadProductImageDto uploadProductImageDto);

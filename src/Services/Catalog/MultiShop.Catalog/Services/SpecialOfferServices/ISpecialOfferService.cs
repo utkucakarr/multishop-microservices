@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.SpecialOfferServices
     {
         Task<List<ResultSpecialOfferDto>> GetAllSpecialOfferAsync();
 
-        Task CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateSpecialOfferAsync(CreateSpecialOfferDto createSpecialOfferDto);
 
         Task UpdateSpecialOfferAsync(UpdateSpecialOfferDto updateSpecialOfferDto);
 

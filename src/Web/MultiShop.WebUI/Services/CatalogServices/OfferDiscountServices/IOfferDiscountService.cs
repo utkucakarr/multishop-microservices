@@ -2,15 +2,18 @@
 
 namespace MultiShop.WebUI.Services.CatalogServices.OfferDiscountServices
 {
+    // Okuma metotları servis hata dönerse ServiceApiException fırlatır (bkz. ServiceExceptionMiddleware);
+    // yazma metotları başarılıysa null, değilse kullanıcıya gösterilecek hata mesajını döner.
     public interface IOfferDiscountService
     {
         Task<List<ResultOfferDiscountDto>> GetAllOfferDiscountAsync();
 
-        Task CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto);
+        Task<string?> CreateOfferDiscountAsync(CreateOfferDiscountDto createOfferDiscountDto);
 
-        Task UpdateOfferDiscountAsync(UpdateOfferDiscountDto updateOfferDiscountDto);
+        Task<string?> UpdateOfferDiscountAsync(UpdateOfferDiscountDto updateOfferDiscountDto);
 
-        Task DeleteOfferDiscountAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> DeleteOfferDiscountAsync(string id);
 
         Task<UpdateOfferDiscountDto> GetByIdOfferDiscountAsync(string id);
     }

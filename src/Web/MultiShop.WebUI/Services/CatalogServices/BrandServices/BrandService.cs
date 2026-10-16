@@ -1,20 +1,20 @@
 ﻿using MultiShop.DtoLayer.CatalogDtos.BrandDtos;
-using Newtonsoft.Json;
 
 namespace MultiShop.WebUI.Services.CatalogServices.BrandServices
 {
     public class BrandService : IBrandService
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public BrandService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task CreateBrandAsync(CreateBrandDto createBrandDto)
+        public async Task<string?> CreateBrandAsync(CreateBrandDto createBrandDto)
         {
-            await _httpClient.PostAsJsonAsync<CreateBrandDto>("brands", createBrandDto);
+            var responseMessage = await _httpClient.PostAsJsonAsync("brands", createBrandDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
 
         public async Task<string?> DeleteBrandAsync(string id)
@@ -26,21 +26,19 @@ namespace MultiShop.WebUI.Services.CatalogServices.BrandServices
         public async Task<List<ResultBrandDto>> GetAllBrandAsync()
         {
             var responseMessage = await _httpClient.GetAsync("brands");
-            var jsonData = await responseMessage.Content.ReadAsStringAsync();
-            var values = JsonConvert.DeserializeObject<List<ResultBrandDto>>(jsonData);
-            return values;
+            return await responseMessage.ReadOrThrowAsync<List<ResultBrandDto>>();
         }
 
         public async Task<UpdateBrandDto> GetByIdBrandAsync(string id)
         {
             var responseMessage = await _httpClient.GetAsync("brands/" + id);
-            var values = await responseMessage.Content.ReadFromJsonAsync<UpdateBrandDto>();
-            return values;
+            return await responseMessage.ReadOrThrowAsync<UpdateBrandDto>();
         }
 
-        public async Task UpdateBrandAsync(UpdateBrandDto updateBrandDto)
+        public async Task<string?> UpdateBrandAsync(UpdateBrandDto updateBrandDto)
         {
-            await _httpClient.PutAsJsonAsync<UpdateBrandDto>("brands", updateBrandDto);
+            var responseMessage = await _httpClient.PutAsJsonAsync("brands", updateBrandDto);
+            return await responseMessage.GetErrorMessageAsync();
         }
     }
 }

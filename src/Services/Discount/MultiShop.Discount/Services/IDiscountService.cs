@@ -6,12 +6,16 @@ namespace MultiShop.Discount.Services
     {
         Task<List<ResultDiscountCouponDto>> GetAllDiscountCouponAsync();
 
-        Task CreateDiscountCouponAsync(CreateDiscountCouponDto createCouponDto);
+        /// <returns>Oluşan kuponun id'si. Aynı kod varsa <see cref="BuildingBlocks.Exceptions.ConflictException"/>.</returns>
+        Task<int> CreateDiscountCouponAsync(CreateDiscountCouponDto createCouponDto);
 
-        Task UpdateDiscountCouponAync(UpdateDiscountCouponDto updateCouponDto);
+        /// <summary>Kupon yoksa <see cref="BuildingBlocks.Exceptions.NotFoundException"/>.</summary>
+        Task UpdateDiscountCouponAsync(UpdateDiscountCouponDto updateCouponDto);
 
+        /// <summary>Kupon yoksa <see cref="BuildingBlocks.Exceptions.NotFoundException"/>.</summary>
         Task DeleteDiscountCouponAsync(int id);
 
+        /// <summary>Kupon yoksa <see cref="BuildingBlocks.Exceptions.NotFoundException"/>.</summary>
         Task<GetByIdDiscountCouponDto> GetByIdDiscountCouponAsync(int id);
 
         /// <summary>Aktif ve süresi dolmamış kuponu döner; yoksa <see cref="BuildingBlocks.Exceptions.NotFoundException"/>.</summary>

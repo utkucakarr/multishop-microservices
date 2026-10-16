@@ -1,5 +1,7 @@
 # MultiShop Mikroservis Projesi 
 
+[![CI](https://github.com/utkucakarr/multishop-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/utkucakarr/multishop-microservices/actions/workflows/ci.yml)
+
 ## Proje Hakkında
 
 **MultiShop**, kullanıcıların oturum açarak veya ziyaretçi olarak siteye giriş yapmalarını sağlayan kapsamlı bir e-ticaret platformudur. Kullanıcılar, ürünler içerisinden diledikleri ürünleri arayabilir, listeleyebilir ve sepetlerine ekleyebilirler. Alışveriş sürecinin sonunda, kullanıcılar siparişlerini güvenle oluşturabilir ve takip edebilirler.

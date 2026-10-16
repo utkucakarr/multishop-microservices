@@ -2,15 +2,18 @@
 
 namespace MultiShop.WebUI.Services.CatalogServices.CategoryServices
 {
+    // Okuma metotları servis hata dönerse ServiceApiException fırlatır (bkz. ServiceExceptionMiddleware);
+    // yazma metotları başarılıysa null, değilse kullanıcıya gösterilecek hata mesajını döner.
     public interface ICategoryService
     {
         Task<List<ResultCategoryDto>> GetAllCategoryAsync();
 
-        Task CreateCategoryAsync(CreateCategoryDto createCategoryDto);
+        Task<string?> CreateCategoryAsync(CreateCategoryDto createCategoryDto);
 
-        Task UpdateCategoryAsync(UpdateCategoryDto updateCategoryDto);
+        Task<string?> UpdateCategoryAsync(UpdateCategoryDto updateCategoryDto);
 
-        Task DeleteCategoryAsync(string id);
+        /// <summary>Başarılıysa null, değilse Catalog'un hata mesajı.</summary>
+        Task<string?> DeleteCategoryAsync(string id);
 
         Task<UpdateCategoryDto> GetByIdCategoryAsync(string id);
     }

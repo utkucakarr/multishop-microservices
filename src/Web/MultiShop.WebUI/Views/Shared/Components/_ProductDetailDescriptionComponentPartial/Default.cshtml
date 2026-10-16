@@ -2,5 +2,6 @@
 
 <div class="tab-pane fade show active" id="tab-pane-1">
     <h4 class="mb-3">Ürün Detayı</h4>
-    <p>@Model.ProductDescription</p>
+    @* Uzun açıklama girilmemişse kısa açıklama gösterilir. *@
+    <p>@(string.IsNullOrWhiteSpace(Model.LongDescription) ? Model.ShortDescription : Model.LongDescription)</p>
 </div>

@@ -18,10 +18,11 @@ namespace MultiShop.Catalog.Services.FeatureServices
             _featureCollection = database.GetCollection<Feature>(_databaseSettings.FeatureCollectionName);
             _mapper = mapper;
         }
-        public async Task CreateFeatureAsync(CreateFeatureDto createFeatureDto)
+        public async Task<string> CreateFeatureAsync(CreateFeatureDto createFeatureDto)
         {
             var values = _mapper.Map<Feature>(createFeatureDto);
             await _featureCollection.InsertOneAsync(values);
+            return values.FeatureId;
         }
 
         public async Task DeleteFeatureAsync(string id)

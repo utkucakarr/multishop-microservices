@@ -12,10 +12,11 @@
                 <br />
                 <div class="bs-example" data-example-id="bordered-table">
                     <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         @if (ViewBag.offerCount >= 2)
                         {
                             <div class="alert alert-warning">
-                                @TempData["errorMessage"]
+                                En fazla 2 özel teklif eklenebilir.
                             </div>
                         }
                         <label>Teklif Başlığı</label>

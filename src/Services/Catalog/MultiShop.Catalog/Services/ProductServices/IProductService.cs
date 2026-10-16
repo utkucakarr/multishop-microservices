@@ -6,7 +6,8 @@ namespace MultiShop.Catalog.Services.ProductServices
     {
         Task<IEnumerable<ResultProductDto>> GetAllProductAsync();
 
-        Task CreateProductAsync(CreateProductDto createProductDto);
+        /// <returns>Oluşan kaydın id'si.</returns>
+        Task<string> CreateProductAsync(CreateProductDto createProductDto);
 
         Task UpdateProductAsync(UpdateProductDto updateProductDto);
 

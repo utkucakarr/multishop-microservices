@@ -25,7 +25,7 @@ namespace MultiShop.Payment.Services.GarantiPosServices
     /// Garanti sanal POS satış isteği (typed HttpClient, IHttpClientFactory; PAY-02).
     /// Retry bilerek yok: satış isteği idempotent değil, yeniden göndermek iki kez çekim demek olabilir.
     /// </summary>
-    public class GarantiPosClient
+    public class GarantiPosClient : IPosClient
     {
         private static readonly Encoding TurkishEncoding = CreateTurkishEncoding();
 
