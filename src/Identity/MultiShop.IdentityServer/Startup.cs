@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using MultiShop.BuildingBlocks.Authentication;
 using MultiShop.BuildingBlocks.HealthChecks;
 using MultiShop.BuildingBlocks.Logging;
+using MultiShop.BuildingBlocks.Observability;
 
 namespace MultiShop.IdentityServer
 {
@@ -33,6 +34,8 @@ namespace MultiShop.IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMultiShopTracing(Configuration, "IdentityServer");
+
             services.AddLocalApiAuthentication();
             // Kullanıcı listesi ve istatistik: local API token'ı + role = Admin.
             // Local API token'ındaki claim adları eşlenmeden gelir ("role"), bu yüzden RequireRole yerine RequireClaim.
